@@ -1,10 +1,18 @@
 #include "app.hpp"
-#include <opencv2/opencv.hpp>
-#include <GLES2/gl2.h>
 #include <iostream>
-#include <jni.h>
 #include <fstream>
 #include <thread>
+
+#include <opencv2/opencv.hpp>
+#include <GLES2/gl2.h>
+#include "libyuv/convert.h"
+#include "libyuv/basic_types.h"
+#include "libyuv/convert.h"
+#include "libyuv/convert_argb.h"
+#include "libyuv/convert_from.h"
+#include "libyuv/convert_from_argb.h"
+#include "libyuv/rotate.h"
+#include <jni.h>
 
 GLuint textureId = 0;
 std::mutex lock;
@@ -24,7 +32,7 @@ int initOpencv() {
             condVar.wait(lk, [&]() { return !inFrame.empty(); });
 
             cv::Mat frame;
-            inFrame;
+//            inFrame;
 
 //            cv::Mat matRGBA;
 //            if (frame.channels() == 3) {
@@ -34,7 +42,7 @@ int initOpencv() {
 //            }
             std::lock_guard<std::mutex> l(lock);
 //            cv::resize(matRGBA, outFrame, cv::Size(), 0.2, 0.2);
-            outFrame = matRGBA;
+//            outFrame = matRGBA;
         }
         return 0;
     });
@@ -69,8 +77,9 @@ Java_com_example_detector_CameraTools_openCameraNative(JNIEnv *env, jobject thiz
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_detector_CameraTools_closeCameraNative(JNIEnv *env, jobject thiz) {
-    onClose = true
+    onClose = true;
 }
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_detector_CameraTools_putFrameNative(JNIEnv *env, jobject thiz,
@@ -89,16 +98,21 @@ Java_com_example_detector_CameraTools_putFrameNative(JNIEnv *env, jobject thiz,
     auto dst_argb_size = width * height * 4;
     auto dst_argb = std::shared_ptr<uint8_t>(new uint8_t[dst_argb_size]);
     libyuv::Android420ToABGR((uint8_t *) y_plane_byte,
-                             yStride,
-                             (uint8_t *) u_plane_byte,
-                             uStride,
-                             (uint8_t *) v_plane_byte,
-                             vStride,
-                             uvPixelStride,
-                             dst_argb.get(),
-                             width * 4,
-                             width, height);
-    device->putVideoFrame((uint8_t *) dst_argb.get(), dst_argb_size, width, height);
+                         yStride,
+                         (uint8_t *) u_plane_byte,
+                         uStride,
+                         (uint8_t *) v_plane_byte,
+                         vStride,
+                         uvPixelStride,
+                         dst_argb.get(),
+                         width * 4,
+                         width, height);
+    {
+//        std::lock_guard<std::mutex> l(lock);
+//        inFrame = cv::Mat(height, width, CV_8UC4, dst_argb.get());
+//        outFrame = cv::Mat(height, width, CV_8UC4, dst_argb.get());
+    }
+//    device->putVideoFrame((uint8_t *) dst_argb.get(), dst_argb_size, width, height);
 
 //    std::lock_guard<std::mutex> lk(lock);
 //    ++count_;

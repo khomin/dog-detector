@@ -75,8 +75,8 @@ class CameraTools(val context: Context) {
         closeCameraNative()
     }
 
-    fun openCamera(cameraId: String, width: Int, height: Int, frameRate: Int, context: Context) {
-         initOpencv()
+    fun openCamera(cameraId: String, width: Int, height: Int, context: Context) {
+//         initOpencv()
         // startCapture()
 //        val cameraId = when (camera) {
 //            "camera1" -> "0"
@@ -90,7 +90,6 @@ class CameraTools(val context: Context) {
                     cameraId,
                     width,
                     height,
-                    frameRate,
                     rotate
                 )
                 camera = openCamera(cameraManager, cameraId, cameraHandler)
@@ -100,16 +99,31 @@ class CameraTools(val context: Context) {
             }
     }
 
-    fun getCameraSize(cameraId: String, context: Context): Array<Size> {
+    fun getCameraSize(cameraId: String, context: Context): List<Size> {
         try {
             val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
             val characteristics = cameraManager.getCameraCharacteristics(cameraId)
-            val sizes =  characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?.getOutputSizes(ImageFormat.YUV_420_888)
-            return sizes ?: emptyArray()
+//            val sizes =  characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)?.getOutputSizes(ImageFormat.YUV_420_888)
+
+            val supportedResolutions = mutableListOf<Size>()
+            val configurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+            configurationMap?.getOutputSizes(ImageFormat.YUV_420_888)?.forEach { size ->
+                // Check minimum frame duration
+                val minFrameDuration = configurationMap.getOutputMinFrameDuration(ImageFormat.YUV_420_888, size)
+
+                // Calculate if 30 FPS is supported (1s / 30fps = 33.33ms per frame)
+                val supports30Fps = minFrameDuration > 0 && (1e9 / minFrameDuration) >= 30
+
+                // Add to list
+                if(supports30Fps) {
+                    supportedResolutions.add(size)
+                }
+            }
+            return supportedResolutions
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
-        return arrayOf()
+        return emptyList()
     }
 
     private fun initializeCamera(size: Size) = coroutineScope.launch(Dispatchers.Main) {
@@ -243,10 +257,10 @@ class CameraTools(val context: Context) {
         videoType: String,
         width: Int,
         height: Int,
-        frameRate: Int,
         rotate: Int
     )
     private external fun closeCameraNative()
+
     private external fun putFrameNative(
         yPlane: ByteArray?,
         yRowStride: Int,

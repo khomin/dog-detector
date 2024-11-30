@@ -6,7 +6,7 @@ project(${PROJECT} LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory(../libyuv)
+add_subdirectory(../cpp/libyuv)
 
 if (ANDROID OR __ANDROID__)
   set(ARCH_NAME ${CMAKE_ANDROID_ARCH_ABI})
@@ -26,12 +26,12 @@ if (ANDROID OR __ANDROID__)
   set(INCLUDE_DIRS ${INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}/../lib_pack/opencv/${ARCH_NAME}/sdk/native/jni/include
     ${ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/
-    ../libyuv/include
+    ../cpp/libyuv/include
   )
   set(LIBRARIES ${LIBRARIES}
     ${CMAKE_CURRENT_SOURCE_DIR}/../lib_pack/opencv/${ARCH_NAME}/sdk/native/libs/${CMAKE_ANDROID_ARCH_ABI}/libopencv_java4.so
     GLESv2
-    -lyuv
+    yuv
   )
 endif()
 

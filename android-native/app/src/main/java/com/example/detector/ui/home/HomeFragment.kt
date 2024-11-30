@@ -60,7 +60,8 @@ class HomeFragment : Fragment() {
             }
             _binding?.buttonStart?.setOnClickListener {
                 val sizeList = cameraTools.getCameraSize("1", context)
-                val size = sizeList.lastOrNull() ?: return@setOnClickListener
+                val size = sizeList[2] ?: return@setOnClickListener
+//                val size = sizeList.firstOrNull() ?: return@setOnClickListener
                 _binding?.surfaceView?.visibility = View.VISIBLE
                 _binding?.surfaceView?.setEGLContextClientVersion(2)
                 _binding?.surfaceView?.setRenderer(MyRenderer(genTexture = {
@@ -68,7 +69,7 @@ class HomeFragment : Fragment() {
                 }, updateFrame = {
                     cameraTools.updateFrame()
                 }))
-                cameraTools.openCamera("1", size.width, size.height, 30, context)
+                cameraTools.openCamera("1", size.width, size.height, context)
             }
             _binding?.buttonStop?.setOnClickListener {
                 cameraTools.closeCamera()
