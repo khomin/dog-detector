@@ -103,19 +103,15 @@ class CameraTools(val context: Context) {
         try {
             val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
             val characteristics = cameraManager.getCameraCharacteristics(cameraId)
-//            val sizes =  characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)?.getOutputSizes(ImageFormat.YUV_420_888)
-
             val supportedResolutions = mutableListOf<Size>()
             val configurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
             configurationMap?.getOutputSizes(ImageFormat.YUV_420_888)?.forEach { size ->
                 // Check minimum frame duration
                 val minFrameDuration = configurationMap.getOutputMinFrameDuration(ImageFormat.YUV_420_888, size)
-
                 // Calculate if 30 FPS is supported (1s / 30fps = 33.33ms per frame)
                 val supports30Fps = minFrameDuration > 0 && (1e9 / minFrameDuration) >= 30
-
                 // Add to list
-                if(supports30Fps) {
+                if(supports30Fps && size.width <= 1280) {
                     supportedResolutions.add(size)
                 }
             }

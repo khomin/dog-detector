@@ -60,8 +60,8 @@ class HomeFragment : Fragment() {
             }
             _binding?.buttonStart?.setOnClickListener {
                 val sizeList = cameraTools.getCameraSize("1", context)
-                val size = sizeList[2] ?: return@setOnClickListener
-//                val size = sizeList.firstOrNull() ?: return@setOnClickListener
+//                val size = sizeList[2] ?: return@setOnClickListener
+                val size = sizeList.firstOrNull() ?: return@setOnClickListener
                 _binding?.surfaceView?.visibility = View.VISIBLE
                 _binding?.surfaceView?.setEGLContextClientVersion(2)
                 _binding?.surfaceView?.setRenderer(MyRenderer(genTexture = {

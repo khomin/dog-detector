@@ -108,9 +108,9 @@ Java_com_example_detector_CameraTools_putFrameNative(JNIEnv *env, jobject thiz,
                          width * 4,
                          width, height);
     {
-//        std::lock_guard<std::mutex> l(lock);
+        std::lock_guard<std::mutex> l(lock);
 //        inFrame = cv::Mat(height, width, CV_8UC4, dst_argb.get());
-//        outFrame = cv::Mat(height, width, CV_8UC4, dst_argb.get());
+        outFrame = cv::Mat(height, width, CV_8UC4, dst_argb.get());
     }
 //    device->putVideoFrame((uint8_t *) dst_argb.get(), dst_argb_size, width, height);
 
@@ -126,12 +126,16 @@ Java_com_example_detector_CameraTools_putFrameNative(JNIEnv *env, jobject thiz,
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_detector_CameraTools_updateFrame(JNIEnv *env, jobject thiz) {
-    std::lock_guard<std::mutex> l(lock);
-    if(outFrame.empty()) {
-        return;
+    cv::Mat frame;
+    {
+        std::lock_guard<std::mutex> l(lock);
+        if (outFrame.empty()) {
+            return;
+        }
+        frame = outFrame;
     }
     glBindTexture(GL_TEXTURE_2D, textureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, outFrame.cols, outFrame.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, outFrame.data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame.cols, frame.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame.data);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
