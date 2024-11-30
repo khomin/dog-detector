@@ -72,7 +72,7 @@ class CameraTools(val context: Context) {
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
-        closeCameraNative()
+        stopNative()
     }
 
     fun openCamera(cameraId: String, width: Int, height: Int, context: Context) {
@@ -86,8 +86,7 @@ class CameraTools(val context: Context) {
         val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         cameraManager.getCameraCharacteristics(cameraId)
             .get(CameraCharacteristics.SENSOR_ORIENTATION)?.let { rotate ->
-                openCameraNative(
-                    cameraId,
+                startNative(
                     width,
                     height,
                     rotate
@@ -249,13 +248,12 @@ class CameraTools(val context: Context) {
             session: CameraCaptureSession, request: CaptureRequest, result: TotalCaptureResult) {}
     }
 
-    private external fun openCameraNative(
-        videoType: String,
+    private external fun startNative(
         width: Int,
         height: Int,
         rotate: Int
     )
-    private external fun closeCameraNative()
+    private external fun stopNative()
 
     private external fun putFrameNative(
         yPlane: ByteArray?,
