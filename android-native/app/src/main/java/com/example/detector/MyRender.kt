@@ -2,6 +2,7 @@ package com.example.detector
 
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
+import android.util.Size
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -9,9 +10,12 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 class MyRenderer(val genTexture: () ->Long,
-                 val updateFrame: () -> Unit) : GLSurfaceView.Renderer {
+                 val updateFrame: () -> Unit,
+                 val onUpdateSize: (size: Size) -> Unit) : GLSurfaceView.Renderer {
     private var textureId = 0L
     private var program: Int = 0
+    private var surfaceWidth = 0
+    private var surfaceHeight = 0
     private var positionHandle: Int = 0
     private var texCoordHandle: Int = 0
     private var textureUniformHandle: Int = 0
@@ -38,6 +42,9 @@ class MyRenderer(val genTexture: () ->Long,
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         GLES20.glViewport(0, 0, width, height)
+        onUpdateSize(Size(width, height))
+        surfaceWidth = width
+        surfaceHeight = height
     }
 
     override fun onDrawFrame(gl: GL10?) {
@@ -77,6 +84,32 @@ class MyRenderer(val genTexture: () ->Long,
         GLES20.glCompileShader(shader)
         return shader
     }
+
+    fun getSurfaceSize(): Size {
+        return Size(surfaceWidth, surfaceHeight)
+    }
+
+//    fun resizeToRatio(videoWidth: Int, videoHeight: Int, screenWidth: Int, screenHeight: Int) {
+//        // Get the dimensions of the video
+//        val videoProportion = videoWidth.toFloat() / videoHeight.toFloat()
+//
+//        // Get the width of the screen
+//        val screenProportion = screenWidth.toFloat() / screenHeight.toFloat()
+//
+//        // Get the SurfaceView layout parameters
+//        _binding?.surfaceView?.let { surfaceView ->
+//            val lp: ViewGroup.LayoutParams = surfaceView.layoutParams
+//            if (videoProportion > screenProportion) {
+//                lp.width = screenWidth
+//                lp.height = (screenWidth.toFloat() / videoProportion).toInt()
+//            } else {
+//                lp.width = (videoProportion * screenHeight.toFloat()).toInt()
+//                lp.height = screenHeight
+//            }
+//            // Commit the layout parameters
+//            surfaceView.setLayoutParams(lp)
+//        }
+//    }
 
     // Vertex and Texture Coordinate Data
     private val vertexCoords = floatArrayOf(

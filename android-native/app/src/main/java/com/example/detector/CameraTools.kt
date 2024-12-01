@@ -18,6 +18,7 @@ import android.util.Log
 import android.util.Range
 import android.util.Size
 import android.view.Surface
+import android.view.WindowManager
 import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +27,9 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class CameraTools(val context: Context) {
+
+class CameraTools(val context: Context, val windowManager: WindowManager) {
+    private var cameraId: String ?=null
     private var imageReader: ImageReader? = null
     private var cameraThread: HandlerThread?=null
     private var cameraHandler: Handler?=null
@@ -61,7 +64,6 @@ class CameraTools(val context: Context) {
     }
 
     fun closeCamera() {
-//        stopCapture()
         try {
             session?.stopRepeating()
             session?.abortCaptures()
@@ -75,27 +77,35 @@ class CameraTools(val context: Context) {
         stopNative()
     }
 
-    fun openCamera(cameraId: String, width: Int, height: Int, context: Context) {
-//         initOpencv()
-        // startCapture()
-//        val cameraId = when (camera) {
-//            "camera1" -> "0"
-//            "camera2" -> "1"
-//            else -> "0"
-//        }
+    fun openCamera(id: String, width: Int, height: Int, context: Context) {
         val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        cameraManager.getCameraCharacteristics(cameraId)
-            .get(CameraCharacteristics.SENSOR_ORIENTATION)?.let { rotate ->
-                startNative(
-                    width,
-                    height,
-                    rotate
-                )
-                camera = openCamera(cameraManager, cameraId, cameraHandler)
-                if (camera != null) {
-                    initializeCamera(Size(width, height))
-                }
-            }
+        startNative(width, height)
+        camera = openCamera(cameraManager, id, cameraHandler)
+        if (camera != null) {
+            initializeCamera(Size(width, height))
+            cameraId = id
+        }
+    }
+
+    fun getDeviceOrientation(): Int {
+        val rotation: Int = windowManager.getDefaultDisplay().rotation
+        var orientation = 0
+        when (rotation) {
+            Surface.ROTATION_0 -> orientation = 0
+            Surface.ROTATION_90 -> orientation = 90
+            Surface.ROTATION_180 -> orientation = 180
+            Surface.ROTATION_270 -> orientation = 270
+        }
+        return orientation
+    }
+
+    fun getOrientation(): Int {
+        cameraId?.let {
+            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            val orientation = cameraManager.getCameraCharacteristics(it).get(CameraCharacteristics.SENSOR_ORIENTATION)
+            return orientation ?: 0
+        }
+        return 0
     }
 
     fun getCameraSize(cameraId: String, context: Context): List<Size> {
@@ -114,6 +124,7 @@ class CameraTools(val context: Context) {
                     supportedResolutions.add(size)
                 }
             }
+            supportedResolutions.sortBy { size: Size -> size.width }
             return supportedResolutions
         } catch (ex: Exception) {
             ex.printStackTrace()
@@ -155,19 +166,17 @@ class CameraTools(val context: Context) {
                     val uvPixelStride = planes[1].pixelStride
                     val width = i.width
                     val height = i.height
-                    coroutineScope.launch(Dispatchers.IO) {
-                        putFrameNative(
-                            yPlane,
-                            yRowStride,
-                            uPlane,
-                            uvRowStride,
-                            vPlane,
-                            vRowStride,
-                            uvPixelStride,
-                            width,
-                            height
-                        )
-                    }
+                    putFrameNative(
+                        yPlane,
+                        yRowStride,
+                        uPlane,
+                        uvRowStride,
+                        vPlane,
+                        vRowStride,
+                        uvPixelStride,
+                        width,
+                        height
+                    )
                 } catch (ex: Exception) {
                     ex.printStackTrace()
                 }
@@ -248,11 +257,7 @@ class CameraTools(val context: Context) {
             session: CameraCaptureSession, request: CaptureRequest, result: TotalCaptureResult) {}
     }
 
-    private external fun startNative(
-        width: Int,
-        height: Int,
-        rotate: Int
-    )
+    private external fun startNative(width: Int,  height: Int)
     private external fun stopNative()
 
     private external fun putFrameNative(
@@ -269,4 +274,10 @@ class CameraTools(val context: Context) {
 
     external fun genTexture() : Long
     external fun updateFrame()
+    external fun updateViewSize(
+        width: Int,
+        height: Int,
+        sensorOrientation: Int,
+        deviceOrientation: Int
+    )
 }

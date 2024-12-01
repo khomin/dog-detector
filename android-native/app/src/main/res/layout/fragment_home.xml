@@ -22,15 +22,13 @@
 
     <android.opengl.GLSurfaceView
         android:id="@+id/surface_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:visibility="gone" />
-
-    <!--        android:background="@color/teal_700"-->
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -49,10 +47,16 @@
             android:text="Init" />
 
         <Button
-            android:id="@+id/button_start"
+            android:id="@+id/button_start_0"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Start" />
+            android:text="Start-0" />
+
+        <Button
+            android:id="@+id/button_start_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start-1" />
 
         <Button
             android:id="@+id/button_stop"
