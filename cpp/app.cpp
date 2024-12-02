@@ -68,23 +68,26 @@ Java_com_example_detector_CameraTools_startNative(JNIEnv *env, jobject thiz, jin
                 frame = inFrame.clone();
                 inFrame.release();
             }
-//            int totalRotation = (sensorOrientation - deviceOrientation + 360) % 360;
+            // main
+            int totalRotation = (sensorOrientation - deviceOrientation + 360) % 360;
+            // frontal
 //            int totalRotation = (sensorOrientation + deviceOrientation) % 360;
 //            totalRotation = (360 - totalRotation) % 360; // Mirror for front-facing
-//            switch (totalRotation) {
-//                case 0: break;
-//                case 90:
-//                    cv::rotate(frame, frame, cv::ROTATE_90_CLOCKWISE);
-//                    break;
-//                case 180:
-//                    cv::rotate(frame, frame, cv::ROTATE_180);
-//                    break;
-//                case 270:
+            switch (totalRotation) {
+                case 0: break;
+                case 90:
+                    cv::rotate(frame, frame, cv::ROTATE_90_CLOCKWISE);
 //                    cv::rotate(frame, frame, cv::ROTATE_90_COUNTERCLOCKWISE);
-//                    break;
-//                default:
-//                    break;
-//            }
+                    break;
+                case 180:
+                    cv::rotate(frame, frame, cv::ROTATE_180);
+                    break;
+                case 270:
+                    cv::rotate(frame, frame, cv::ROTATE_90_COUNTERCLOCKWISE);
+                    break;
+                default:
+                    break;
+            }
 
 //            frame = resizeWithAspectRatio(frame, viewWidth, viewHeight);
 //            cv::resize(frame, frame, cv::Size(frame.cols/10, frame.rows/10));
@@ -153,6 +156,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_detector_CameraTools_stopNative(JNIEnv *env, jobject thiz) {
     isRun = false;
+    condVar.notify_one();
 }
 
 extern "C"

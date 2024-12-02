@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.size
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.detector.CameraTools
@@ -26,14 +27,16 @@ class HomeFragment : Fragment() {
         _model = ViewModelProvider(this)[HomeViewModel::class.java]
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         context?.let { context ->
-            activity?.windowManager?.let { windowManager ->
-                _model.cameraTools = CameraTools(context, windowManager)
+            if(_model.cameraTools == null) {
+                activity?.windowManager?.let { windowManager ->
+                    _model.cameraTools = CameraTools(context, windowManager)
+                }
             }
             _model.text.observe(viewLifecycleOwner) {
                 binding.textHome.text = it
             }
             _binding?.buttonInit?.setOnClickListener {
-                val size = _model.cameraTools?.getCameraSize("1", context)
+                val size = _model.cameraTools?.getCameraSize("0", context)
                 if(size != null) {
                     _model.cameraSizeList.addAll(size)
                 }
@@ -74,10 +77,15 @@ class HomeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding?.surfaceView?.onPause()
         _binding = null
     }
 
-    private fun resizeToRatio(videoWidth: Int, videoHeight: Int, screenWidth: Int, screenHeight: Int) {
+    private fun resizeToRatio(videoWidth: Int, videoHeight: Int, screenWidth1: Int, screenHeight1: Int) {
+//        return
+        val screenWidth = _binding?.layoutHome?.width
+        val screenHeight =  _binding?.layoutHome?.height
+        if(screenWidth == null || screenHeight == null) return
         val camera = _model.cameraTools ?: return
         val sensorOrientation = camera.getOrientation()
         val deviceOrientation = camera.getDeviceOrientation()
@@ -87,6 +95,8 @@ class HomeFragment : Fragment() {
 
         var videoWidth2 = videoWidth
         var videoHeigh2 = videoHeight
+
+//        val screenWidth = layoutSize.
 
         when (totalRotation) {
             0 -> {
@@ -109,6 +119,8 @@ class HomeFragment : Fragment() {
 //                var h = screenHeight
 //                screenWidth2 = h
 //                screenHeight2 = w
+                videoWidth2 = videoHeight
+                videoHeigh2 = videoWidth
             }
         }
 
@@ -136,37 +148,30 @@ class HomeFragment : Fragment() {
     private fun start(id: String) {
         context?.let { context->
             val camera = _model.cameraTools ?: return
-            val sizeList = camera.getCameraSize("1", context)
+            val sizeList = camera.getCameraSize(id, context)
             _model.cameraSize = sizeList.lastOrNull() ?: return
-            _binding?.surfaceView?.visibility = View.VISIBLE
-            _binding?.surfaceView?.setEGLContextClientVersion(2)
-            _model.render = MyRenderer(genTexture = {
-                camera.genTexture()
-            }, updateFrame = {
-                camera.updateFrame()
-            }, onUpdateSize = { surfaceSize ->
-                CoroutineScope(Dispatchers.Main).launch {
-                    resizeToRatio(
-                        _model.cameraSize.width,
-                        _model.cameraSize.height,
-                        surfaceSize.width,
-                        surfaceSize.height
-                    )
-                }
-                camera.updateViewSize(
-                    surfaceSize.width, surfaceSize.height,
-                    camera.getOrientation(),
-                    camera.getDeviceOrientation()
+            if (_model.render == null) {
+                _binding?.surfaceView?.visibility = View.VISIBLE
+                _binding?.surfaceView?.setEGLContextClientVersion(2)
+                _model.render = MyRenderer(genTexture = {
+                    camera.genTexture()
+                }, updateFrame = {
+                    camera.updateFrame()
+                }, onUpdateSize = { surfaceSize ->
+                    camera.updateViewSize(
+                        surfaceSize.width, surfaceSize.height,
+                        camera.getOrientation(),
+                        camera.getDeviceOrientation()
 
-                )
-            })
-            _binding?.surfaceView?.setRenderer(_model.render)
+                    )
+                })
+                _binding?.surfaceView?.setRenderer(_model.render)
+            }
             camera.openCamera(id, _model.cameraSize.width, _model.cameraSize.height, context)
         }
     }
 
     private fun stop() {
         _model.cameraTools?.closeCamera()
-        _model.render = null
     }
 }

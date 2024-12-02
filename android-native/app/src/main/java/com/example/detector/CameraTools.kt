@@ -27,7 +27,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-
 class CameraTools(val context: Context, val windowManager: WindowManager) {
     private var cameraId: String ?=null
     private var imageReader: ImageReader? = null
@@ -37,9 +36,8 @@ class CameraTools(val context: Context, val windowManager: WindowManager) {
     private var imageReaderHandler: Handler?=null
     private var camera: CameraDevice? = null
     private var session: CameraCaptureSession?=null
-    private val IMAGE_BUFFER_SIZE: Int = 2
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
-    private val TAG = "CameraTools"
+    private val tag = "CameraTools"
 
     init {
         cameraThread = HandlerThread("CameraThread").apply { start() }
@@ -65,6 +63,7 @@ class CameraTools(val context: Context, val windowManager: WindowManager) {
 
     fun closeCamera() {
         try {
+            camera?.close()
             session?.stopRepeating()
             session?.abortCaptures()
             session?.close()
@@ -78,13 +77,29 @@ class CameraTools(val context: Context, val windowManager: WindowManager) {
     }
 
     fun openCamera(id: String, width: Int, height: Int, context: Context) {
-        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        startNative(width, height)
-        camera = openCamera(cameraManager, id, cameraHandler)
-        if (camera != null) {
-            initializeCamera(Size(width, height))
-            cameraId = id
+        val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
         }
+        manager.openCamera(id, object : CameraDevice.StateCallback() {
+            override fun onOpened(device: CameraDevice) {
+                camera = device
+                cameraId = id
+                initializeCamera(Size(width, height))
+                startNative(width, height)
+            }
+            override fun onDisconnected(device: CameraDevice) {
+                Log.w(tag, "Camera $cameraId has been disconnected")
+                device.close()
+            }
+            override fun onError(device: CameraDevice, error: Int) {
+                device.close()
+            }
+        }, cameraHandler)
     }
 
     fun getDeviceOrientation(): Int {
@@ -134,7 +149,7 @@ class CameraTools(val context: Context, val windowManager: WindowManager) {
 
     private fun initializeCamera(size: Size) = coroutineScope.launch(Dispatchers.Main) {
         imageReader = ImageReader.newInstance(
-            size.width, size.height, ImageFormat.YUV_420_888, IMAGE_BUFFER_SIZE
+            size.width, size.height, ImageFormat.YUV_420_888, 2
         )
         val imageReaderSafe = imageReader ?: return@launch
         val cameraSafe = camera ?: return@launch
@@ -196,42 +211,6 @@ class CameraTools(val context: Context, val windowManager: WindowManager) {
         }
     }
 
-    private fun openCamera(
-        manager: CameraManager, cameraId: String, handler: Handler? = null
-    ): CameraDevice? {
-        var foundDevice: CameraDevice? = null
-        var failed = false
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return null
-        }
-        manager.openCamera(cameraId, object : CameraDevice.StateCallback() {
-            override fun onOpened(device: CameraDevice) {
-                foundDevice = device
-            }
-
-            override fun onDisconnected(device: CameraDevice) {
-                Log.w(TAG, "Camera $cameraId has been disconnected")
-            }
-
-            override fun onError(device: CameraDevice, error: Int) {
-                failed = true
-            }
-        }, handler)
-        val startTime = System.currentTimeMillis()
-        val waitTime: Long = 10000
-        val endTime = startTime + waitTime
-        while (System.currentTimeMillis() < endTime) {
-            if (foundDevice != null || failed) {
-                break
-            }
-            Thread.sleep(50)
-        }
-        return foundDevice
-    }
 
     /**
      * Starts a [CameraCaptureSession] and returns the configured session (as the result of the
@@ -246,7 +225,7 @@ class CameraTools(val context: Context, val windowManager: WindowManager) {
             override fun onConfigured(session: CameraCaptureSession) = cont.resume(session)
             override fun onConfigureFailed(session: CameraCaptureSession) {
                 val exc = RuntimeException("Camera ${device.id} session configuration failed")
-                Log.e(TAG, exc.message, exc)
+                Log.e(tag, exc.message, exc)
                 cont.resumeWithException(exc)
             }
         }, handler)
