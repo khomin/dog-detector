@@ -19,11 +19,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try {
-            System.loadLibrary("opencv_cpp")
-        } catch (e: Exception) {
-            Toast.makeText(this, e.message, Toast.LENGTH_LONG).show()
-        }
         if (hasPermissions(this)) {
             // If permissions have already been granted, proceed
         } else {

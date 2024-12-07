@@ -18,7 +18,6 @@ import android.util.Log
 import android.util.Range
 import android.util.Size
 import android.view.Surface
-import android.view.WindowManager
 import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,8 +26,16 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class CameraTools(val context: Context, val windowManager: WindowManager) {
+enum class CameraFacing { Front, Back }
+
+class CameraDescription(val size: List<Size>, val facing: CameraFacing) {}
+
+class CameraTool(val context: Context) {
+    var cameraFacing: CameraFacing = CameraFacing.Back
     private var cameraId: String ?=null
+    var deviceOrientation = 0
+    var sensorOrientation = 0
+
     private var imageReader: ImageReader? = null
     private var cameraThread: HandlerThread?=null
     private var cameraHandler: Handler?=null
@@ -47,24 +54,13 @@ class CameraTools(val context: Context, val windowManager: WindowManager) {
     }
 
     fun finalize() {
-        imageReader?.close()
-        cameraThread?.quitSafely()
-        imageReaderThread?.quitSafely()
-        camera?.close()
-        session?.close()
-        imageReader = null
-        cameraThread = null
-        cameraHandler = null
-        imageReaderThread = null
-        imageReaderHandler = null
-        camera = null
-        session = null
+        closeCamera()
     }
 
     fun closeCamera() {
         try {
             camera?.close()
-            session?.stopRepeating()
+                session?.stopRepeating()
             session?.abortCaptures()
             session?.close()
             imageReader?.close()
@@ -76,21 +72,24 @@ class CameraTools(val context: Context, val windowManager: WindowManager) {
         stopNative()
     }
 
-    fun openCamera(id: String, width: Int, height: Int, context: Context) {
+    fun openCamera(id: String, width: Int, height: Int, facing: CameraFacing, context: Context) {
         val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            Log.e(tag, "Camera permission is not granted")
             return
         }
         manager.openCamera(id, object : CameraDevice.StateCallback() {
             override fun onOpened(device: CameraDevice) {
                 camera = device
                 cameraId = id
-                initializeCamera(Size(width, height))
-                startNative(width, height)
+                cameraFacing = facing
+                val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+                // get sensor orientation
+                cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.SENSOR_ORIENTATION)?.let {
+                    sensorOrientation = it
+                    initSession(Size(width, height))
+                    startNative(width, height)
+                }
             }
             override fun onDisconnected(device: CameraDevice) {
                 Log.w(tag, "Camera $cameraId has been disconnected")
@@ -102,33 +101,22 @@ class CameraTools(val context: Context, val windowManager: WindowManager) {
         }, cameraHandler)
     }
 
-    fun getDeviceOrientation(): Int {
-        val rotation: Int = windowManager.getDefaultDisplay().rotation
-        var orientation = 0
+    fun updateDeviceOrientation(rotation: Int) {
         when (rotation) {
-            Surface.ROTATION_0 -> orientation = 0
-            Surface.ROTATION_90 -> orientation = 90
-            Surface.ROTATION_180 -> orientation = 180
-            Surface.ROTATION_270 -> orientation = 270
+            Surface.ROTATION_0 -> deviceOrientation = 0
+            Surface.ROTATION_90 -> deviceOrientation = 90
+            Surface.ROTATION_180 -> deviceOrientation = 180
+            Surface.ROTATION_270 -> deviceOrientation = 270
         }
-        return orientation
     }
 
-    fun getOrientation(): Int {
-        cameraId?.let {
-            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            val orientation = cameraManager.getCameraCharacteristics(it).get(CameraCharacteristics.SENSOR_ORIENTATION)
-            return orientation ?: 0
-        }
-        return 0
-    }
-
-    fun getCameraSize(cameraId: String, context: Context): List<Size> {
+    fun getDescription(cameraId: String, context: Context): CameraDescription? {
         try {
             val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
             val characteristics = cameraManager.getCameraCharacteristics(cameraId)
             val supportedResolutions = mutableListOf<Size>()
             val configurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+            val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
             configurationMap?.getOutputSizes(ImageFormat.YUV_420_888)?.forEach { size ->
                 // Check minimum frame duration
                 val minFrameDuration = configurationMap.getOutputMinFrameDuration(ImageFormat.YUV_420_888, size)
@@ -140,16 +128,26 @@ class CameraTools(val context: Context, val windowManager: WindowManager) {
                 }
             }
             supportedResolutions.sortBy { size: Size -> size.width }
-            return supportedResolutions
+            return CameraDescription(supportedResolutions, when (facing) {
+                CameraCharacteristics.LENS_FACING_FRONT -> {
+                    CameraFacing.Front
+                }
+                CameraCharacteristics.LENS_FACING_BACK -> {
+                    CameraFacing.Back
+                }
+                else -> {
+                    CameraFacing.Back
+                }
+            })
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
-        return emptyList()
+        return null
     }
 
-    private fun initializeCamera(size: Size) = coroutineScope.launch(Dispatchers.Main) {
+    private fun initSession(frameSize: Size) = coroutineScope.launch(Dispatchers.Main) {
         imageReader = ImageReader.newInstance(
-            size.width, size.height, ImageFormat.YUV_420_888, 2
+            frameSize.width, frameSize.height, ImageFormat.YUV_420_888, 2
         )
         val imageReaderSafe = imageReader ?: return@launch
         val cameraSafe = camera ?: return@launch
@@ -251,12 +249,13 @@ class CameraTools(val context: Context, val windowManager: WindowManager) {
         height: Int
     )
 
-    external fun genTexture() : Long
-    external fun updateFrame()
-    external fun updateViewSize(
+    external fun genTextureNative() : Long
+    external fun updateFrameNative()
+    external fun updateViewSizeNative(
         width: Int,
         height: Int,
         sensorOrientation: Int,
-        deviceOrientation: Int
+        deviceOrientation: Int,
+        facing: Int
     )
 }
