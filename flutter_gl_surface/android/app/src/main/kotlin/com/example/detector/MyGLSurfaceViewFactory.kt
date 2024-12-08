@@ -9,6 +9,7 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MessageCodec
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodCall
+import java.util.Objects
 
 class MyGLSurfaceViewFactory(
     private val messenger: BinaryMessenger, createArgsCodec: MessageCodec<Any>?
@@ -30,6 +31,7 @@ class MyGLSurfacePlatformView(
         //"my_gl_surface_view_$id")
 
     init {
+        glSurfaceView.visibility = View.GONE
         // Set the MethodCallHandler to handle calls from Flutter
         methodChannel.setMethodCallHandler(this)
     }
@@ -46,20 +48,26 @@ class MyGLSurfacePlatformView(
         val args = call.arguments as HashMap<*, *>
         when (call.method) {
             "start_camera" -> {
-//                glSurfaceView.startCustomRendering()
                 val id = args["id"] as String
                 val captureRep = (context.applicationContext as App?)?.captureRep
-                    captureRep?.initRender(     glSurfaceView)
-//                captureRep?.l
-                captureRep?.start("0")
-                captureRep?.updateViewSize()
+                if(captureRep == null) {
+                    result.error("", "cannot open", "")
+                    return
+                }
+                captureRep.initRender(glSurfaceView)
+                val size = captureRep.start(id)
+                result.success(mapOf(
+                    "size_width" to size.width,
+                    "size_height" to size.height))
+            }
+            "stop_camera" -> {
+                val captureRep = (context.applicationContext as App?)?.captureRep
+                captureRep?.stop()
                 result.success(true)
             }
-//            "stopRendering" -> {
-//                glSurfaceView.stopCustomRendering()
-//                result.success("Rendering stopped")
-//            }
             else -> result.notImplemented()
         }
     }
 }
+
+//                captureRep?.updateViewSize()

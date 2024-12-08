@@ -62,3 +62,6 @@ linux/flutter/generated_plugin_registrant.h
 
 android/app/.cxx/**
 *.db
+
+
+flutter_gl_surface/android/app/.cxx/**

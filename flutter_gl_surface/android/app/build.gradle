@@ -25,7 +25,7 @@ if (flutterVersionName == null) {
 android {
     namespace "com.example.detector"
     compileSdk flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    ndkVersion = "26.1.10909125"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -49,8 +49,29 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_ARM_NEON=TRUE",
+                        "-DANDROID_TOOLCHAIN=clang",
+                        "-DCMAKE_CXX_FLAGS=\"-llog\"",
+                        "-DANDROID_STL=c++_shared"
+                cFlags "-D__STDC_FORMAT_MACROS -D__ANDROID__ -fPIC -Wl -Bsymbolic"
+                cppFlags "-std=c++17", "-fPIC", "-frtti", "-fexceptions", "--build-id", "-Wl", "-Bsymbolic"
+                version = '3.18.0+'
+            }
+        }
+        ndk {
+            ldLibs "log"
+        }
+        ndk {
+            abiFilters  "arm64-v8a", "x86_64"
+        }
     }
-
+    externalNativeBuild {
+        cmake {
+            path "../../../cpp/CMakeLists.txt"
+        }
+    }
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
