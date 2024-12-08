@@ -1,0 +1,1 @@
+/home/khomin/Documents/PROJECTS/dog-detector/android-native/app/src/main/java/com/example/detector/CaptureRep.kt

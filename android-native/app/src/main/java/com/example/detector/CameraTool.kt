@@ -60,7 +60,7 @@ class CameraTool(val context: Context) {
     fun closeCamera() {
         try {
             camera?.close()
-                session?.stopRepeating()
+                   session?.stopRepeating()
             session?.abortCaptures()
             session?.close()
             imageReader?.close()
