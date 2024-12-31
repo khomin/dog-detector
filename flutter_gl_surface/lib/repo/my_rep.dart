@@ -1,13 +1,16 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_demo/utils/common.dart';
 import 'package:flutter_demo/utils/file_utils.dart';
 import 'package:loggy/loggy.dart';
 import 'package:rxdart/rxdart.dart';
 
 class HistoryRecord {
-  HistoryRecord({required this.date, required this.path});
+  HistoryRecord(
+      {required this.date, required this.dateNice, required this.path});
   DateTime date;
+  String dateNice;
   String path;
 }
 
@@ -41,13 +44,21 @@ class MyRep {
     try {
       var dir = Directory(path);
       var folders = dir.listSync();
-      // top lavel
       for (var it in folders) {
         var dir2 = Directory(it.path);
         var files = dir2.listSync();
-        // files
-        for (var it2 in files) {
-          history.add(HistoryRecord(date: DateTime.now(), path: it2.path));
+
+        var name = FileUtils.getFileName(it.path);
+        var date = Common().parseFileNameToDate(name);
+
+        var file = files.firstOrNull;
+        if (file != null) {
+          // var name = FileUtils.getFileName(file.path);
+          // var date = Common().parseFileNameToDate(name);
+          history.add(HistoryRecord(
+              date: DateTime.now(),
+              dateNice: Common().formatDateInt(date.microsecondsSinceEpoch),
+              path: file.path));
         }
       }
     } catch (ex) {
@@ -55,4 +66,26 @@ class MyRep {
     }
     return history;
   }
+
+  // Future<List<HistoryRecord>> history() async {
+  //   var history = <HistoryRecord>[];
+  //   var path = '${FileUtils.homeDir}/history/';
+  //   try {
+  //     var dir = Directory(path);
+  //     var folders = dir.listSync();
+  //     // top lavel
+  //     for (var it in folders) {
+  //       var dir2 = Directory(it.path);
+  //       var files = dir2.listSync();
+  //       // files
+  //       for (var it2 in files) {
+  //         history.add(HistoryRecord(
+  //             date: DateTime.now(), dateNice: 'Yesterday', path: it2.path));
+  //       }
+  //     }
+  //   } catch (ex) {
+  //     logWarning('$tag: ex');
+  //   }
+  //   return history;
+  // }
 }

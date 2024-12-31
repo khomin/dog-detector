@@ -4,16 +4,16 @@ import 'package:flutter_demo/pages/components/navigation_observer.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:rxdart/rxdart.dart';
 
-enum PageType { main, record, account, history }
+enum PageType { main, record, history, settings }
 
 class Panel {
   Panel(
-      {required this.panelType,
+      {required this.type,
       this.arg,
       this.fullPop = false,
       this.replace = false,
       this.onePop = false});
-  final PageType panelType;
+  final PageType type;
   final dynamic arg;
   final bool fullPop;
   final bool replace;
@@ -22,15 +22,14 @@ class Panel {
 
 class NavigatorRep {
   final onLayoutChanged = BehaviorSubject<ScreenType>();
-  // final onNavTabChanged = BehaviorSubject<TabMode>();
 
   final routeBloc = PanelRouterBloc();
   var size = const Size(0, 0);
 
   Future<bool> Function()? onCheckPopAllowed;
 
-  static NavigatorRep? _instance;
   static const tag = 'navRep';
+  static NavigatorRep? _instance;
 
   NavigatorRep._internal();
   factory NavigatorRep() {
@@ -44,25 +43,19 @@ class NavigatorRep {
 class PanelRouterBloc {
   final onGoto = PublishSubject<Panel?>();
   final onCurrent = BehaviorSubject<Panel?>();
-  final onGotoChild = PublishSubject<Panel?>();
-  final onCurrentChild = BehaviorSubject<Panel?>();
 
   void goto(Panel panel) {
-    if (_checkPaneTheSameAsCurrent(panel, onCurrentChild.valueOrNull)) {
+    if (_checkPaneTheSameAsCurrent(panel, onCurrent.valueOrNull)) {
       return;
     }
     if (panel.fullPop) {
-      fullPopChild();
+      fullPop();
     }
-    onGotoChild.add(panel);
+    onGoto.add(panel);
   }
 
   void fullPop() {
     onGoto.add(null);
-  }
-
-  void fullPopChild() {
-    onGotoChild.add(null);
   }
 
   void dispose() {
@@ -70,7 +63,7 @@ class PanelRouterBloc {
   }
 
   bool _checkPaneTheSameAsCurrent(Panel panel, Panel? current) {
-    if (current?.panelType == panel.panelType) {
+    if (current?.type == panel.type) {
       // var room1 = panel.arg?['room'] as ChatRoom?;
       // var room2 = current?.arg?['room'] as ChatRoom?;
       // if (room1 == room2) {
@@ -95,17 +88,16 @@ class NavigationService {
     }
     if (panel.replace) {
       navKey.currentState
-          ?.pushReplacementNamed(panel.panelType.name, arguments: panel.arg);
+          ?.pushReplacementNamed(panel.type.name, arguments: panel.arg);
     } else {
-      navKey.currentState
-          ?.pushNamed(panel.panelType.name, arguments: panel.arg);
+      navKey.currentState?.pushNamed(panel.type.name, arguments: panel.arg);
     }
   }
 
   void onChanged(String name, dynamic arg) {
     var route = routeNameToType(name);
     routeBloc.onCurrent
-        .add(route == PageType.main ? null : Panel(panelType: route, arg: arg));
+        .add(route == PageType.main ? null : Panel(type: route, arg: arg));
     NavigatorRep().onCheckPopAllowed = null;
   }
 

@@ -153,6 +153,15 @@ class FileUtils {
     }
   }
 
+  static String getFileName(String path) {
+    if (Platform.isWindows) {
+      path = path.replaceAll('/', '\\');
+    }
+    File file = File(path);
+    var name = file.path.split(Platform.isWindows ? '\\' : '/').last;
+    return name;
+  }
+
   static Future<Uint8List> readFileToBuf(String path) async {
     var file = File(path);
     return await file.readAsBytes();

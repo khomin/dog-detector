@@ -1,48 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/pages/components/history_item_thumb.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
+import 'package:flutter_demo/pages/components/history_item.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:provider/provider.dart';
 
-class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+class Card extends StatefulWidget {
+  const Card({super.key});
 
   @override
-  State<MainPage> createState() => MainPageState();
+  State<Card> createState() => CardState();
 }
 
-class MainPageState extends State<MainPage> {
-  @override
-  void initState() {
-    super.initState();
-
-    Future.microtask(() {
-      _fetch();
-    });
-  }
-
-  Future _fetch() async {
-    var history = await MyRep().history();
-    if (!mounted) return;
-    context.read<AppModel>().setHistory(history);
-  }
-
+class CardState extends State<Card> {
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-        onRefresh: () async {
-          await _fetch();
-        },
-        child: Container(
-            color: Constants.colorBackground,
-            margin: const EdgeInsets.only(top: 20),
-            height: double.infinity,
-            child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                shrinkWrap: true,
-                children: [_item1()])));
+    return Container(
+        color: Constants.colorBackground,
+        padding: const EdgeInsets.only(top: 20),
+        child: Column(children: [
+          Expanded(child: Column(children: [_item1()]))
+        ]));
   }
 
   Widget _item1() {
@@ -90,10 +69,11 @@ class MainPageState extends State<MainPage> {
                           itemCount: history.length,
                           itemBuilder: (context, index) {
                             var i = history[index];
-                            return HistoryItemThumbnail(
+                            return HistoryItem(
                                 history: i,
                                 padding: const EdgeInsets.only(right: 2),
                                 size: const Size(50, 50),
+                                showText: false,
                                 onPressed: () {
                                   NavigatorRep().routeBloc.goto(
                                       Panel(type: PageType.history, arg: i));

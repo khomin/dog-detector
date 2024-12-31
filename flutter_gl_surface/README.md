@@ -1,16 +1,17 @@
 # flutter_demo
 
-A new Flutter project.
+- click on history -> jump to history menu
+    - show all images in folder there
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+- settings menu
+- record recover functionality
 
-A few resources to get you started if this is your first Flutter project:
+- rename bundle app name
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# done
++ separate history on main screen by yesterday-today show folder only
++ nice formating
++ parse folder to date
++ make fixed preview size
