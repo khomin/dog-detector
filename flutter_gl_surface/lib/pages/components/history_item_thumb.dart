@@ -29,7 +29,7 @@ class HistoryItemThumbnailState extends State<HistoryItemThumbnail> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: Constants.colorBackground,
+        color: Constants.colorCard,
         child: Container(
             margin: const EdgeInsets.only(left: 5),
             decoration: const BoxDecoration(

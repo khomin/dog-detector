@@ -8,6 +8,7 @@ import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/pages/record_page.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
+import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:flutter_demo/utils/file_utils.dart';
 import 'package:flutter_demo/utils/log_printer.dart';
@@ -81,8 +82,9 @@ class AppState extends State<App> {
                                   selectedFontSize: 12,
                                   unselectedFontSize: 12,
                                   type: BottomNavigationBarType.fixed,
-                                  backgroundColor:
-                                      const Color.fromARGB(255, 255, 255, 255),
+                                  backgroundColor: Constants.colorCard,
+                                  unselectedItemColor: Constants.colorTextSecond
+                                      .withOpacity(0.8),
                                   items: const <BottomNavigationBarItem>[
                                     BottomNavigationBarItem(
                                         icon: Icon(Icons.home), label: 'Home'),
@@ -97,7 +99,7 @@ class AppState extends State<App> {
                                         label: 'Settings'),
                                   ],
                                   currentIndex: page?.index ?? 0,
-                                  selectedItemColor: Colors.blueAccent,
+                                  selectedItemColor: Constants.colorPrimary,
                                   onTap: (value) {
                                     NavigatorRep().routeBloc.goto(
                                         Panel(type: PageType.values[value]));

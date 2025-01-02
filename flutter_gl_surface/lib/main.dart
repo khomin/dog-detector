@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_demo/app.dart';
+import 'package:flutter_demo/resource/constants.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -8,7 +9,8 @@ void main() {
           Colors.white, // Set navigation bar color to white
       systemNavigationBarIconBrightness:
           Brightness.dark, // Set icons to dark for contrast
-      statusBarColor: Colors.white, // Optional: Change the status bar color
+      statusBarColor:
+          Constants.colorPrimary, // Optional: Change the status bar color
       statusBarIconBrightness:
           Brightness.dark // Optional: Dark icons on status bar));
       ));
@@ -23,7 +25,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          colorScheme: ColorScheme.fromSeed(seedColor: Constants.colorBar),
           splashColor: Colors.transparent,
           useMaterial3: true),
       home: const App(),

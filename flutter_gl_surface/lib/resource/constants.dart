@@ -6,10 +6,13 @@ class Constants {
   static const appName = "VocaByte";
   static const localFolderName = 'vocabyte';
 
-  static const colorBackground = Color(0xfff1f2f4);
+  static const colorBar = Color.fromARGB(255, 172, 169, 233);
   static const colorCard = Colors.white;
+  static const colorBackgroundUnderCard = Color(0xfff1f2f4);
   static const colorTextAccent = Colors.black;
   static const colorTextSecond = Color(0xFF515155);
+
+  static const colorPrimary = Color.fromARGB(255, 172, 169, 233);
 
   // static const double learnCountForBreak = 20;
   // static const int reapedToLeanDefault = 10;

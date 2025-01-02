@@ -37,7 +37,7 @@ class HistoryPageState extends State<HistoryPage> {
           await _fetch();
         },
         child: Container(
-            color: Constants.colorBackground,
+            color: Constants.colorCard,
             margin: const EdgeInsets.only(top: 20),
             height: double.infinity,
             child: Column(children: [

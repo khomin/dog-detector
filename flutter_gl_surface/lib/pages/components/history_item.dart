@@ -32,7 +32,7 @@ class HistoryItemState extends State<HistoryItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: Constants.colorBackground,
+        color: Constants.colorCard,
         // padding: const EdgeInsets.only(top: 20),
         child: Container(
             margin: const EdgeInsets.only(left: 30, right: 30, top: 15),
