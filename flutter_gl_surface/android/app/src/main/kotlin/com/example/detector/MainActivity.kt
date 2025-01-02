@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
 import android.Manifest
+import android.os.Build
 import android.util.Log
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
@@ -18,7 +19,9 @@ class MainActivity: FlutterActivity() {
         if (hasPermissions(this)) {
             // If permissions have already been granted, proceed
         } else {
-            requestPermissions(PERMISSIONS_REQUIRED, PERMISSIONS_REQUEST_CODE)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(PERMISSIONS_REQUIRED, PERMISSIONS_REQUEST_CODE)
+            }
         }
     }
 
@@ -30,12 +33,12 @@ class MainActivity: FlutterActivity() {
         val registry: PlatformViewRegistry = flutterEngine.platformViewsController.registry
         registry.registerViewFactory("my_gl_surface_view", surfaceFactory)
 
-//        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "dev/cmd")
+//        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "main/cmd")
 //            .setMethodCallHandler { call, result ->
 //                try {
 //                    val args = call.arguments as HashMap<*, *>
 //                    when (call.method) {
-//                        "start_camera" -> {
+//                        "get_camera" -> {
 //                            val id = args["id"] as String
 //                            val captureRep = (application as App?)?.captureRep
 //                            result.success(true)

@@ -27,7 +27,7 @@ class MyGLSurfacePlatformView(
 ) : PlatformView, MethodChannel.MethodCallHandler {
 
     private val glSurfaceView: GLSurfaceView = GLSurfaceView(context)
-    private val methodChannel: MethodChannel = MethodChannel(messenger, "dev/cmd")
+    private val methodChannel: MethodChannel = MethodChannel(messenger, "camera/cmd")
         //"my_gl_surface_view_$id")
 
     init {
@@ -65,9 +65,28 @@ class MyGLSurfacePlatformView(
                 captureRep?.stop()
                 result.success(true)
             }
+            "get_cameras" -> {
+                val captureRep = (context.applicationContext as App?)?.captureRep
+                if(captureRep == null) {
+                    result.error("", "cannot open", "")
+                    return
+                }
+                val cameras = captureRep.cameraTool.getCameras(context)
+                val map = mutableMapOf<String,Any>()
+                for(cameraIndex in cameras.indices) {
+                    val cameraDesc = cameras[cameraIndex]
+                    if(cameraDesc != null) {
+                        val map2 = mutableMapOf<String,Any>()
+                        val camera = cameraDesc.size.lastOrNull()
+                        map2["width"] = camera?.width ?: 0
+                        map2["height"] = camera?.height ?: 0
+                        map2["facing"] = cameraDesc.facing.name
+                        map["$cameraIndex"] = map2
+                    }
+                }
+                result.success(map)
+            }
             else -> result.notImplemented()
         }
     }
 }
-
-//                captureRep?.updateViewSize()

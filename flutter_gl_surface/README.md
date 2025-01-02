@@ -1,11 +1,14 @@
 # flutter_demo
 
-- click on history -> jump to history menu
-    - show all images in folder there
+- record start at openening
+- record flip camera button
+- record make a photo button
 
+- add navigator in history
+    - show list of sessions
+    - show list of images in a session
 
 - settings menu
-- record recover functionality
 
 - rename bundle app name
 

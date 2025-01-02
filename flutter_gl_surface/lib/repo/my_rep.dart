@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -14,19 +16,54 @@ class HistoryRecord {
   String path;
 }
 
-class MyRep {
-  // var history = <HistoryRecord>[];
+class Camera {
+  Camera({required this.id, required this.facing});
+  final String id;
+  final String facing;
+}
 
-  // render
+class MyRep {
+  var cameraMap = <String, Camera>{};
+  final onCameraChanged = BehaviorSubject<void>();
   var frameSize = const Size(0, 0);
   final onFrameSizeChanged = BehaviorSubject<bool>();
   // private
-  static const _methodChannel = MethodChannel('dev/cmd');
+  static const _cameraChannel = MethodChannel('camera/cmd');
+  // static const _mainChannel = MethodChannel('main/cmd');
+
+  static MyRep? _instance;
+  MyRep._internal();
+  factory MyRep() {
+    if (_instance == null) {
+      var i = MyRep._internal();
+      _instance = i;
+    }
+    return _instance!;
+  }
   final tag = 'myRep';
+
+  Future<Map<String, Camera>> getCameras() async {
+    try {
+      var r = await _cameraChannel
+          .invokeMethod('get_cameras', <String, dynamic>{}) as Map;
+      r.forEach((key, value) {
+        if (value['facing'] == 'Back') {
+          cameraMap['back'] = Camera(id: key, facing: value['facing']);
+        } else if (value['facing'] == 'Front') {
+          cameraMap['front'] = Camera(id: key, facing: value['facing']);
+        }
+      });
+      onCameraChanged.add(null);
+      return cameraMap;
+    } catch (e) {
+      logError('$tag: error starting rende  ring: $e');
+    }
+    return cameraMap;
+  }
 
   Future<void> startRender(String id) async {
     try {
-      var r = await _methodChannel
+      var r = await _cameraChannel
           .invokeMethod('start_camera', <String, dynamic>{'id': id});
       // TODO: update frame size
       // setState(() {

@@ -26,9 +26,10 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
+
 enum class CameraFacing { Front, Back }
 
-class CameraDescription(val size: List<Size>, val facing: CameraFacing) {}
+class CameraDescription(val size: List<Size>, val id: String, val facing: CameraFacing) {}
 
 class CameraTool(val context: Context) {
     var cameraFacing: CameraFacing = CameraFacing.Back
@@ -118,17 +119,12 @@ class CameraTool(val context: Context) {
             val configurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
             val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
             configurationMap?.getOutputSizes(ImageFormat.YUV_420_888)?.forEach { size ->
-                // Check minimum frame duration
-                val minFrameDuration = configurationMap.getOutputMinFrameDuration(ImageFormat.YUV_420_888, size)
-                // Calculate if 30 FPS is supported (1s / 30fps = 33.33ms per frame)
-                val supports30Fps = minFrameDuration > 0 && (1e9 / minFrameDuration) >= 30
-                // Add to list
-                if(supports30Fps && size.width <= 1280) {
+                if(size.width <= 1280) {
                     supportedResolutions.add(size)
                 }
             }
             supportedResolutions.sortBy { size: Size -> size.width }
-            return CameraDescription(supportedResolutions, when (facing) {
+            return CameraDescription(supportedResolutions, cameraId, when (facing) {
                 CameraCharacteristics.LENS_FACING_FRONT -> {
                     CameraFacing.Front
                 }
@@ -143,6 +139,40 @@ class CameraTool(val context: Context) {
             ex.printStackTrace()
         }
         return null
+    }
+
+    fun getCameras(context: Context): List<CameraDescription?> {
+        val cameras = mutableListOf<CameraDescription?>()
+        try {
+            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            for(cameraId in cameraManager.cameraIdList) {
+                val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+                val configurationMap =
+                    characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+                val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
+                val supportedResolutions = mutableListOf<Size>()
+                configurationMap?.getOutputSizes(ImageFormat.YUV_420_888)?.forEach { size ->
+                    if (size.width <= 1280) {
+                        supportedResolutions.add(size)
+                    }
+                }
+                supportedResolutions.sortBy { size: Size -> size.width }
+                cameras.add(CameraDescription(supportedResolutions, cameraId, when (facing) {
+                    CameraCharacteristics.LENS_FACING_FRONT -> {
+                        CameraFacing.Front
+                    }
+                    CameraCharacteristics.LENS_FACING_BACK -> {
+                        CameraFacing.Back
+                    }
+                    else -> {
+                        CameraFacing.Back
+                    }
+                }))
+            }
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+        return cameras
     }
 
     private fun initSession(frameSize: Size) = coroutineScope.launch(Dispatchers.Main) {

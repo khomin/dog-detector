@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/pages/account_page.dart';
 import 'package:flutter_demo/pages/history_page.dart';
 import 'package:flutter_demo/pages/main_page.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/pages/record_page.dart';
+import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:flutter_demo/utils/file_utils.dart';
@@ -28,8 +31,11 @@ class AppState extends State<App> {
     () async {
       await FileUtils.init();
       Loggy.initLoggy(logPrinter: LogPrinter());
-      // NavigatorRep().routeBloc.goto(Panel(type: PageType.main));
       _appModel.setReady(true);
+
+      Timer(const Duration(milliseconds: 100), () async {
+        await MyRep().getCameras();
+      });
     }();
   }
 
