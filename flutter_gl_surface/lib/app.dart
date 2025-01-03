@@ -51,7 +51,7 @@ class AppState extends State<App> {
           return LayoutBuilder(builder: (context, constraints) {
             Common().calcLayout(context);
             return Container(
-                color: Colors.white,
+                color: Constants.colorBar,
                 child: SafeArea(
                     child: Scaffold(
                         backgroundColor: Colors.white,
@@ -78,32 +78,42 @@ class AppState extends State<App> {
                             stream: NavigatorRep().routeBloc.onGoto,
                             builder: (context, snapshot) {
                               var page = snapshot.data?.type;
-                              return BottomNavigationBar(
-                                  selectedFontSize: 12,
-                                  unselectedFontSize: 12,
-                                  type: BottomNavigationBarType.fixed,
-                                  backgroundColor: Constants.colorCard,
-                                  unselectedItemColor: Constants.colorTextSecond
-                                      .withOpacity(0.8),
-                                  items: const <BottomNavigationBarItem>[
-                                    BottomNavigationBarItem(
-                                        icon: Icon(Icons.home), label: 'Home'),
-                                    BottomNavigationBarItem(
-                                        icon: Icon(Icons.camera),
-                                        label: 'Record'),
-                                    BottomNavigationBarItem(
-                                        icon: Icon(Icons.history),
-                                        label: 'History'),
-                                    BottomNavigationBarItem(
-                                        icon: Icon(Icons.settings),
-                                        label: 'Settings'),
-                                  ],
-                                  currentIndex: page?.index ?? 0,
-                                  selectedItemColor: Constants.colorPrimary,
-                                  onTap: (value) {
-                                    NavigatorRep().routeBloc.goto(
-                                        Panel(type: PageType.values[value]));
-                                  });
+                              return Container(
+                                  decoration: BoxDecoration(boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 0),
+                                    )
+                                  ]),
+                                  child: BottomNavigationBar(
+                                      selectedFontSize: 12,
+                                      unselectedFontSize: 12,
+                                      type: BottomNavigationBarType.fixed,
+                                      backgroundColor: Constants.colorCard,
+                                      unselectedItemColor: Constants
+                                          .colorTextSecond
+                                          .withOpacity(0.8),
+                                      items: const <BottomNavigationBarItem>[
+                                        BottomNavigationBarItem(
+                                            icon: Icon(Icons.home),
+                                            label: 'Home'),
+                                        BottomNavigationBarItem(
+                                            icon: Icon(Icons.camera),
+                                            label: 'Record'),
+                                        BottomNavigationBarItem(
+                                            icon: Icon(Icons.history),
+                                            label: 'History'),
+                                        BottomNavigationBarItem(
+                                            icon: Icon(Icons.settings),
+                                            label: 'Settings'),
+                                      ],
+                                      currentIndex: page?.index ?? 0,
+                                      selectedItemColor: Constants.colorPrimary,
+                                      onTap: (value) {
+                                        NavigatorRep().routeBloc.goto(Panel(
+                                            type: PageType.values[value]));
+                                      }));
                             }))));
           });
         });

@@ -62,7 +62,7 @@ class HistoryPageState extends State<HistoryPage> {
                                         onPressed: () {
                                           // NavigatorRep().routeBloc.goto(Panel(
                                           //     type: PageType.history, arg: i));
-                                          showModalBottomSheet<void>(
+                                          showModalBottomSheet(
                                               context: context,
                                               builder: (BuildContext context) {
                                                 return Container(

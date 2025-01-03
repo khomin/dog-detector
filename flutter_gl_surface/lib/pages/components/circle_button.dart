@@ -5,9 +5,10 @@ class CircleButton extends StatelessWidget {
       {required this.iconData,
       required this.color,
       required this.iconColor,
-      this.onPressed,
+      required this.onPressed,
       this.padding,
       this.margin,
+      this.iconSize,
       this.size,
       super.key});
   final IconData iconData;
@@ -16,6 +17,7 @@ class CircleButton extends StatelessWidget {
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final double? size;
+  final double? iconSize;
   final Function(Offset)? onPressed;
 
   @override
@@ -35,12 +37,13 @@ class CircleButton extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 shape: const CircleBorder(),
                 shadowColor: color,
-                fixedSize: size2 != null ? Size(size2, size2) : Size(50, 50),
-                alignment: Alignment.center,
+                fixedSize:
+                    size2 != null ? Size(size2, size2) : const Size(50, 50),
+                // alignment: Alignment.center,
                 padding: EdgeInsets.zero,
-                backgroundColor: Colors.transparent,
+                // backgroundColor: Colors.transparent,
               ),
-              child: Icon(iconData, color: iconColor, size: 30))
+              child: Icon(iconData, color: iconColor, size: iconSize ?? 30))
         ]));
   }
 }

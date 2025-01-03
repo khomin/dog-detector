@@ -9,8 +9,8 @@ void main() {
           Colors.white, // Set navigation bar color to white
       systemNavigationBarIconBrightness:
           Brightness.dark, // Set icons to dark for contrast
-      statusBarColor:
-          Constants.colorPrimary, // Optional: Change the status bar color
+      statusBarColor: Colors
+          .transparent, //Constants.colorPrimary, // Optional: Change the status bar color
       statusBarIconBrightness:
           Brightness.dark // Optional: Dark icons on status bar));
       ));
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Constants.colorBar),
+          // colorScheme: ColorScheme.fromSeed(seedColor: Constants.colorBar),
           splashColor: Colors.transparent,
           useMaterial3: true),
       home: const App(),
