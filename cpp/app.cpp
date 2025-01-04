@@ -35,7 +35,7 @@ cv::Mat resizeWithAspectRatio(const cv::Mat& frame, int width, int height);
 
 extern "C"
 JNIEXPORT long JNICALL
-Java_com_example_detector_CameraTool_genTextureNative(JNIEnv *env, jobject thiz) {
+Java_com_example_detector_CaptureRep_genTextureNative(JNIEnv *env, jobject thiz) {
     // generate a texture ID
     glGenTextures(1, &textureId);
     // bind the texture
@@ -52,7 +52,7 @@ Java_com_example_detector_CameraTool_genTextureNative(JNIEnv *env, jobject thiz)
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_detector_CameraTool_startNative(JNIEnv *env, jobject thiz, jint width, jint height) {
+Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint width, jint height) {
     isRun = true;
     auto th = std::thread([&] {
         // Background subtractor
@@ -77,20 +77,20 @@ Java_com_example_detector_CameraTool_startNative(JNIEnv *env, jobject thiz, jint
             } else if(cameraFacing == CameraFace::front) {
                 totalRotation = (sensorOrientation + deviceOrientation) % 360;
             }
-            switch (totalRotation) {
-                case 0: break;
-                case 90:
-                    cv::rotate(frame, frame, cv::ROTATE_90_CLOCKWISE);
-                    break;
-                case 180:
-                    cv::rotate(frame, frame, cv::ROTATE_180);
-                    break;
-                case 270:
-                    cv::rotate(frame, frame, cv::ROTATE_90_COUNTERCLOCKWISE);
-                    break;
-                default:
-                    break;
-            }
+//            switch (totalRotation) {
+//                case 0: break;
+//                case 90:
+//                    cv::rotate(frame, frame, cv::ROTATE_90_CLOCKWISE);
+//                    break;
+//                case 180:
+//                    cv::rotate(frame, frame, cv::ROTATE_180);
+//                    break;
+//                case 270:
+//                    cv::rotate(frame, frame, cv::ROTATE_90_COUNTERCLOCKWISE);
+//                    break;
+//                default:
+//                    break;
+//            }
 
 //            frame = resizeWithAspectRatio(frame, viewWidth, viewHeight);
 //            cv::resize(frame, frame, cv::Size(frame.cols/10, frame.rows/10));
@@ -157,14 +157,14 @@ Java_com_example_detector_CameraTool_startNative(JNIEnv *env, jobject thiz, jint
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_detector_CameraTool_stopNative(JNIEnv *env, jobject thiz) {
+Java_com_example_detector_CaptureRep_stopNative(JNIEnv *env, jobject thiz) {
     isRun = false;
     condVar.notify_one();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_detector_CameraTool_putFrameNative(JNIEnv *env, jobject thiz,
+Java_com_example_detector_CaptureRep_putFrameNative(JNIEnv *env, jobject thiz,
                                                     jbyteArray y_plane,
                                                     jint yStride,
                                                     jbyteArray u_plane,
@@ -201,7 +201,7 @@ Java_com_example_detector_CameraTool_putFrameNative(JNIEnv *env, jobject thiz,
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_detector_CameraTool_updateFrameNative(JNIEnv *env, jobject thiz) {
+Java_com_example_detector_CaptureRep_updateFrameNative(JNIEnv *env, jobject thiz) {
     cv::Mat frame;
     {
         std::lock_guard<std::mutex> l(lock);
@@ -217,7 +217,7 @@ Java_com_example_detector_CameraTool_updateFrameNative(JNIEnv *env, jobject thiz
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_detector_CameraTool_updateViewSizeNative(JNIEnv *env, jobject thiz, jint width,
+Java_com_example_detector_CaptureRep_updateViewSizeNative(JNIEnv *env, jobject thiz, jint width,
                                                           jint height, jint sensorOrientation_, jint deviceOrientation_, jint facing) {
     std::lock_guard<std::mutex> l(lock);
     viewWidth = width;

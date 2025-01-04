@@ -17,19 +17,20 @@ class HistoryRecord {
 }
 
 class Camera {
-  Camera({required this.id, required this.facing});
+  Camera({required this.id, required this.facing, required this.sensor});
   final String id;
   final String facing;
+  final int sensor;
 }
 
 class MyRep {
   var cameraMap = <String, Camera>{};
   final onCameraChanged = BehaviorSubject<void>();
-  var frameSize = const Size(0, 0);
-  final onFrameSizeChanged = BehaviorSubject<bool>();
+  final onFrameSize = BehaviorSubject<Size>.seeded(const Size(0, 0));
+  var _frameSize = const Size(0, 0);
   // private
   static const _cameraChannel = MethodChannel('camera/cmd');
-  // static const _mainChannel = MethodChannel('main/cmd');
+  static const _mainChannel = MethodChannel('main/cmd');
 
   static MyRep? _instance;
   MyRep._internal();
@@ -42,37 +43,75 @@ class MyRep {
   }
   final tag = 'myRep';
 
+  Future<void> registerView() async {
+    try {
+      await _mainChannel.invokeMethod('register_view', <String, dynamic>{});
+    } catch (e) {
+      logError('$tag: error: $e');
+    }
+  }
+
   Future<Map<String, Camera>> getCameras() async {
     try {
-      var r = await _cameraChannel
-          .invokeMethod('get_cameras', <String, dynamic>{}) as Map;
+      var r =
+          await _cameraChannel.invokeMethod('get_cameras', <String, dynamic>{});
       r.forEach((key, value) {
+        var camera =
+            Camera(id: key, facing: value['facing'], sensor: value['sensor']);
         if (value['facing'] == 'Back') {
-          cameraMap['back'] = Camera(id: key, facing: value['facing']);
+          cameraMap['back'] = camera;
         } else if (value['facing'] == 'Front') {
-          cameraMap['front'] = Camera(id: key, facing: value['facing']);
+          cameraMap['front'] = camera;
         }
       });
       onCameraChanged.add(null);
       return cameraMap;
+      // await _cameraChannel
+      //     .invokeMethod('init_render', <String, dynamic>{'1': '1'});
+      // // await _cameraChannel.invokeMethod('get_cameras', <String, dynamic>{});
     } catch (e) {
-      logError('$tag: error starting rende  ring: $e');
+      logError('$tag: error: $e');
     }
     return cameraMap;
   }
 
-  Future<void> startRender(String id) async {
+  Future<void> initRender() async {
+    try {
+      await _cameraChannel.invokeMethod('init_render', <String, dynamic>{});
+    } on PlatformException catch (e) {
+      logError('$tag: error: ${e.message}');
+    }
+  }
+
+  Future<void> startCamera(String id) async {
     try {
       var r = await _cameraChannel
           .invokeMethod('start_camera', <String, dynamic>{'id': id});
-      // TODO: update frame size
-      // setState(() {
-      //   _frameSize = Size((r['size_width'] as int).toDouble(),
-      //       (r['size_height'] as int).toDouble());
-      // });
+      _frameSize = Size((r['size_width'] as int).toDouble(),
+          (r['size_height'] as int).toDouble());
+      onFrameSize.add(_frameSize);
     } on PlatformException catch (e) {
-      logError('$tag: error starting rende  ring: ${e.message}');
+      logError('$tag: error: ${e.message}');
     }
+  }
+
+  Future stopCamera() async {
+    try {
+      await _cameraChannel.invokeMethod('stop_camera', <String, dynamic>{});
+    } on PlatformException catch (e) {
+      logError('$tag: error: ${e.message}');
+    }
+  }
+
+  Future<int> getDeviceSensor() async {
+    try {
+      var rotation = await _mainChannel
+          .invokeMethod('get_device_sensor', <String, dynamic>{});
+      return rotation;
+    } catch (e) {
+      logError('$tag: error: $e');
+    }
+    return 0;
   }
 
   Future<List<HistoryRecord>> history() async {

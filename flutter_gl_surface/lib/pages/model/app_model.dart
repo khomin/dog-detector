@@ -7,6 +7,7 @@ class AppModel with ChangeNotifier {
   AppModel();
 
   bool ready = false;
+  bool collapse = false;
   List<HistoryRecord> history = [];
 
   void setReady(bool v) {
@@ -19,6 +20,13 @@ class AppModel with ChangeNotifier {
   void setHistory(List<HistoryRecord> v) {
     if (v != history) {
       history = v;
+      notifyListeners();
+    }
+  }
+
+  void setCollapse(bool v) {
+    if (v != collapse) {
+      collapse = v;
       notifyListeners();
     }
   }

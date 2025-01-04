@@ -1,40 +1,330 @@
 package com.example.detector
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.ImageFormat
+import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraDevice
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.TotalCaptureResult
+import android.media.Image
+import android.media.ImageReader
 import android.opengl.GLSurfaceView
+import android.os.Handler
+import android.os.HandlerThread
 import android.util.Log
+import android.util.Range
 import android.util.Size
+import android.view.Surface
 import android.view.View
-import android.view.ViewGroup
-//import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
+
+enum class CameraFacing { Front, Back }
+
+class CameraDescription(val size: List<Size>, val id: String, val facing: CameraFacing, val sensorOrientation: Int) {}
 
 class CaptureRep(val context: Context) {
-    var cameraTool: CameraTool = CameraTool(context)
-
+    private var cameraDescription: CameraDescription ?= null
+    private var cameraSize: Size = Size(0,0)
+    private var render: MyRenderer?= null
+    private var isRunning = false
+    private var cameraFacing: CameraFacing = CameraFacing.Back
+    private var deviceOrientation = 0
+    private var sensorOrientation = 0
     private var surfaceView: GLSurfaceView ?= null
-//    var layout: ConstraintLayout ?= null
-
-    var cameraDescription: CameraDescription ?= null
-    var cameraSize: Size = Size(0,0)
-    var render: MyRenderer?= null
-    var isRunning = false
+    private var cameraId: String ?=null
+    private var imageReader: ImageReader? = null
+    private var cameraThread: HandlerThread?=null
+    private var cameraHandler: Handler?=null
+    private var imageReaderThread: HandlerThread?=null
+    private var imageReaderHandler: Handler?=null
+    private var camera: CameraDevice? = null
+    private var session: CameraCaptureSession?=null
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private val mutex = Mutex()
     val tag = "CaptureRep"
+
+    init {
+        cameraThread = HandlerThread("CameraThread").apply { start() }
+        cameraHandler = Handler(cameraThread!!.looper)
+        imageReaderThread = HandlerThread("imageReaderThread").apply { start() }
+        imageReaderHandler = Handler(imageReaderThread!!.looper)
+    }
+
+    suspend fun start(cameraId: String): Size {
+        stop()
+        val desc = getDescription(cameraId, context)
+        if(desc == null) {
+            Log.e(tag, "camera info is null")
+            return Size(0, 0)
+        }
+        isRunning = true
+        cameraDescription = desc
+        cameraSize = desc.size.lastOrNull() ?: return Size(0, 0)
+        openCamera(cameraId, cameraSize.width, cameraSize.height, desc.facing,  context)
+        return Size(cameraSize.width, cameraSize.height)
+    }
+
+    suspend fun stop() {
+        stopCamera()
+        isRunning = false
+    }
+
+    fun getCameras(context: Context): List<CameraDescription?> {
+        val cameras = mutableListOf<CameraDescription?>()
+        try {
+            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            for(cameraId in cameraManager.cameraIdList) {
+                val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+                val configurationMap =
+                    characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+                val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
+                val supportedResolutions = mutableListOf<Size>()
+                configurationMap?.getOutputSizes(ImageFormat.YUV_420_888)?.forEach { size ->
+                    if (size.width <= 1280) {
+                        supportedResolutions.add(size)
+                    }
+                }
+                supportedResolutions.sortBy { size: Size -> size.width }
+                val orientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
+                cameras.add(CameraDescription(supportedResolutions, cameraId, when (facing) {
+                    CameraCharacteristics.LENS_FACING_FRONT -> {
+                        CameraFacing.Front
+                    }
+                    CameraCharacteristics.LENS_FACING_BACK -> {
+                        CameraFacing.Back
+                    }
+                    else -> {
+                        CameraFacing.Back
+                    }
+                }, orientation))
+            }
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+        return cameras
+    }
+
+    private suspend fun stopCamera() {
+        mutex.withLock {
+            try {
+                camera?.close()
+                session?.stopRepeating()
+                session?.abortCaptures()
+                session?.close()
+                imageReader?.close()
+                session = null
+                imageReader = null
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+            stopNative()
+        }
+    }
+
+    private suspend fun openCamera(id: String, width: Int, height: Int, facing: CameraFacing, context: Context) {
+        mutex.withLock {
+            val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.e(tag, "Camera permission is not granted")
+                return
+            }
+            manager.openCamera(id, object : CameraDevice.StateCallback() {
+                override fun onOpened(device: CameraDevice) {
+                    camera = device
+                    cameraId = id
+                    cameraFacing = facing
+                    val cameraManager =
+                        context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+                    // get sensor orientation
+                    cameraManager.getCameraCharacteristics(id)
+                        .get(CameraCharacteristics.SENSOR_ORIENTATION)?.let {
+                            sensorOrientation = it
+                            initSession(Size(width, height))
+                            startNative(width, height)
+                        }
+                }
+
+                override fun onDisconnected(device: CameraDevice) {
+                    Log.w(tag, "Camera $cameraId has been disconnected")
+                    device.close()
+                }
+
+                override fun onError(device: CameraDevice, error: Int) {
+                    device.close()
+                }
+            }, cameraHandler)
+        }
+    }
+
+    private fun initSession(frameSize: Size)  {
+        coroutineScope.launch(Dispatchers.Main) {
+            imageReader = ImageReader.newInstance(
+                frameSize.width, frameSize.height, ImageFormat.YUV_420_888, 2
+            )
+            val imageReaderSafe = imageReader ?: return@launch
+            val cameraSafe = camera ?: return@launch
+            val targets = listOf(imageReaderSafe.surface)
+
+            session = createCaptureSession(cameraSafe, targets, cameraHandler)
+
+            imageReaderSafe.setOnImageAvailableListener({ reader ->
+                val i: Image? = reader.acquireLatestImage()
+                if (i != null) {
+                    // yuv420 to argb in cpp
+                    try {
+                        val planes: Array<Image.Plane> = i.planes
+                        var buffer = planes[0].buffer
+                        val yPlane = ByteArray(planes[0].buffer.remaining())
+                        buffer[yPlane]
+
+                        buffer = planes[1].buffer
+                        val uPlane = ByteArray(planes[1].buffer.remaining())
+                        buffer[uPlane]
+
+                        buffer = planes[2].buffer
+                        val vPlane = ByteArray(planes[2].buffer.remaining())
+                        buffer[vPlane]
+
+                        val yRowStride = planes[0].rowStride
+                        val uvRowStride = planes[1].rowStride
+                        val vRowStride = planes[2].rowStride
+                        val uvPixelStride = planes[1].pixelStride
+                        val width = i.width
+                        val height = i.height
+                        putFrameNative(
+                            yPlane,
+                            yRowStride,
+                            uPlane,
+                            uvRowStride,
+                            vPlane,
+                            vRowStride,
+                            uvPixelStride,
+                            width,
+                            height
+                        )
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
+                    }
+                }
+                i?.close()
+            }, imageReaderHandler)
+
+            val captureRequest = session?.device?.createCaptureRequest(
+                CameraDevice.TEMPLATE_RECORD
+            )?.apply {
+                addTarget(imageReaderSafe.surface)
+            }
+            if (captureRequest != null) {
+                val fpsRange: Range<Int> = Range(25, 25)
+                captureRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+                session?.setRepeatingRequest(captureRequest.build(), captureCallback, cameraHandler)
+            }
+        }
+    }
+
+    private suspend fun createCaptureSession(
+        device: CameraDevice, targets: List<Surface>, handler: Handler? = null
+    ): CameraCaptureSession = suspendCoroutine { cont ->
+        // Create a capture session using the predefined targets; this also involves defining the
+        // session state callback to be notified of when the session is ready
+        device.createCaptureSession(targets, object : CameraCaptureSession.StateCallback() {
+            override fun onConfigured(session: CameraCaptureSession) = cont.resume(session)
+            override fun onConfigureFailed(session: CameraCaptureSession) {
+                val exc = RuntimeException("Camera ${device.id} session configuration failed")
+                Log.e(tag, exc.message, exc)
+                cont.resumeWithException(exc)
+            }
+        }, handler)
+    }
+
+    private val captureCallback = object : CameraCaptureSession.CaptureCallback() {
+        override fun onCaptureCompleted(
+            session: CameraCaptureSession, request: CaptureRequest, result: TotalCaptureResult
+        ) {}
+    }
+
+    private fun getDescription(cameraId: String, context: Context): CameraDescription? {
+        try {
+            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+            val supportedResolutions = mutableListOf<Size>()
+            val configurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+            val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
+            configurationMap?.getOutputSizes(ImageFormat.YUV_420_888)?.forEach { size ->
+                if(size.width <= 1280) {
+                    supportedResolutions.add(size)
+                }
+            }
+            supportedResolutions.sortBy { size: Size -> size.width }
+            val orientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
+            return CameraDescription(supportedResolutions, cameraId, when (facing) {
+                CameraCharacteristics.LENS_FACING_FRONT -> {
+                    CameraFacing.Front
+                }
+                CameraCharacteristics.LENS_FACING_BACK -> {
+                    CameraFacing.Back
+                }
+                else -> {
+                    CameraFacing.Back
+                }
+            }, orientation)
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+        return null
+    }
+
+    private external fun startNative(width: Int,  height: Int)
+    private external fun stopNative()
+    private external fun putFrameNative(
+        yPlane: ByteArray?,
+        yRowStride: Int,
+        uPlane: ByteArray?,
+        uRowStride: Int,
+        vPlane: ByteArray?,
+        vRowStride: Int,
+        uvRowStride: Int,
+        width: Int,
+        height: Int
+    )
+    external fun genTextureNative() : Long
+    external fun updateFrameNative()
+    external fun updateViewSizeNative(
+        width: Int,
+        height: Int,
+        sensorOrientation: Int,
+        deviceOrientation: Int,
+        facing: Int
+    )
 
     fun initRender(surfaceView: GLSurfaceView) {
         this.surfaceView = surfaceView
         render = MyRenderer(genTexture = {
-            cameraTool.genTextureNative()
+            genTextureNative()
         }, updateFrame = {
-            cameraTool.updateFrameNative()
+            updateFrameNative()
         }, onUpdateSize = { surfaceSize ->
-            cameraTool.updateViewSizeNative(
+            updateViewSizeNative(
                 surfaceSize.width, surfaceSize.height,
-                cameraTool.sensorOrientation,
-                cameraTool.deviceOrientation,
-                cameraTool.cameraFacing.ordinal
+                sensorOrientation,
+                deviceOrientation,
+                cameraFacing.ordinal
             )
         })
         surfaceView.visibility = View.VISIBLE
@@ -56,77 +346,4 @@ class CaptureRep(val context: Context) {
 //            surfaceView?.setRenderer(render)
         }
     }
-
-    fun start(cameraId: String): Size {
-        stop()
-        val desc = cameraTool.getDescription(cameraId, context)
-        if(desc == null) {
-            Log.e(tag, "camera info is null")
-            return Size(0, 0)
-        }
-        isRunning = true
-        cameraDescription = desc
-        cameraSize = desc.size.lastOrNull() ?: return Size(0, 0)
-        cameraTool.openCamera(cameraId, cameraSize.width, cameraSize.height, desc.facing,  context)
-        return Size(cameraSize.width, cameraSize.height)
-    }
-
-    fun stop() {
-        cameraTool.closeCamera()
-        isRunning = false
-    }
-
-//    fun updateViewSize() {
-//        val surfaceSize = render?.getSurfaceSize() ?: return
-//        cameraTool.updateViewSizeNative(
-//            surfaceSize.width, surfaceSize.height,
-//            cameraTool.sensorOrientation,
-//            cameraTool.deviceOrientation,
-//            cameraTool.cameraFacing.ordinal
-//        )
-//        // adjust layout
-//        val surfaceView = surfaceView ?: return
-//        val layout = layout ?: return
-//        val frameWidth = cameraSize.width
-//        val frameHeight = cameraSize.height
-//        val screenWidth = layout.width
-//        val screenHeight =  layout.height
-//        val sensorOrientation = cameraTool.sensorOrientation
-//        val deviceOrientation = cameraTool.deviceOrientation
-//        var totalRotation = (sensorOrientation + deviceOrientation) % 360;
-//        totalRotation = (360 - totalRotation) % 360; // Mirror for front-facing
-//        var videoWidth2 = frameWidth
-//        var videoHeigh2 = frameHeight
-//        when (totalRotation) {
-//            0 -> {}
-//            90 -> {
-//                videoWidth2 = frameHeight
-//                videoHeigh2 = frameWidth
-//            }
-//            180 -> {}
-//            270 -> {
-//                videoWidth2 = frameHeight
-//                videoHeigh2 = frameWidth
-//            }
-//        }
-//        // Get the dimensions of the video
-//        val videoProportion = videoWidth2.toFloat() / videoHeigh2.toFloat()
-//
-//        // Get the width of the screen
-//        val screenProportion = screenWidth.toFloat() / screenHeight.toFloat()
-//
-//        // Get the SurfaceView layout parameters
-//        CoroutineScope(Dispatchers.Main).launch {
-//            val lp: ViewGroup.LayoutParams = surfaceView.layoutParams
-//            if (videoProportion > screenProportion) {
-//                lp.width = screenWidth
-//                lp.height = (screenWidth.toFloat() / videoProportion).toInt()
-//            } else {
-//                lp.width = (videoProportion * screenHeight.toFloat()).toInt()
-//                lp.height = screenHeight
-//            }
-//            // Commit the layout parameters
-//            surfaceView.setLayoutParams(lp)
-//        }
-//    }
 }

@@ -7,6 +7,7 @@ import android.widget.Toast
 import android.Manifest
 import android.os.Build
 import android.util.Log
+import android.view.Surface
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -29,29 +30,36 @@ class MainActivity: FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
 
         val surfaceFactory = MyGLSurfaceViewFactory(flutterEngine.dartExecutor.binaryMessenger, null)
-
         val registry: PlatformViewRegistry = flutterEngine.platformViewsController.registry
         registry.registerViewFactory("my_gl_surface_view", surfaceFactory)
 
-//        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "main/cmd")
-//            .setMethodCallHandler { call, result ->
-//                try {
-//                    val args = call.arguments as HashMap<*, *>
-//                    when (call.method) {
-//                        "get_camera" -> {
-//                            val id = args["id"] as String
-//                            val captureRep = (application as App?)?.captureRep
-//                            result.success(true)
-//                        }
-//                        else -> {
-//                            result.success(true)
-//                        }
-//                    }
-//                } catch (e: Exception) {
-//                    Log.e(TAG, "Error parsing", e)
-//                }
-//
-//            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "main/cmd")
+            .setMethodCallHandler { call, result ->
+                try {
+                    val args = call.arguments as HashMap<*, *>
+                    when (call.method) {
+                        "register_view" -> {
+                            result.success(true)
+                        }
+                        "get_device_sensor" -> {
+                            activity.windowManager?.getDefaultDisplay()?.rotation?.let {
+                                when (it) {
+                                    Surface.ROTATION_0 -> result.success(0)
+                                    Surface.ROTATION_90 -> result.success(90)
+                                    Surface.ROTATION_180 -> result.success(180)
+                                    Surface.ROTATION_270 -> result.success(270)
+                                }
+                            }
+                        }
+                        else -> {
+                            result.success(true)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing", e)
+                }
+
+            }
     }
 
     companion object {

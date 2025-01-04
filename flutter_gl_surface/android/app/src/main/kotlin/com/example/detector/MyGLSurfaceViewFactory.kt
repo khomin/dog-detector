@@ -9,7 +9,7 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MessageCodec
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodCall
-import java.util.Objects
+import kotlinx.coroutines.runBlocking
 
 class MyGLSurfaceViewFactory(
     private val messenger: BinaryMessenger, createArgsCodec: MessageCodec<Any>?
@@ -25,19 +25,19 @@ class MyGLSurfacePlatformView(
     messenger: BinaryMessenger,
     id: Int
 ) : PlatformView, MethodChannel.MethodCallHandler {
-
     private val glSurfaceView: GLSurfaceView = GLSurfaceView(context)
     private val methodChannel: MethodChannel = MethodChannel(messenger, "camera/cmd")
-        //"my_gl_surface_view_$id")
-
     init {
         glSurfaceView.visibility = View.GONE
-        // Set the MethodCallHandler to handle calls from Flutter
         methodChannel.setMethodCallHandler(this)
     }
 
     override fun getView(): View {
         return glSurfaceView
+    }
+
+    override fun onFlutterViewAttached(flutterView: View) {
+        super.onFlutterViewAttached(flutterView)
     }
 
     override fun dispose() {
@@ -47,6 +47,15 @@ class MyGLSurfacePlatformView(
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         val args = call.arguments as HashMap<*, *>
         when (call.method) {
+            "init_render" -> {
+                val captureRep = (context.applicationContext as App?)?.captureRep
+                if(captureRep == null) {
+                    result.error("", "cannot init", "")
+                    return
+                }
+                captureRep.initRender(glSurfaceView)
+                result.success(true)
+            }
             "start_camera" -> {
                 val id = args["id"] as String
                 val captureRep = (context.applicationContext as App?)?.captureRep
@@ -54,37 +63,43 @@ class MyGLSurfacePlatformView(
                     result.error("", "cannot open", "")
                     return
                 }
-                captureRep.initRender(glSurfaceView)
-                val size = captureRep.start(id)
-                result.success(mapOf(
-                    "size_width" to size.width,
-                    "size_height" to size.height))
+                runBlocking {
+                    val size = captureRep.start(id)
+                    result.success(mapOf(
+                        "size_width" to size.width,
+                        "size_height" to size.height))
+                }
             }
             "stop_camera" -> {
                 val captureRep = (context.applicationContext as App?)?.captureRep
-                captureRep?.stop()
-                result.success(true)
+                runBlocking {
+                    captureRep?.stop()
+                    result.success(true)
+                }
             }
             "get_cameras" -> {
                 val captureRep = (context.applicationContext as App?)?.captureRep
-                if(captureRep == null) {
-                    result.error("", "cannot open", "")
-                    return
-                }
-                val cameras = captureRep.cameraTool.getCameras(context)
-                val map = mutableMapOf<String,Any>()
-                for(cameraIndex in cameras.indices) {
-                    val cameraDesc = cameras[cameraIndex]
-                    if(cameraDesc != null) {
-                        val map2 = mutableMapOf<String,Any>()
-                        val camera = cameraDesc.size.lastOrNull()
-                        map2["width"] = camera?.width ?: 0
-                        map2["height"] = camera?.height ?: 0
-                        map2["facing"] = cameraDesc.facing.name
-                        map["$cameraIndex"] = map2
+                runBlocking {
+                    if (captureRep == null) {
+                        result.error("", "cannot open", "")
+                        return@runBlocking
                     }
+                    val cameras = captureRep.getCameras(context)
+                    val map = mutableMapOf<String, Any>()
+                    for (cameraIndex in cameras.indices) {
+                        val cameraDesc = cameras[cameraIndex]
+                        if (cameraDesc != null) {
+                            val map2 = mutableMapOf<String, Any>()
+                            val camera = cameraDesc.size.lastOrNull()
+                            map2["width"] = camera?.width ?: 0
+                            map2["height"] = camera?.height ?: 0
+                            map2["facing"] = cameraDesc.facing.name
+                            map2["sensor"] = cameraDesc.sensorOrientation
+                            map["$cameraIndex"] = map2
+                        }
+                    }
+                    result.success(map)
                 }
-                result.success(map)
             }
             else -> result.notImplemented()
         }

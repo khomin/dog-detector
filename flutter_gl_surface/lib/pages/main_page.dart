@@ -50,81 +50,45 @@ class MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    // return RefreshIndicator(
-    //     onRefresh: () async {
-    //       await _fetch();
-    //     },
-    //     child:
     return Scaffold(
-        // backgroundColor: Colors.transparent,
         backgroundColor: Constants.colorBar,
-        // backgroundColor: Colors.black,
         body: CustomScrollView(
             physics: const ClampingScrollPhysics(),
             controller: _scrollCtr,
             slivers: [
               SliverAppBar(
                   backgroundColor: Constants.colorBar,
-                  foregroundColor: Colors.deepPurple,
-                  // stretch: true,
-                  // stretch: false,
-                  // onStretchTrigger: () async {
-                  //   // Triggers when stretching
-                  // },
-                  // [stretchTriggerOffset] describes the amount of overscroll that must occur
-                  // to trigger [onStretchTrigger]
-                  //
-                  // Setting [stretchTriggerOffset] to a value of 300.0 will trigger
-                  // [onStretchTrigger] when the user has overscrolled by 300.0 pixels.
-                  // stretchTriggerOffset: kToolbarHeight,
                   toolbarHeight: kToolbarHeight,
-                  // expandedHeight: kToolbarHeight,
                   flexibleSpace: const FlexibleSpaceBar(
                       title: Row(children: [
                         Padding(
-                            padding: const EdgeInsets.only(left: 25),
-                            child: Text('Activity',
+                            padding: EdgeInsets.only(left: 25),
+                            child: Text('Recent',
                                 style: TextStyle(
-                                    // fontFamily: 'Sulphur',
-                                    fontSize: 25,
-                                    color: Colors.black38,
-                                    fontWeight: FontWeight.bold)))
+                                  // fontFamily: 'Salsa',
+                                  fontSize: 25,
+                                  // fontStyle: FontStyle.italic,
+                                  // color: Colors.white,
+                                  // fontWeight: FontWeight.bold
+                                  // fontWeight: FontWeight.w400
+                                )))
                       ]),
-                      // background: FlutterLogo(),
-                      // background: Text('dd'),
-                      // collapseMode: CollapseMode.none,
                       centerTitle: true)),
               SliverToBoxAdapter(child: _header()),
               DecoratedSliver(
-                  // position: DecorationPosition.background,
                   decoration: const BoxDecoration(
-                    // color: Constants.colorBackgroundUnderCard,
                     color: Constants.colorBackgroundUnderCard,
-                    // borderRadius: BorderRadius.only(
-                    //     topLeft: Radius.circular(20),
-                    //     topRight: Radius.circular(20)
-                    // )
                   ),
                   sliver: SliverList.builder(
                       itemCount: 10,
                       itemBuilder: (context, index) {
-                        // if (index == 0) return _header();
+                        if (index == 10 - 1) {
+                          return Padding(
+                              padding: const EdgeInsets.only(bottom: 20.0),
+                              child: _item1());
+                        }
                         return _item1();
-                      })
-                  // fillOverscroll: true,
-                  // child:  ListView(
-                  //         primary: false,
-                  //         physics: const AlwaysScrollableScrollPhysics(),
-                  // shrinkWrap: true,
-                  // padding: const EdgeInsets.only(
-                  //     left: 20, right: 20, top: 25),
-                  // children: [
-                  //   _item1(),
-                  //   _item1(),
-                  //   _item1(),
-                  //   _item1()
-                  // ])))
-                  )
+                      }))
             ]));
   }
 
@@ -132,11 +96,7 @@ class MainPageState extends State<MainPage> {
     return Container(
         width: 300,
         height: 60,
-        // decoration: BoxDecoration(
-        //     border: Border(
-        //         bottom: BorderSide(
-        //             color: Constants.colorBackgroundUnderCard, width: 1))),
-        // color: Constants.colorCard,
+        // color: Colors.pink,
         child: Stack(children: [
           Positioned(
               top: 20,
@@ -146,7 +106,6 @@ class MainPageState extends State<MainPage> {
                   height: 40,
                   width: 100,
                   decoration: BoxDecoration(
-                      // color: Colors.yellow,
                       color: Constants.colorBackgroundUnderCard,
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20),
@@ -177,8 +136,7 @@ class MainPageState extends State<MainPage> {
                           size: 28,
                         )),
                     Flexible(
-                        child: Container(
-                            // margin: EdgeInsets.only(left: 20, right: 20),
+                        child: SizedBox(
                             height: 50,
                             width: double.infinity,
                             child: Row(children: [
@@ -188,7 +146,7 @@ class MainPageState extends State<MainPage> {
                                       focusNode: _focus,
                                       maxLines: 1,
                                       decoration: InputDecoration.collapsed(
-                                          hintText: 'Search',
+                                          hintText: 'Search, tag',
                                           hintStyle: TextStyle(
                                               color: Constants.colorTextSecond
                                                   .withOpacity(0.4),
@@ -261,208 +219,183 @@ class MainPageState extends State<MainPage> {
       var history =
           context.select<AppModel, List<HistoryRecord>>((v) => v.history);
       return Container(
-          // margin: const EdgeInsets.only(top: 20),
-          color: Constants.colorBackgroundUnderCard,
-          child: Container(
-              margin: const EdgeInsets.only(
-                  left: 25, right: 25, top: 20, bottom: 5),
-              decoration: BoxDecoration(
-                  color: Constants.colorCard,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 0),
-                    )
-                  ],
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
-              height: 270,
-              child: Column(children: [
-                if (history.isNotEmpty)
-                  Column(children: [
-                    // header
-                    Padding(
-                        padding: EdgeInsets.only(left: 20, top: 10),
-                        child: Row(children: [
-                          Container(
-                              width: 50,
-                              height: 50,
-                              // color: Colors.pink,
-                              decoration: BoxDecoration(
-                                  color: Constants.colorBackgroundUnderCard,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(10))),
-                              child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('28',
-                                        style: TextStyle(
-                                            color: Constants.colorTextAccent
-                                                .withOpacity(0.5),
-                                            fontSize: 16,
-                                            // fontFamily: 'Salsa',
-                                            fontWeight: FontWeight.bold)),
-                                    Text('DEC',
-                                        style: TextStyle(
-                                            color: Constants.colorTextSecond,
-                                            fontSize: 12,
-                                            fontFamily: 'Salsa',
-                                            fontWeight: FontWeight.w600))
-                                  ])),
-                          Padding(
-                              padding: EdgeInsets.only(left: 10),
-                              child:
-                                  //
-                                  Container(
-                                      // width: 50,
-                                      height: 50,
-                                      // color: Colors.pink,
-                                      // decoration: BoxDecoration(
-                                      //     color: Constants.colorBackgroundUnderCard,
-                                      //     borderRadius:
-                                      //         BorderRadius.all(Radius.circular(10))),
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text('Saturday',
-                                                style: TextStyle(
-                                                    color: Constants
-                                                        .colorTextAccent
-                                                        .withOpacity(0.5),
-                                                    fontSize: 16,
-                                                    // fontFamily: 'Salsa',
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                            Text('2024',
-                                                style: TextStyle(
-                                                    color: Constants
-                                                        .colorTextSecond,
-                                                    fontSize: 12,
-                                                    fontFamily: 'Salsa',
-                                                    fontWeight:
-                                                        FontWeight.w600))
-                                          ]))),
-                          const Spacer(),
-                          Padding(
-                              padding: EdgeInsets.only(right: 20),
-                              child: Row(children: [
-                                Icon(Icons.photo_library_sharp,
-                                    size: 18,
-                                    color: Constants.colorTextAccent
-                                        .withOpacity(0.5)),
-                                const SizedBox(width: 4),
-                                Text('64',
+          margin:
+              const EdgeInsets.only(left: 25, right: 25, top: 20, bottom: 5),
+          decoration: BoxDecoration(
+              color: Constants.colorCard,
+              boxShadow: [
+                BoxShadow(
+                  // color: Colors.black.withOpacity(0.2),
+                  color: Constants.colorBar.withOpacity(0.5),
+                  blurRadius: 15,
+                  offset: const Offset(0, 0),
+                )
+              ],
+              borderRadius: BorderRadius.all(Radius.circular(20))),
+          height: 270,
+          child: Column(children: [
+            if (history.isNotEmpty)
+              Column(children: [
+                // header
+                Padding(
+                    padding: EdgeInsets.only(left: 20, top: 10),
+                    child: Row(children: [
+                      Container(
+                          width: 50,
+                          height: 50,
+                          // color: Colors.pink,
+                          decoration: BoxDecoration(
+                              color: Constants.colorBackgroundUnderCard,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10))),
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('28',
+                                    style: TextStyle(
+                                        color: Constants.colorTextAccent
+                                            .withOpacity(0.5),
+                                        fontSize: 16,
+                                        // fontFamily: 'Salsa',
+                                        fontWeight: FontWeight.bold)),
+                                Text('DEC',
                                     style: TextStyle(
                                         color: Constants.colorTextSecond,
                                         fontSize: 12,
-                                        // fontFamily: 'Salsa',
-                                        fontWeight: FontWeight.bold)),
-                              ]))
-                        ])),
-                    Padding(
-                        padding: EdgeInsets.only(
-                            left: 20, right: 20, top: 10, bottom: 10),
-                        child: Stack(children: [
-                          ClipRRect(
-                              borderRadius: BorderRadius.circular(20.0),
-                              child: Image.file(File(history.first.path),
-                                  width: double.infinity,
-                                  height: 180,
-                                  fit: BoxFit.cover)),
-                          // Positioned(
-                          //     right: 5,
-                          //     bottom: 0,
-                          //     // top: 0,
-                          //     child: Container(
-                          //         // margin: EdgeInsets.only(top: 20, bottom: 20),
-                          //         decoration: BoxDecoration(
-                          //             // color: Colors.yellow,
-                          //             // color: Constants.colorBackgroundUnderCard
-                          //             //     .withOpacity(0.2),
-                          //             borderRadius: BorderRadius.all(
-                          //                 Radius.circular(10))),
-                          //         child: Row(children: [
-                          //           // Icon(Icons.image, color: Colors.white),
-                          //           Image.file(File(history.first.path),
-                          //               width: 80, height: 80),
-                          //           Image.file(File(history.first.path),
-                          //               width: 80, height: 80),
-                          //           Image.file(File(history.first.path),
-                          //               width: 80, height: 80),
-                          //         ])))
-                          // Positioned(
-                          //     right: 0,
-                          //     bottom: 0,
-                          //     child: Image.file(File(history.first.path),
-                          //         width: 80, height: 80)),
-                          // Positioned(
-                          //     right: 0,
-                          //     bottom: 40,
-                          //     child: Image.file(File(history.first.path),
-                          //         width: 80, height: 80)),
-                          // Positioned(
-                          //     right: 0,
-                          //     bottom: 80,
-                          //     child: Image.file(File(history.first.path),
-                          //         width: 80, height: 80))
-                        ]))
-                    // body
-                    // _itemSubLine(
-                    //     text: 'Sessions',
-                    //     value: '${history.length}',
-                    //     firstLine: true),
-                    // _itemSubLine(text: 'Images', value: '450', firstLine: false),
-                    // _itemSubLine(text: 'Storage', value: '4.5Gb', firstLine: false)
-                  ]),
-                // history.isNotEmpty
-                //     ? Container(
-                //         // color: Colors.pink,
-                //         height: 60,
-                //         width: double.infinity,
-                //         margin: const EdgeInsets.only(left: 10, right: 10, top: 15),
-                //         child: Row(children: [
-                //           ListView.builder(
-                //               scrollDirection: Axis.horizontal,
-                //               shrinkWrap: true,
-                //               itemCount: history.length,
-                //               itemBuilder: (context, index) {
-                //                 var i = history[index];
-                //                 return HistoryItemThumbnail(
-                //                     history: i,
-                //                     padding: const EdgeInsets.only(right: 2),
-                //                     size: const Size(50, 50),
-                //                     onPressed: () {
-                //                       NavigatorRep().routeBloc.goto(
-                //                           Panel(type: PageType.history, arg: i));
-                //                     });
-                //               })
-                //         ]))
-                //     : const Flexible(
-                //         child: Center(child: Text("You don't have history yet")))
-              ])));
+                                        fontFamily: 'Salsa',
+                                        fontWeight: FontWeight.w600))
+                              ])),
+                      Padding(
+                          padding: EdgeInsets.only(left: 10),
+                          child:
+                              //
+                              SizedBox(
+                                  // width: 50,
+                                  height: 50,
+                                  // color: Colors.pink,
+                                  // decoration: BoxDecoration(
+                                  //     color: Constants.colorBackgroundUnderCard,
+                                  //     borderRadius:
+                                  //         BorderRadius.all(Radius.circular(10))),
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text('Saturday',
+                                            style: TextStyle(
+                                                color: Constants.colorTextAccent
+                                                    .withOpacity(0.5),
+                                                fontSize: 16,
+                                                // fontFamily: 'Salsa',
+                                                fontWeight: FontWeight.bold)),
+                                        Text('2024',
+                                            style: TextStyle(
+                                                color:
+                                                    Constants.colorTextSecond,
+                                                fontSize: 12,
+                                                fontFamily: 'Salsa',
+                                                fontWeight: FontWeight.w600))
+                                      ]))),
+                      const Spacer(),
+                      Padding(
+                          padding: EdgeInsets.only(right: 20),
+                          child: Row(children: [
+                            Icon(Icons.photo_library_sharp,
+                                size: 18,
+                                color:
+                                    Constants.colorTextAccent.withOpacity(0.5)),
+                            const SizedBox(width: 4),
+                            Text('64',
+                                style: TextStyle(
+                                    color: Constants.colorTextSecond,
+                                    fontSize: 12,
+                                    // fontFamily: 'Salsa',
+                                    fontWeight: FontWeight.bold)),
+                          ]))
+                    ])),
+                Padding(
+                    padding: EdgeInsets.only(
+                        left: 20, right: 20, top: 10, bottom: 10),
+                    child: Stack(children: [
+                      ClipRRect(
+                          borderRadius: BorderRadius.circular(20.0),
+                          child: Image.file(File(history.first.path),
+                              width: double.infinity,
+                              height: 180,
+                              fit: BoxFit.cover)),
+                      // Positioned(
+                      //     right: 5,
+                      //     bottom: 0,
+                      //     // top: 0,
+                      //     child: Container(
+                      //         // margin: EdgeInsets.only(top: 20, bottom: 20),
+                      //         decoration: BoxDecoration(
+                      //             // color: Colors.yellow,
+                      //             // color: Constants.colorBackgroundUnderCard
+                      //             //     .withOpacity(0.2),
+                      //             borderRadius: BorderRadius.all(
+                      //                 Radius.circular(10))),
+                      //         child: Row(children: [
+                      //           // Icon(Icons.image, color: Colors.white),
+                      //           Image.file(File(history.first.path),
+                      //               width: 80, height: 80),
+                      //           Image.file(File(history.first.path),
+                      //               width: 80, height: 80),
+                      //           Image.file(File(history.first.path),
+                      //               width: 80, height: 80),
+                      //         ])))
+                      // Positioned(
+                      //     right: 0,
+                      //     bottom: 0,
+                      //     child: Image.file(File(history.first.path),
+                      //         width: 80, height: 80)),
+                      // Positioned(
+                      //     right: 0,
+                      //     bottom: 40,
+                      //     child: Image.file(File(history.first.path),
+                      //         width: 80, height: 80)),
+                      // Positioned(
+                      //     right: 0,
+                      //     bottom: 80,
+                      //     child: Image.file(File(history.first.path),
+                      //         width: 80, height: 80))
+                    ]))
+                // body
+                // _itemSubLine(
+                //     text: 'Sessions',
+                //     value: '${history.length}',
+                //     firstLine: true),
+                // _itemSubLine(text: 'Images', value: '450', firstLine: false),
+                // _itemSubLine(text: 'Storage', value: '4.5Gb', firstLine: false)
+              ]),
+            // history.isNotEmpty
+            //     ? Container(
+            //         // color: Colors.pink,
+            //         height: 60,
+            //         width: double.infinity,
+            //         margin: const EdgeInsets.only(left: 10, right: 10, top: 15),
+            //         child: Row(children: [
+            //           ListView.builder(
+            //               scrollDirection: Axis.horizontal,
+            //               shrinkWrap: true,
+            //               itemCount: history.length,
+            //               itemBuilder: (context, index) {
+            //                 var i = history[index];
+            //                 return HistoryItemThumbnail(
+            //                     history: i,
+            //                     padding: const EdgeInsets.only(right: 2),
+            //                     size: const Size(50, 50),
+            //                     onPressed: () {
+            //                       NavigatorRep().routeBloc.goto(
+            //                           Panel(type: PageType.history, arg: i));
+            //                     });
+            //               })
+            //         ]))
+            //     : const Flexible(
+            //         child: Center(child: Text("You don't have history yet")))
+          ]));
     });
-  }
-
-  Widget _itemSubLine(
-      {required String text, required String value, required bool firstLine}) {
-    return Padding(
-        padding: EdgeInsets.only(left: 20, right: 10, top: firstLine ? 15 : 5),
-        child: Row(children: [
-          SizedBox(
-              width: 100,
-              child: Text(text,
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Constants.colorTextSecond.withOpacity(0.7)))),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Constants.colorTextSecond.withOpacity(0.7)))
-        ]));
   }
 }

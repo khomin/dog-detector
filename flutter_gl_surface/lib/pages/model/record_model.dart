@@ -5,12 +5,32 @@ class RecordModel with ChangeNotifier {
   RecordModel();
 
   bool run = false;
+  bool flipWait = false;
+  double flipTurns = 0.0;
+
   Camera? camera;
 
-  void setRun(bool v, Camera camera) {
-    if (v != run) {
-      run = v;
+  int rotation = 0;
+
+  void setRun(
+      {required bool run, required Camera? camera, bool mounted = true}) {
+    if (this.run != run || this.camera != camera) {
+      this.run = run;
       this.camera = camera;
+      if (mounted) notifyListeners();
+    }
+  }
+
+  void setFlipWait(bool v) {
+    if (flipWait != v) {
+      flipWait = v;
+      notifyListeners();
+    }
+  }
+
+  void setRotation(int v) {
+    if (rotation != v) {
+      rotation = v;
       notifyListeners();
     }
   }
