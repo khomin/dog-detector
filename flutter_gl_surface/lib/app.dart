@@ -60,8 +60,7 @@ class AppState extends State<App> {
                 color: Constants.colorBar,
                 child: SafeArea(
                     child: Stack(children: [
-                  // Text('hohoho'),
-                  BackgroundPage(),
+                  const BackgroundPage(),
                   AnimatedPositioned(
                       duration: Constants.duration,
                       curve: Curves.bounceIn,

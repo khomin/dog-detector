@@ -207,14 +207,15 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20))),
-              padding: EdgeInsets.only(top: 10, left: 10),
+              // padding: const EdgeInsets.only(top: 10),
               height: double.infinity,
               child: Stack(alignment: Alignment.center, children: [
-                Positioned.fill(
+                Positioned(
+                    top: 0,
                     left: 0,
                     right: 0,
-                    bottom: 0,
-                    top: 0,
+                    // bottom: 0,
+                    bottom: -(NavigatorRep().size.height + 20 / 3),
                     child: Builder(builder: (context) {
                       //   var rotation = context.read<RecordModel>().rotation;
                       // _updateRotation();
@@ -236,11 +237,14 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
                                     aspectRatio: model.surfaceLayout.ratio,
                                     child: Opacity(
                                         opacity: model.orientationpWait ? 0 : 1,
-                                        child: const AndroidView(
-                                            viewType: 'my_gl_surface_view',
-                                            creationParams: null,
-                                            creationParamsCodec:
-                                                StandardMessageCodec()))))),
+                                        child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(20.0),
+                                            child: const AndroidView(
+                                                viewType: 'my_gl_surface_view',
+                                                creationParams: null,
+                                                creationParamsCodec:
+                                                    StandardMessageCodec())))))),
                         // Flexible(
                         //     child: Text(
                         //         'ratio: ${layout.ratio}, rotation=${layout.rotation}',
