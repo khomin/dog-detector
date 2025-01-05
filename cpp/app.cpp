@@ -71,12 +71,12 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
                 frame = inFrame.clone();
                 inFrame.release();
             }
-            int totalRotation = 0;
-            if(cameraFacing == CameraFace::back) {
-                totalRotation = (sensorOrientation - deviceOrientation + 360) % 360;
-            } else if(cameraFacing == CameraFace::front) {
-                totalRotation = (sensorOrientation + deviceOrientation) % 360;
-            }
+//            int totalRotation = 0;
+//            if(cameraFacing == CameraFace::back) {
+//                totalRotation = (sensorOrientation - deviceOrientation + 360) % 360;
+//            } else if(cameraFacing == CameraFace::front) {
+//                totalRotation = (sensorOrientation + deviceOrientation) % 360;
+//            }
 //            switch (totalRotation) {
 //                case 0: break;
 //                case 90:

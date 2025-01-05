@@ -17,10 +17,15 @@ class HistoryRecord {
 }
 
 class Camera {
-  Camera({required this.id, required this.facing, required this.sensor});
+  Camera(
+      {required this.id,
+      required this.facing,
+      required this.sensor,
+      required this.size});
   final String id;
   final String facing;
   final int sensor;
+  final Size size;
 }
 
 class MyRep {
@@ -56,8 +61,12 @@ class MyRep {
       var r =
           await _cameraChannel.invokeMethod('get_cameras', <String, dynamic>{});
       r.forEach((key, value) {
-        var camera =
-            Camera(id: key, facing: value['facing'], sensor: value['sensor']);
+        var camera = Camera(
+            id: key,
+            facing: value['facing'],
+            sensor: value['sensor'],
+            size: Size((value['width'] as int).toDouble(),
+                (value['height'] as int).toDouble()));
         if (value['facing'] == 'Back') {
           cameraMap['back'] = camera;
         } else if (value['facing'] == 'Front') {

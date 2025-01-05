@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
@@ -16,7 +18,7 @@ class RecordPage extends StatefulWidget {
   State<RecordPage> createState() => RecordPageState();
 }
 
-class RecordPageState extends State<RecordPage> {
+class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
   final _dispStream = DisposableStream();
   late RecordModel _model;
 
@@ -25,6 +27,12 @@ class RecordPageState extends State<RecordPage> {
     super.initState();
 
     Future.microtask(() async {
+// _dispStream.add(MyRep().onFrameSize.listen((size) {
+//   _model.camera.
+// }));
+
+      WidgetsBinding.instance.addObserver(this);
+
       await MyRep().registerView();
       await MyRep().getCameras();
       _start();
@@ -76,6 +84,74 @@ class RecordPageState extends State<RecordPage> {
     _dispStream.dispose();
     _model.setRun(run: false, camera: null, mounted: false);
     MyRep().stopCamera();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+    // Here you can detect orientation change
+    // final orientation = MediaQuery.of(context).orientation;
+    // var view = View.of(context).platformDispatcher.views.first;
+    // var size = view.physicalSize / view.devicePixelRatio;
+    // print("BTEST_Current size: $size");
+    // Timer(const Duration(milliseconds: 500), () {
+    //   _updateRotation();
+    // });
+  }
+
+  void _updateRotation() async {
+    var devRotation = await MyRep().getDeviceSensor();
+    var sensorRotation = _model.camera?.sensor ?? 0;
+    var rotation = _adjustRotation(
+        sensorRotation, devRotation, _model.camera?.facing == 'Front');
+    var size = _model.camera?.size;
+    var ratio = 1.0;
+    if (size != null) {
+      if (size.width > size.height) {
+        ratio = size.width / size.height;
+      } else {
+        ratio = size.height / size.width;
+      }
+      // ratio = size.height / size.width;
+      // ratio = size.width / size.height;
+    }
+    _model.setSurfaceLayout(SurfaceLayout(rotation: rotation, ratio: ratio));
+    logDebug(
+        'BTEST:2 rotation=$rotation, devRotation=$devRotation, sensorRotation=$sensorRotation');
+    // }();
+    // logDebug(
+    //     'BTEST, rotation=${context.watch<RecordModel>().rotation} ratio=$ratio, width=${size?.width},height=${size?.height},orientation=$orientation');
+  }
+
+  int _adjustRotation(int sensorRotation, int deviceRotation, bool front) {
+    // 1
+    // // Calculate the rotation values in terms of quarter turns.
+    // int sensorQuarterTurn = (sensorRotation ~/ 90) % 4; // 0 to 3
+    // int deviceQuarterTurn = (deviceRotation ~/ 90) % 4; // 0 to 3
+
+    // // Combine the two to get the final rotation.
+    // // Since both values represent a rotation, we could just add them.
+    // int adjustedTurn = (sensorQuarterTurn + deviceQuarterTurn) % 4;
+
+    // return adjustedTurn; // Return a value between 0 and 3
+
+    //// 2
+    // Combine sensor and device rotation
+    if (front) {
+      int combinedRotation = (sensorRotation + deviceRotation) % 360;
+      return combinedRotation ~/ 90;
+    } else {
+      int combinedRotation = (sensorRotation - deviceRotation + 360) % 360;
+      return combinedRotation ~/ 90;
+    }
+
+    // // 3
+    // // Combine sensor and device rotations
+    // int combinedRotation = (sensorRotation + deviceRotation) % 360;
+
+    // // Convert degrees to quarterTurns
+    // return combinedRotation ~/ 90;
   }
 
   @override
@@ -127,85 +203,45 @@ class RecordPageState extends State<RecordPage> {
                       topRight: Radius.circular(20))),
               height: double.infinity,
               child: Stack(alignment: Alignment.center, children: [
-                Column(children: [
-                  //
-                  // render
-                  StreamBuilder(
-                      stream: MyRep().onFrameSize,
-                      builder: (context, snapshot) {
-                        // var size = snapshot.data;
-                        // var ratio = 1.0;
-                        // if (size != null) {
-                        //   if (size.width > 0 && size.height > 0) {
-                        //     ratio = size.width / size.height;
-                        //   }
-                        // }
-                        return Expanded(
-                            child: Container(
-                                color: Colors.black,
-                                child: OrientationBuilder(
-                                    builder: (context, orientation) {
-                                  _updateRotation();
-                                  var rotation =
-                                      context.watch<RecordModel>().rotation;
-                                  var size = snapshot.data;
-                                  var ratio = 1.0;
-                                  if (size != null &&
-                                      size.width > 0 &&
-                                      size.height > 0) {
-                                    switch (rotation) {
-                                      case 0:
-                                        size = size.flipped;
-                                        break;
-                                      case 1:
-                                        size = size.flipped;
-                                        break;
-                                      case 2:
-                                        break;
-                                      case 3:
-                                        break;
-                                      case 4:
-                                        break;
-                                    }
-                                    if (size.width > size.height) {
-                                      ratio = size.width / size.height;
-                                    } else {
-                                      ratio = size.height / size.width;
-                                    }
-                                    // if (rotation == 0) {
-                                    //   if (size.width > 0 && size.height > 0) {
-                                    //     ratio = size.width / size.height;
-                                    //   }
-                                    // } else {
-                                    //   if (size.width > 0 && size.height > 0) {
-                                    //     ratio = size.width / size.height;
-                                    //   }
-                                    // }
-                                  }
-                                  logDebug(
-                                      'BTEST, rotation=$rotation, ratio=$ratio');
-                                  return RotatedBox(
-                                      quarterTurns: rotation,
-                                      // quarterTurns: 3,
-                                      child: AspectRatio(
-                                          aspectRatio: ratio,
-                                          child: const AndroidView(
-                                            viewType: 'my_gl_surface_view',
-                                            creationParams: null,
-                                            creationParamsCodec:
-                                                StandardMessageCodec(),
-                                          ))
-                                      // child: const AndroidView(
-                                      //   viewType: 'my_gl_surface_view',
-                                      //   creationParams: null,
-                                      //   creationParamsCodec:
-                                      //       StandardMessageCodec(),
-                                      // )
-                                      //
-                                      );
-                                })));
-                      })
-                ]),
+                Positioned.fill(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    top: 0,
+                    child: OrientationBuilder(builder: (context, orientation) {
+                      _updateRotation();
+                      return Builder(builder: (context) {
+                        //   var rotation = context.read<RecordModel>().rotation;
+                        // _updateRotation();
+                        // var rotation =
+                        //     context.watch<RecordModel>().rotation;
+                        // var camera = context
+                        //     .select<RecordModel, Camera?>((v) => v.camera);
+                        // var rotation = 0;
+                        // var camera = context.read<RecordModel>().camera;
+                        var layout = context.watch<RecordModel>().surfaceLayout;
+                        // var rotation = _model.rotation;
+                        logDebug(
+                            'BTEST: rotation=${layout.rotation}, ratio=${layout.ratio}');
+                        return Column(children: [
+                          Flexible(
+                              child: RotatedBox(
+                                  quarterTurns: layout.rotation,
+                                  child: AspectRatio(
+                                      aspectRatio: layout.ratio,
+                                      child: const AndroidView(
+                                          viewType: 'my_gl_surface_view',
+                                          creationParams: null,
+                                          creationParamsCodec:
+                                              StandardMessageCodec())))),
+                          // Flexible(
+                          //     child: Text(
+                          //         'ratio: ${layout.ratio}, rotation=${layout.rotation}',
+                          //         style: const TextStyle(
+                          //             color: Colors.purple, fontSize: 15)))
+                        ]);
+                      });
+                    })),
                 // camera
                 Positioned(
                     left: 0,
@@ -214,12 +250,12 @@ class RecordPageState extends State<RecordPage> {
                     child: Builder(builder: (context) {
                       var model = context.watch<RecordModel>();
                       return Container(
-                          color: Colors.white30,
+                          color: Colors.black26,
                           child: Center(
                               child: Text(
-                                  'Camera: ${model.camera?.facing}:${model.camera?.id}\nsensor=${model.camera?.sensor}',
+                                  'Camera: ${model.camera?.facing}:${model.camera?.id}\nrotation=${model.surfaceLayout.rotation}\nratio=${model.surfaceLayout.ratio}\nsensor=${model.camera?.sensor}\nsize=${model.camera?.size}',
                                   style: const TextStyle(
-                                      color: Constants.colorTextAccent))));
+                                      color: Colors.white, fontSize: 15))));
                     })),
                 Positioned(
                     bottom: 50,
@@ -240,6 +276,7 @@ class RecordPageState extends State<RecordPage> {
                               // await Future.delayed(const Duration(seconds: 1));
                               // _model.setFlipWait(false);
                               MyRep().getCameras();
+                              setState(() {});
                             }))),
                 Positioned(
                     right: 40,
@@ -267,50 +304,6 @@ class RecordPageState extends State<RecordPage> {
                               _model.setFlipWait(false);
                             })))
               ]));
-          // });
         });
-  }
-
-  void _updateRotation() async {
-    var devRotation = await MyRep().getDeviceSensor();
-    var sensorRotation = _model.camera?.sensor ?? 0;
-    var rotation = _adjustRotation(
-        sensorRotation, devRotation, _model.camera?.facing == 'Front');
-    _model.setRotation(rotation);
-    // logDebug(
-    //     'BTEST, rotation=$rotation, devRotation=$devRotation, sensorRotation=$sensorRotation');
-    // }();
-    // logDebug(
-    //     'BTEST, rotation=${context.watch<RecordModel>().rotation} ratio=$ratio, width=${size?.width},height=${size?.height},orientation=$orientation');
-  }
-
-  int _adjustRotation(int sensorRotation, int deviceRotation, bool front) {
-    // 1
-    // // Calculate the rotation values in terms of quarter turns.
-    // int sensorQuarterTurn = (sensorRotation ~/ 90) % 4; // 0 to 3
-    // int deviceQuarterTurn = (deviceRotation ~/ 90) % 4; // 0 to 3
-
-    // // Combine the two to get the final rotation.
-    // // Since both values represent a rotation, we could just add them.
-    // int adjustedTurn = (sensorQuarterTurn + deviceQuarterTurn) % 4;
-
-    // return adjustedTurn; // Return a value between 0 and 3
-
-    //// 2
-    // Combine sensor and device rotation
-    if (front) {
-      int combinedRotation = (sensorRotation + deviceRotation) % 360;
-      return combinedRotation ~/ 90;
-    } else {
-      int combinedRotation = (sensorRotation - deviceRotation + 360) % 360;
-      return combinedRotation ~/ 90;
-    }
-
-    // // 3
-    // // Combine sensor and device rotations
-    // int combinedRotation = (sensorRotation + deviceRotation) % 360;
-
-    // // Convert degrees to quarterTurns
-    // return combinedRotation ~/ 90;
   }
 }
