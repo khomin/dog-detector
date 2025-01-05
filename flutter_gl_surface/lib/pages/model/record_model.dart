@@ -12,6 +12,7 @@ class RecordModel with ChangeNotifier {
 
   bool run = false;
   bool flipWait = false;
+  bool orientationpWait = false;
   double flipTurns = 0.0;
 
   Camera? camera;
@@ -85,6 +86,13 @@ class RecordModel with ChangeNotifier {
     if (surfaceLayout.ratio != v.ratio ||
         surfaceLayout.rotation != v.rotation) {
       surfaceLayout = v;
+      notifyListeners();
+    }
+  }
+
+  void setOrientationWait(bool v) {
+    if (orientationpWait != v) {
+      orientationpWait = v;
       notifyListeners();
     }
   }

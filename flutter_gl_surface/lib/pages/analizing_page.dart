@@ -25,17 +25,15 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     Future.microtask(() async {
-// _dispStream.add(MyRep().onFrameSize.listen((size) {
-//   _model.camera.
-// }));
-
-      WidgetsBinding.instance.addObserver(this);
-
+      _model.setOrientationWait(true);
       await MyRep().registerView();
       await MyRep().getCameras();
-      _start();
+      await _start();
+      await _updateRotation();
+      _model.setOrientationWait(false);
     });
   }
 
@@ -87,20 +85,28 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
   }
 
+  Timer? _updateLayoutTm;
+
   @override
   void didChangeMetrics() {
     super.didChangeMetrics();
     // Here you can detect orientation change
     // final orientation = MediaQuery.of(context).orientation;
-    // var view = View.of(context).platformDispatcher.views.first;
-    // var size = view.physicalSize / view.devicePixelRatio;
-    // print("BTEST_Current size: $size");
-    // Timer(const Duration(milliseconds: 500), () {
-    //   _updateRotation();
-    // });
+    var view = View.of(context).platformDispatcher.views.first;
+    var size = view.physicalSize / view.devicePixelRatio;
+    print("BTEST_Current size: $size");
+    logDebug('BTEST: didChange');
+    _model.setOrientationWait(true);
+    _updateLayoutTm?.cancel();
+    _updateLayoutTm = Timer(const Duration(milliseconds: 300), () async {
+      await _updateRotation();
+      Timer(Duration(milliseconds: 100), () {
+        _model.setOrientationWait(false);
+      });
+    });
   }
 
-  void _updateRotation() async {
+  Future _updateRotation() async {
     var devRotation = await MyRep().getDeviceSensor();
     var sensorRotation = _model.camera?.sensor ?? 0;
     var rotation = _adjustRotation(
@@ -183,11 +189,11 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
                               model.setCollapse(!model.collapse);
                             })
                       ]))),
-              SliverToBoxAdapter(
-                  child: SizedBox(
-                height: NavigatorRep().size.height - kToolbarHeight - 85,
-                child: _camera(),
-              ))
+              SliverFillRemaining(child: _camera())
+              //     child: SizedBox(
+              //   height: NavigatorRep().size.height - kToolbarHeight - 85,
+              //   child: _camera(),
+              // ))
             ]));
   }
 
@@ -201,6 +207,7 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20))),
+              padding: EdgeInsets.only(top: 10, left: 10),
               height: double.infinity,
               child: Stack(alignment: Alignment.center, children: [
                 Positioned.fill(
@@ -208,39 +215,54 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
                     right: 0,
                     bottom: 0,
                     top: 0,
-                    child: OrientationBuilder(builder: (context, orientation) {
-                      _updateRotation();
-                      return Builder(builder: (context) {
-                        //   var rotation = context.read<RecordModel>().rotation;
-                        // _updateRotation();
-                        // var rotation =
-                        //     context.watch<RecordModel>().rotation;
-                        // var camera = context
-                        //     .select<RecordModel, Camera?>((v) => v.camera);
-                        // var rotation = 0;
-                        // var camera = context.read<RecordModel>().camera;
-                        var layout = context.watch<RecordModel>().surfaceLayout;
-                        // var rotation = _model.rotation;
-                        logDebug(
-                            'BTEST: rotation=${layout.rotation}, ratio=${layout.ratio}');
-                        return Column(children: [
-                          Flexible(
-                              child: RotatedBox(
-                                  quarterTurns: layout.rotation,
-                                  child: AspectRatio(
-                                      aspectRatio: layout.ratio,
-                                      child: const AndroidView(
-                                          viewType: 'my_gl_surface_view',
-                                          creationParams: null,
-                                          creationParamsCodec:
-                                              StandardMessageCodec())))),
-                          // Flexible(
-                          //     child: Text(
-                          //         'ratio: ${layout.ratio}, rotation=${layout.rotation}',
-                          //         style: const TextStyle(
-                          //             color: Colors.purple, fontSize: 15)))
-                        ]);
-                      });
+                    child: Builder(builder: (context) {
+                      //   var rotation = context.read<RecordModel>().rotation;
+                      // _updateRotation();
+                      // var rotation =
+                      //     context.watch<RecordModel>().rotation;
+                      // var camera = context
+                      //     .select<RecordModel, Camera?>((v) => v.camera);
+                      // var rotation = 0;
+                      // var camera = context.read<RecordModel>().camera;
+                      var model = context.watch<RecordModel>();
+                      // var rotation = _model.rotation;
+                      logDebug(
+                          'BTEST: rotation=${model.surfaceLayout.rotation}, ratio=${model.surfaceLayout.ratio}');
+                      return Column(children: [
+                        Flexible(
+                            child: RotatedBox(
+                                quarterTurns: model.surfaceLayout.rotation,
+                                child: AspectRatio(
+                                    aspectRatio: model.surfaceLayout.ratio,
+                                    child: Opacity(
+                                        opacity: model.orientationpWait ? 0 : 1,
+                                        child: const AndroidView(
+                                            viewType: 'my_gl_surface_view',
+                                            creationParams: null,
+                                            creationParamsCodec:
+                                                StandardMessageCodec()))))),
+                        // Flexible(
+                        //     child: Text(
+                        //         'ratio: ${layout.ratio}, rotation=${layout.rotation}',
+                        //         style: const TextStyle(
+                        //             color: Colors.purple, fontSize: 15)))
+                      ]);
+                    })),
+                Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Builder(builder: (context) {
+                      var model = context.watch<RecordModel>();
+                      if (model.orientationpWait) {
+                        return const Center(
+                            child: SizedBox(
+                                width: 60,
+                                height: 60,
+                                child: CircularProgressIndicator()));
+                      }
+                      return const SizedBox();
                     })),
                 // camera
                 Positioned(
