@@ -183,47 +183,90 @@ class CaptureRep(val context: Context) {
 
             session = createCaptureSession(cameraSafe, targets, cameraHandler)
 
+            var yPlaneBuffer = ByteArray(0)
+            var uPlaneBuffer = ByteArray(0)
+            var vPlaneBuffer = ByteArray(0)
+
             imageReaderSafe.setOnImageAvailableListener({ reader ->
                 val i: Image? = reader.acquireLatestImage()
                 if (i != null) {
-                    // yuv420 to argb in cpp
                     try {
                         val planes: Array<Image.Plane> = i.planes
-                        var buffer = planes[0].buffer
-                        val yPlane = ByteArray(planes[0].buffer.remaining())
-                        buffer[yPlane]
+                        // init buffers first time
+                        if(yPlaneBuffer.isEmpty()) {
+                            yPlaneBuffer = ByteArray(planes[0].buffer.remaining())
+                        }
+                        if(uPlaneBuffer.isEmpty()) {
+                            uPlaneBuffer = ByteArray(planes[1].buffer.remaining())
+                        }
+                        if(vPlaneBuffer.isEmpty()) {
+                            vPlaneBuffer = ByteArray(planes[2].buffer.remaining())
+                        }
+                        // Use existing buffers
+                        planes[0].buffer.get(yPlaneBuffer)
+                        planes[1].buffer.get(uPlaneBuffer)
+                        planes[2].buffer.get(vPlaneBuffer)
 
-                        buffer = planes[1].buffer
-                        val uPlane = ByteArray(planes[1].buffer.remaining())
-                        buffer[uPlane]
-
-                        buffer = planes[2].buffer
-                        val vPlane = ByteArray(planes[2].buffer.remaining())
-                        buffer[vPlane]
-
-                        val yRowStride = planes[0].rowStride
-                        val uvRowStride = planes[1].rowStride
-                        val vRowStride = planes[2].rowStride
-                        val uvPixelStride = planes[1].pixelStride
-                        val width = i.width
-                        val height = i.height
                         putFrameNative(
-                            yPlane,
-                            yRowStride,
-                            uPlane,
-                            uvRowStride,
-                            vPlane,
-                            vRowStride,
-                            uvPixelStride,
-                            width,
-                            height
+                            yPlaneBuffer,
+                            planes[0].rowStride,
+                            uPlaneBuffer,
+                            planes[1].rowStride,
+                            vPlaneBuffer,
+                            planes[2].rowStride,
+                            planes[1].pixelStride,
+                            i.width,
+                            i.height
                         )
                     } catch (ex: Exception) {
                         ex.printStackTrace()
+                    } finally {
+                        i.close() // Make sure to close in finally to ensure it gets called
                     }
                 }
-                i?.close()
             }, imageReaderHandler)
+
+//            imageReaderSafe.setOnImageAvailableListener({ reader ->
+//                val i: Image? = reader.acquireLatestImage()
+//                if (i != null) {
+//                    // yuv420 to argb in cpp
+//                    try {
+//                        val planes: Array<Image.Plane> = i.planes
+//                        var buffer = planes[0].buffer
+//                        val yPlane = ByteArray(planes[0].buffer.remaining())
+//                        buffer[yPlane]
+//
+//                        buffer = planes[1].buffer
+//                        val uPlane = ByteArray(planes[1].buffer.remaining())
+//                        buffer[uPlane]
+//
+//                        buffer = planes[2].buffer
+//                        val vPlane = ByteArray(planes[2].buffer.remaining())
+//                        buffer[vPlane]
+//
+//                        val yRowStride = planes[0].rowStride
+//                        val uvRowStride = planes[1].rowStride
+//                        val vRowStride = planes[2].rowStride
+//                        val uvPixelStride = planes[1].pixelStride
+//                        val width = i.width
+//                        val height = i.height
+//                        putFrameNative(
+//                            yPlane,
+//                            yRowStride,
+//                            uPlane,
+//                            uvRowStride,
+//                            vPlane,
+//                            vRowStride,
+//                            uvPixelStride,
+//                            width,
+//                            height
+//                        )
+//                    } catch (ex: Exception) {
+//                        ex.printStackTrace()
+//                    }
+//                }
+//                i?.close()
+//            }, imageReaderHandler)
 
             val captureRequest = session?.device?.createCaptureRequest(
                 CameraDevice.TEMPLATE_RECORD

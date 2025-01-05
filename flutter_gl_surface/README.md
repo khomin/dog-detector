@@ -1,8 +1,12 @@
 # flutter_demo
 
-- record start at openening
-- record flip camera button
+- camera settings
+- remember last used camera (use as default)
+
+- rename bundle app name
 - record make a photo button
++ make preview hero animation
+- nice formating
 
 - add navigator in history
     - show list of sessions
@@ -10,11 +14,9 @@
 
 - settings menu
 
-- rename bundle app name
-
-
 # done
++ record start at openening
++ record flip camera button
 + separate history on main screen by yesterday-today show folder only
-+ nice formating
 + parse folder to date
 + make fixed preview size

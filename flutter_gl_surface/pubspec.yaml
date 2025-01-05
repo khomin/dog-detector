@@ -46,6 +46,7 @@ dependencies:
   collection: ^1.18.0
   backdrop: ^0.9.1
   calendar_date_picker2: ^1.1.8
+  shared_preferences: ^2.3.5
 
 dev_dependencies:
   flutter_test:

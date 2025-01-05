@@ -61,7 +61,7 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
         // Define ROI (x, y, width, height)
 //        cv::Rect roi(100, 300, 600, 600);
 //        cv::Rect roi(50, 50, 300, 300);
-        cv::Rect roi(0, 0, 400, 100);
+//        cv::Rect roi(0, 0, width-100, height-100);
 
         while (isRun) {
             cv::Mat frame;
@@ -71,80 +71,56 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
                 frame = inFrame.clone();
                 inFrame.release();
             }
-//            int totalRotation = 0;
-//            if(cameraFacing == CameraFace::back) {
-//                totalRotation = (sensorOrientation - deviceOrientation + 360) % 360;
-//            } else if(cameraFacing == CameraFace::front) {
-//                totalRotation = (sensorOrientation + deviceOrientation) % 360;
-//            }
-//            switch (totalRotation) {
-//                case 0: break;
-//                case 90:
-//                    cv::rotate(frame, frame, cv::ROTATE_90_CLOCKWISE);
-//                    break;
-//                case 180:
-//                    cv::rotate(frame, frame, cv::ROTATE_180);
-//                    break;
-//                case 270:
-//                    cv::rotate(frame, frame, cv::ROTATE_90_COUNTERCLOCKWISE);
-//                    break;
-//                default:
-//                    break;
-//            }
+            // Convert to grayscale
+            cv::Mat gray;
+            cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
-//            frame = resizeWithAspectRatio(frame, viewWidth, viewHeight);
-//            cv::resize(frame, frame, cv::Size(frame.cols/10, frame.rows/10));
-
-//            float frameAspectRatio = static_cast<float>(frame.cols) / static_cast<float>(frame.rows);
-//            float viewAspectRatio = static_cast<float>(width) / static_cast<float>(height);
-
-//            cv::resize(frame, frame, cv::Size(0, 0), frameAspectRatio, viewAspectRatio);
-
-//            // Convert to grayscale
-//            cv::Mat gray;
-//            cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-//
-//            // Apply the ROI
+            // Apply the ROI
 //            cv::Mat roiFrame = gray(roi);
-//
-//            // Background subtraction
-//            cv::Mat fgMask;
+
+            // Background subtraction
+            cv::Mat fgMask;
 //            bgSubtractor->apply(roiFrame, fgMask);
-//
-//            // Remove noise
-//            cv::threshold(fgMask, fgMask, 25, 255, cv::THRESH_BINARY);
-//            cv::morphologyEx(fgMask, fgMask, cv::MORPH_OPEN, cv::Mat());
-//
-//            // Find contours
-//            std::vector<std::vector<cv::Point>> contours;
-//            cv::findContours(fgMask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-//
-//            bool movementDetected = false;
-//
-//            for (const auto& contour : contours) {
-//                // Filter by area
-//                double area = cv::contourArea(contour);
-//                if (area > 2000) {
-//                    movementDetected = true;
-//
-//                    // Draw bounding box (adjust coordinates for the full frame)
-//                    cv::Rect boundingBox = cv::boundingRect(contour);
+            bgSubtractor->apply(gray, fgMask);
+
+            // Remove noise
+            cv::threshold(fgMask, fgMask, 25, 255, cv::THRESH_BINARY);
+            cv::morphologyEx(fgMask, fgMask, cv::MORPH_OPEN, cv::Mat());
+
+            // Find contours
+            std::vector<std::vector<cv::Point>> contours;
+            cv::findContours(fgMask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+            bool movementDetected = false;
+
+            for (const auto& contour : contours) {
+                // Filter by area
+                double area = cv::contourArea(contour);
+                if (area > 2000) {
+                    movementDetected = true;
+
+                    // Draw bounding box (adjust coordinates for the full frame)
+                    cv::Rect boundingBox = cv::boundingRect(contour);
 //                    cv::rectangle(frame,
 //                                  cv::Point(roi.x + boundingBox.x, roi.y + boundingBox.y),
 //                                  cv::Point(roi.x + boundingBox.x + boundingBox.width, roi.y + boundingBox.y + boundingBox.height),
 //                                  cv::Scalar(0, 255, 0), 2);
-//                }
-//            }
-//
-//            // Draw ROI boundary
+                    cv::rectangle(frame,
+                                  cv::Point(boundingBox.x, boundingBox.y),
+                                  cv::Point(boundingBox.x + boundingBox.width, boundingBox.y + boundingBox.height),
+                                  cv::Scalar(0, 255, 0), 2);
+                }
+            }
+
+            // Draw ROI boundary
 //            cv::rectangle(frame, roi, cv::Scalar(255, 0, 0), 2);
-//
-//            // Print movement status
-//            if (movementDetected) {
-//                std::cout << "Movement detected in ROI!" << std::endl;
-//            } else {
-//                std::cout << "No movement in ROI." << std::endl;
-//            }
+
+            // Print movement status
+            if (movementDetected) {
+                std::cout << "Movement detected in ROI!" << std::endl;
+            } else {
+                std::cout << "No movement in ROI." << std::endl;
+            }
             {
                 std::lock_guard<std::mutex> l(lock);
                 outFrame = frame;

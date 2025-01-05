@@ -17,6 +17,7 @@ class Constants {
   static const defaultCamera = 'Back';
 
   static const duration = Duration(milliseconds: 200);
+  static const durationPanel = Duration(milliseconds: 100);
 
   // static const double learnCountForBreak = 20;
   // static const int reapedToLeanDefault = 10;

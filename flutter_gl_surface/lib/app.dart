@@ -62,15 +62,15 @@ class AppState extends State<App> {
                     child: Stack(children: [
                   const BackgroundPage(),
                   AnimatedPositioned(
-                      duration: Constants.duration,
-                      curve: Curves.bounceIn,
+                      duration: Constants.durationPanel,
+                      curve: Curves.easeIn,
                       top: collapse ? NavigatorRep().size.height / 3 : 0,
                       left: 0,
                       right: 0,
                       bottom: 0,
                       child: Stack(children: [
                         Scaffold(
-                            backgroundColor: Colors.white,
+                            backgroundColor: Constants.colorBackgroundUnderCard,
                             body: Stack(children: [
                               StreamBuilder(
                                   stream: NavigatorRep().routeBloc.onGoto,

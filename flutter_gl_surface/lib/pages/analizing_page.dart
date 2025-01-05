@@ -7,6 +7,7 @@ import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/pages/model/record_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
+import 'package:flutter_demo/repo/settings_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/resource/disposable_stream.dart';
 import 'package:loggy/loggy.dart';
@@ -15,12 +16,13 @@ import 'package:provider/provider.dart';
 class RecordPage extends StatefulWidget {
   const RecordPage({super.key});
   @override
-  State<RecordPage> createState() => RecordPageState();
+  State<RecordPage> createState() => AnalizePageState();
 }
 
-class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
+class AnalizePageState extends State<RecordPage> with WidgetsBindingObserver {
   final _dispStream = DisposableStream();
   late RecordModel _model;
+  final tag = 'analizePage';
 
   @override
   void initState() {
@@ -38,21 +40,31 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
   }
 
   Future _start() async {
-    if (_model.run) return;
     var cameras = MyRep().cameraMap;
     var front = cameras['front'];
     var back = cameras['back'];
     Camera? camera;
     // init first
     await MyRep().initRender();
-    // start with front
-    if (Constants.defaultCamera == front?.facing) {
+    // start with last used or default camera
+    var cameraId = await SettingsRep().getCameraUsed();
+    if (front?.id == cameraId) {
       camera = front;
-    } else if (back != null) {
+    } else if (back?.id == cameraId) {
       camera = back;
+    } else {
+      if (Constants.defaultCamera == front?.facing) {
+        camera = front;
+      } else if (back != null) {
+        camera = back;
+      }
     }
-    if (camera == null) return;
+    if (camera == null) {
+      logError('$tag: cannot initialize camera');
+      return;
+    }
     await MyRep().startCamera(camera.id);
+    SettingsRep().setCameraUsed(camera.id);
     _model.setRun(run: true, camera: camera);
   }
 
@@ -63,6 +75,7 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
     await MyRep().stopCamera();
     // await MyRep().initRender();
     await MyRep().startCamera(camera.id);
+    SettingsRep().setCameraUsed(camera.id);
   }
 
   Camera? _cameraToFlit() {
@@ -165,6 +178,7 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
     _model = context.read<RecordModel>();
     return Scaffold(
         backgroundColor: Constants.colorBar,
+        // backgroundColor: Colors.transparent,
         body: CustomScrollView(
             physics: const NeverScrollableScrollPhysics(),
             slivers: [
@@ -182,17 +196,16 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
                             iconColor:
                                 Constants.colorTextAccent.withOpacity(0.8),
                             size: 70,
+                            // margin: EdgeInsets.only(bottom: 10),
                             vertTransform: true,
-                            iconData: Icons.arrow_back_ios,
+                            iconData: Icons.arrow_back_ios_new,
+                            // iconData: Icons.arrow_back_ios,
                             onPressed: (p0) {
                               var model = context.read<AppModel>();
                               model.setCollapse(!model.collapse);
                             })
                       ]))),
               SliverFillRemaining(child: _camera())
-              //     child: SizedBox(
-              //   height: NavigatorRep().size.height - kToolbarHeight - 85,
-              //   child: _camera(),
               // ))
             ]));
   }
@@ -203,18 +216,16 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
         builder: (context, child) {
           return Container(
               decoration: const BoxDecoration(
-                  color: Constants.colorBackgroundUnderCard,
+                  color: Constants.colorTextAccent,
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20))),
-              // padding: const EdgeInsets.only(top: 10),
               height: double.infinity,
               child: Stack(alignment: Alignment.center, children: [
                 Positioned(
                     top: 0,
                     left: 0,
                     right: 0,
-                    // bottom: 0,
                     bottom: -(NavigatorRep().size.height + 20 / 3),
                     child: Builder(builder: (context) {
                       //   var rotation = context.read<RecordModel>().rotation;
@@ -244,12 +255,7 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
                                                 viewType: 'my_gl_surface_view',
                                                 creationParams: null,
                                                 creationParamsCodec:
-                                                    StandardMessageCodec())))))),
-                        // Flexible(
-                        //     child: Text(
-                        //         'ratio: ${layout.ratio}, rotation=${layout.rotation}',
-                        //         style: const TextStyle(
-                        //             color: Colors.purple, fontSize: 15)))
+                                                    StandardMessageCodec()))))))
                       ]);
                     })),
                 Positioned(
@@ -285,25 +291,23 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
                     })),
                 Positioned(
                     bottom: 50,
-                    child: AnimatedRotation(
-                        turns: context.watch<RecordModel>().flipWait ? 0 : 0.5,
-                        duration: Constants.duration * 2,
-                        child: CircleButton(
-                            color: Constants.colorBackgroundUnderCard
-                                .withOpacity(0.3),
-                            iconColor: Constants.colorCard.withOpacity(0.8),
-                            size: 70,
-                            iconData: Icons.photo_camera,
-                            onPressed: (v) async {
-                              // if (_model.flipWait) return;
-                              // _model.flipTurns = 4;
-                              // _model.setFlipWait(true);
-                              // // await _flip();
-                              // await Future.delayed(const Duration(seconds: 1));
-                              // _model.setFlipWait(false);
-                              MyRep().getCameras();
-                              setState(() {});
-                            }))),
+                    child: CircleButton(
+                        color:
+                            Constants.colorBackgroundUnderCard.withOpacity(0.3),
+                        iconColor: Constants.colorCard.withOpacity(0.8),
+                        size: 70,
+                        useScaleAnimation: true,
+                        iconData: Icons.photo_camera,
+                        onPressed: (v) async {
+                          // if (_model.flipWait) return;
+                          // _model.flipTurns = 4;
+                          // _model.setFlipWait(true);
+                          // // await _flip();
+                          // await Future.delayed(const Duration(seconds: 1));
+                          // _model.setFlipWait(false);
+                          // MyRep().getCameras();
+                          // setState(() {});
+                        })),
                 Positioned(
                     right: 40,
                     bottom: 50,
@@ -318,6 +322,7 @@ class RecordPageState extends State<RecordPage> with WidgetsBindingObserver {
                                 .withOpacity(0.3),
                             iconColor: Constants.colorCard.withOpacity(0.8),
                             size: 55,
+                            useScaleAnimation: true,
                             iconData: Icons.flip_camera_android,
                             onPressed: (v) async {
                               if (_model.flipWait) return;

@@ -8,6 +8,7 @@ class CircleButton extends StatefulWidget {
       required this.onPressed,
       this.padding,
       this.margin,
+      this.useScaleAnimation = false,
       this.iconSize,
       this.vertTransform = false,
       this.size,
@@ -15,6 +16,7 @@ class CircleButton extends StatefulWidget {
   final IconData iconData;
   final Color iconColor;
   final Color color;
+  final bool useScaleAnimation;
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final double? size;
@@ -67,15 +69,16 @@ class CircleButtonState extends State<CircleButton>
           // 2
           ElevatedButton(
               onPressed: () async {
-                _controller.forward();
-                await Future.delayed(const Duration(milliseconds: 50));
-                _controller.reverse();
                 widget.onPressed?.call(Offset.zero);
+                if (widget.useScaleAnimation) {
+                  _controller.forward();
+                  await Future.delayed(const Duration(milliseconds: 50));
+                  _controller.reverse();
+                }
               },
               key: widget.key,
               style: ElevatedButton.styleFrom(
                   shape: const CircleBorder(),
-                  animationDuration: const Duration(milliseconds: 20),
                   shadowColor: widget.color,
                   fixedSize:
                       size2 != null ? Size(size2, size2) : const Size(50, 50),
