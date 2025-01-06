@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/pages/account_page.dart';
+import 'package:flutter_demo/pages/settings_page.dart';
 import 'package:flutter_demo/pages/background_page.dart';
-import 'package:flutter_demo/pages/history_page.dart';
-import 'package:flutter_demo/pages/main_page.dart';
+import 'package:flutter_demo/pages/components/hover_click.dart';
+import 'package:flutter_demo/pages/alert_page.dart';
+import 'package:flutter_demo/pages/home_page.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
-import 'package:flutter_demo/pages/analizing_page.dart';
+import 'package:flutter_demo/pages/capture_page.dart';
 import 'package:flutter_demo/pages/model/record_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
@@ -60,7 +61,7 @@ class AppState extends State<App> {
                 color: Constants.colorBar,
                 child: SafeArea(
                     child: Stack(children: [
-                  const BackgroundPage(),
+                  const CameraSettingsPage(),
                   AnimatedPositioned(
                       duration: Constants.durationPanel,
                       curve: Curves.easeIn,
@@ -76,34 +77,43 @@ class AppState extends State<App> {
                                   stream: NavigatorRep().routeBloc.onGoto,
                                   builder: (context, snapshot) {
                                     var page = snapshot.data?.type;
-                                    var arg = snapshot.data?.arg;
+                                    // var arg = snapshot.data?.arg;
                                     switch (page) {
                                       case PageType.main:
                                         return const MainPage();
-                                      case PageType.record:
-                                        return const RecordPage();
-                                      case PageType.history:
-                                        return HistoryPage(arg: arg);
+                                      case PageType.capture:
+                                        return const CapturePage();
+                                      // case PageType.alert:
+                                      //   return AlertPage(arg: arg);
                                       case PageType.settings:
-                                        return const AccountPage();
+                                        return const SettingsPage();
                                       default:
                                         return const MainPage();
-                                      // return HistoryPage(arg: arg);
-                                      // return const RecordPage();
                                     }
                                   }),
-                              IgnorePointer(
-                                  child: AnimatedOpacity(
-                                      opacity: collapse ? 0.5 : 0.0,
-                                      duration: Constants.duration,
-                                      child: Container(
-                                          color: Constants
-                                              .colorBackgroundUnderCard)))
+                              AnimatedOpacity(
+                                  opacity: collapse ? 0.5 : 0.0,
+                                  duration: Constants.duration,
+                                  child: IgnorePointer(
+                                      ignoring: !collapse,
+                                      child: HoverClick(
+                                          onPressedL: (p0) {
+                                            context
+                                                .read<AppModel>()
+                                                .setCollapse(false);
+                                          },
+                                          child: Container(
+                                              color: Constants
+                                                  .colorBackgroundUnderCard))))
                             ]),
                             bottomNavigationBar: Container(
                                 height: 70,
                                 decoration: BoxDecoration(
                                     color: Constants.colorCard,
+                                    // color: Colors.amber,
+                                    // borderRadius: BorderRadius.only(
+                                    //     topLeft: Radius.circular(20),
+                                    //     topRight: Radius.circular(20)),
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black.withOpacity(0.2),
@@ -116,10 +126,12 @@ class AppState extends State<App> {
                                     builder: (context, snapshot) {
                                       var page = snapshot.data?.type;
                                       return BottomNavigationBar(
+                                          elevation: 0,
                                           selectedFontSize: 12,
                                           unselectedFontSize: 12,
                                           type: BottomNavigationBarType.fixed,
-                                          backgroundColor: Constants.colorCard,
+                                          backgroundColor: Colors.transparent,
+                                          // backgroundColor: Constants.colorCard,
                                           unselectedItemColor: Constants
                                               .colorTextSecond
                                               .withOpacity(0.8),
@@ -128,11 +140,12 @@ class AppState extends State<App> {
                                                 icon: Icon(Icons.home),
                                                 label: 'Home'),
                                             BottomNavigationBarItem(
-                                                icon: Icon(Icons.camera),
-                                                label: 'Record'),
-                                            BottomNavigationBarItem(
-                                                icon: Icon(Icons.history),
-                                                label: 'History'),
+                                                icon: Icon(Icons
+                                                    .photo_camera_front_sharp),
+                                                label: 'Capture'),
+                                            // BottomNavigationBarItem(
+                                            //     icon: Icon(Icons.help_rounded),
+                                            //     label: 'Help'),
                                             BottomNavigationBarItem(
                                                 icon: Icon(Icons.settings),
                                                 label: 'Settings'),
@@ -140,24 +153,16 @@ class AppState extends State<App> {
                                           currentIndex: page?.index ?? 0,
                                           selectedItemColor:
                                               Constants.colorPrimary,
-                                          onTap: (value) {
+                                          onTap: (value) async {
+                                            if (collapse) {
+                                              context
+                                                  .read<AppModel>()
+                                                  .setCollapse(false);
+                                            }
                                             NavigatorRep().routeBloc.goto(Panel(
                                                 type: PageType.values[value]));
                                           });
-                                    }))),
-                        // if (collapse)
-                        //   GestureDetector(
-                        //       onTap: () {
-                        //         var model = context.read<AppModel>();
-                        //         model.setCollapse(!model.collapse);
-                        //       },
-                        //       child:
-                        //       AnimatedOpacity(
-                        //           opacity: collapse ? 0.8 : 0.0,
-                        //           duration: const Duration(milliseconds: 200),
-                        //           child: Container(
-                        //               color:
-                        //                   Constants.colorBackgroundUnderCard)))
+                                    })))
                       ]))
                 ])));
           });

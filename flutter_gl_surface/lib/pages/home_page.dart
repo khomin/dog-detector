@@ -59,19 +59,24 @@ class MainPageState extends State<MainPage> {
               SliverAppBar(
                   backgroundColor: Constants.colorBar,
                   toolbarHeight: kToolbarHeight,
-                  flexibleSpace: const FlexibleSpaceBar(
+                  flexibleSpace: FlexibleSpaceBar(
                       title: Row(children: [
                         Padding(
                             padding: EdgeInsets.only(left: 25),
-                            child: Text('Recent',
-                                style: TextStyle(
-                                  // fontFamily: 'Salsa',
-                                  fontSize: 25,
-                                  // fontStyle: FontStyle.italic,
-                                  // color: Colors.white,
-                                  // fontWeight: FontWeight.bold
-                                  // fontWeight: FontWeight.w400
-                                )))
+                            child:
+                                Text('Home', style: TextStyle(fontSize: 25))),
+                        Spacer(),
+                        // CircleButton(
+                        //     color: Colors.transparent,
+                        //     // iconColor:
+                        //     //     Constants.colorTextAccent.withOpacity(0.8),
+                        //     iconColor: const Color.fromARGB(255, 17, 48, 19),
+                        //     size: 70,
+                        //     iconData: Icons.tab_unselected_rounded,
+                        //     onPressed: (p0) async {
+                        //       // var model = context.read<AppModel>();
+                        //       // model.setCollapse(!model.collapse);
+                        //     })
                       ]),
                       centerTitle: true)),
               SliverToBoxAdapter(child: _header()),

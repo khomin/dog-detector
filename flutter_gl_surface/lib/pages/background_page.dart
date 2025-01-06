@@ -1,28 +1,20 @@
-import 'dart:math';
-
-import 'package:backdrop/backdrop.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
+import 'package:flutter_demo/pages/components/custom_checkbox.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
-import 'package:flutter_demo/pages/model/record_model.dart';
-import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/resource/disposable_stream.dart';
-import 'package:collection/collection.dart';
-import 'package:loggy/loggy.dart';
 import 'package:provider/provider.dart';
 
-class BackgroundPage extends StatefulWidget {
-  const BackgroundPage({super.key});
+class CameraSettingsPage extends StatefulWidget {
+  const CameraSettingsPage({super.key});
   @override
-  State<BackgroundPage> createState() => BackgroundPageState();
+  State<CameraSettingsPage> createState() => CameraSettingsPageState();
 }
 
-class BackgroundPageState extends State<BackgroundPage> {
+class CameraSettingsPageState extends State<CameraSettingsPage> {
   final _dispStream = DisposableStream();
-  final _model = RecordModel();
 
   @override
   void initState() {
@@ -37,6 +29,8 @@ class BackgroundPageState extends State<BackgroundPage> {
     super.dispose();
   }
 
+  double _sliderValue = 0.0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,7 +43,7 @@ class BackgroundPageState extends State<BackgroundPage> {
                 child: Row(children: [
                   const Padding(
                       padding: EdgeInsets.only(left: 25),
-                      child: Text('Settings',
+                      child: Text('Camera settings',
                           style: TextStyle(
                             // fontFamily: 'Sulphur',
                             fontSize: 25,
@@ -63,12 +57,80 @@ class BackgroundPageState extends State<BackgroundPage> {
                       size: 70,
                       iconData: Icons.close_sharp,
                       onPressed: (p0) async {
-                        // await Future.delayed(
-                        // const Duration(milliseconds: 20));
                         var model = context.read<AppModel>();
                         model.setCollapse(!model.collapse);
                       })
                 ])),
+            Container(
+                margin: const EdgeInsets.only(top: 15),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      //
+                      // min area
+                      Row(children: [
+                        const Padding(
+                            padding: EdgeInsets.only(left: 25),
+                            child: Text('Min area',
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Constants.colorTextAccent))),
+                        Expanded(
+                            child: Slider(
+                                value: _sliderValue,
+                                min: 0.0,
+                                max: 100.0,
+                                divisions: 100,
+                                activeColor: Constants.colorSecondary,
+                                inactiveColor: Constants.colorSecondary,
+                                thumbColor: Constants.colorPrimary,
+                                label: _sliderValue.round().toString(),
+                                onChanged: (double newValue) {
+                                  setState(() {
+                                    _sliderValue = newValue;
+                                  });
+                                }))
+                      ]),
+                      //
+                      // capture image interval
+                      Row(children: [
+                        const Padding(
+                            padding: EdgeInsets.only(left: 25),
+                            child: Text('Capture image interval',
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Constants.colorTextAccent))),
+                        Expanded(
+                            child: Slider(
+                                value: _sliderValue,
+                                min: 0.0,
+                                max: 100.0,
+                                divisions: 100,
+                                activeColor: Constants.colorSecondary,
+                                inactiveColor: Constants.colorSecondary,
+                                thumbColor: Constants.colorPrimary,
+                                label: _sliderValue.round().toString(),
+                                onChanged: (double newValue) {
+                                  setState(() {
+                                    _sliderValue = newValue;
+                                  });
+                                }))
+                      ]),
+                      // enable area on images
+                      Row(children: [
+                        const Padding(
+                            padding: EdgeInsets.only(left: 25),
+                            child: Text('Show area on captured images',
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Constants.colorTextAccent))),
+                        const Spacer(),
+                        Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child:
+                                CustomCheckBox(value: true, onChanged: () {}))
+                      ]),
+                    ])),
             Builder(builder: (context) {
               var collapse = context.select<AppModel, bool>((v) => v.collapse);
               if (collapse) {

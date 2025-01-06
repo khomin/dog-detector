@@ -13,16 +13,16 @@ import 'package:flutter_demo/resource/disposable_stream.dart';
 import 'package:loggy/loggy.dart';
 import 'package:provider/provider.dart';
 
-class RecordPage extends StatefulWidget {
-  const RecordPage({super.key});
+class CapturePage extends StatefulWidget {
+  const CapturePage({super.key});
   @override
-  State<RecordPage> createState() => AnalizePageState();
+  State<CapturePage> createState() => CapturePageState();
 }
 
-class AnalizePageState extends State<RecordPage> with WidgetsBindingObserver {
+class CapturePageState extends State<CapturePage> with WidgetsBindingObserver {
   final _dispStream = DisposableStream();
   late RecordModel _model;
-  final tag = 'analizePage';
+  final tag = 'capturePage';
 
   @override
   void initState() {
@@ -188,7 +188,7 @@ class AnalizePageState extends State<RecordPage> with WidgetsBindingObserver {
                       child: Row(children: [
                         const Padding(
                             padding: EdgeInsets.only(left: 25),
-                            child: Text('Analizing',
+                            child: Text('Capture',
                                 style: TextStyle(fontSize: 25))),
                         const Spacer(),
                         CircleButton(
@@ -206,7 +206,6 @@ class AnalizePageState extends State<RecordPage> with WidgetsBindingObserver {
                             })
                       ]))),
               SliverFillRemaining(child: _camera())
-              // ))
             ]));
   }
 

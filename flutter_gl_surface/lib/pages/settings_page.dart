@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class AccountPage extends StatefulWidget {
-  const AccountPage({super.key});
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
   @override
-  State<AccountPage> createState() => AccountPageState();
+  State<SettingsPage> createState() => SettingsPageState();
 }
 
 // TODO: here is main page
@@ -11,7 +11,7 @@ class AccountPage extends StatefulWidget {
 // 2 an optioon to see previous videos -> delete, ListView
 // NavigationBar -> Settings
 
-class AccountPageState extends State<AccountPage> {
+class SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Text('account');
