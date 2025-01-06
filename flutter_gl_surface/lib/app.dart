@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_demo/pages/model/camera_model.dart';
 import 'package:flutter_demo/pages/settings_page.dart';
-import 'package:flutter_demo/pages/background_page.dart';
+import 'package:flutter_demo/pages/camera_settings_page.dart';
 import 'package:flutter_demo/pages/components/hover_click.dart';
 import 'package:flutter_demo/pages/alert_page.dart';
 import 'package:flutter_demo/pages/home_page.dart';
@@ -49,6 +50,8 @@ class AppState extends State<App> {
           ChangeNotifierProvider<AppModel>.value(value: _appModel),
           ChangeNotifierProvider<RecordModel>(
               create: (context) => RecordModel()),
+          ChangeNotifierProvider<CameraModel>(
+              create: (context) => CameraModel())
         ],
         builder: (context, child) {
           if (!context.select<AppModel, bool>((v) => v.ready)) {
@@ -71,7 +74,7 @@ class AppState extends State<App> {
                       bottom: 0,
                       child: Stack(children: [
                         Scaffold(
-                            backgroundColor: Constants.colorBackgroundUnderCard,
+                            backgroundColor: Constants.colorBgUnderCard,
                             body: Stack(children: [
                               StreamBuilder(
                                   stream: NavigatorRep().routeBloc.onGoto,
@@ -103,8 +106,8 @@ class AppState extends State<App> {
                                                 .setCollapse(false);
                                           },
                                           child: Container(
-                                              color: Constants
-                                                  .colorBackgroundUnderCard))))
+                                              color:
+                                                  Constants.colorBgUnderCard))))
                             ]),
                             bottomNavigationBar: Container(
                                 height: 70,

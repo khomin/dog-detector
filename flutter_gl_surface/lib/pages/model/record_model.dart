@@ -13,6 +13,7 @@ class RecordModel with ChangeNotifier {
   bool run = false;
   bool flipWait = false;
   bool orientationpWait = false;
+  bool modeMenuVisible = false;
   double flipTurns = 0.0;
 
   Camera? camera;
@@ -93,6 +94,13 @@ class RecordModel with ChangeNotifier {
   void setOrientationWait(bool v) {
     if (orientationpWait != v) {
       orientationpWait = v;
+      notifyListeners();
+    }
+  }
+
+  void setModeMenuVisible(bool v) {
+    if (modeMenuVisible != v) {
+      modeMenuVisible = v;
       notifyListeners();
     }
   }

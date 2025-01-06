@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
+import 'package:flutter_demo/pages/components/hover_click.dart';
+import 'package:flutter_demo/pages/components/my_cliper.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/pages/model/record_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
@@ -10,6 +12,7 @@ import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/repo/settings_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/resource/disposable_stream.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:loggy/loggy.dart';
 import 'package:provider/provider.dart';
 
@@ -19,15 +22,59 @@ class CapturePage extends StatefulWidget {
   State<CapturePage> createState() => CapturePageState();
 }
 
-class CapturePageState extends State<CapturePage> with WidgetsBindingObserver {
+class CapturePageState extends State<CapturePage>
+    with WidgetsBindingObserver, TickerProviderStateMixin {
   final _dispStream = DisposableStream();
   late RecordModel _model;
   final tag = 'capturePage';
 
+  late final Animation<double> opacity;
+  late final Animation<double> width;
+  late final Animation<double> height;
+  late final Animation<double> _borderRadius;
+  late final Animation<double> _leftOffset;
+  late AnimationController _controller;
+
   @override
   void initState() {
     super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
     WidgetsBinding.instance.addObserver(this);
+
+    width = Tween<double>(
+      begin: 55.0,
+      end: 120.0,
+    ).animate(CurvedAnimation(
+        parent: _controller.view,
+        curve: const Interval(
+          0.125,
+          0.250,
+          curve: Curves.ease,
+        )));
+    height = Tween<double>(begin: 55.0, end: 200.0).animate(CurvedAnimation(
+        parent: _controller.view,
+        curve: const Interval(
+          0.250,
+          0.375,
+          curve: Curves.ease,
+        )));
+    _borderRadius =
+        Tween<double>(begin: 60.0, end: 25.0).animate(CurvedAnimation(
+            parent: _controller.view,
+            curve: const Interval(
+              0.000,
+              0.125,
+              curve: Curves.ease,
+            )
+            // curve: Curves.easeInOut,
+            ));
+    _leftOffset = Tween<double>(begin: 40.0, end: 10.0).animate(CurvedAnimation(
+        parent: _controller.view,
+        curve: const Interval(0.150, 0.225, curve: Curves.easeIn)));
 
     Future.microtask(() async {
       _model.setOrientationWait(true);
@@ -37,6 +84,18 @@ class CapturePageState extends State<CapturePage> with WidgetsBindingObserver {
       await _updateRotation();
       _model.setOrientationWait(false);
     });
+  }
+
+  Future<void> _playAnimation() async {
+    try {
+      if (_controller.isForwardOrCompleted) {
+        await _controller.reverse().orCancel;
+      } else {
+        await _controller.forward().orCancel;
+      }
+    } on TickerCanceled {
+      // The animation got canceled, probably because we were disposed.
+    }
   }
 
   Future _start() async {
@@ -288,51 +347,86 @@ class CapturePageState extends State<CapturePage> with WidgetsBindingObserver {
                                   style: const TextStyle(
                                       color: Colors.white, fontSize: 15))));
                     })),
+
                 Positioned(
+                    left: 0,
                     bottom: 50,
-                    child: CircleButton(
-                        color:
-                            Constants.colorBackgroundUnderCard.withOpacity(0.3),
-                        iconColor: Constants.colorCard.withOpacity(0.8),
-                        size: 70,
-                        useScaleAnimation: true,
-                        iconData: Icons.photo_camera,
-                        onPressed: (v) async {
-                          // if (_model.flipWait) return;
-                          // _model.flipTurns = 4;
-                          // _model.setFlipWait(true);
-                          // // await _flip();
-                          // await Future.delayed(const Duration(seconds: 1));
-                          // _model.setFlipWait(false);
-                          // MyRep().getCameras();
-                          // setState(() {});
-                        })),
-                Positioned(
-                    right: 40,
-                    bottom: 50,
-                    child: AnimatedRotation(
-                        turns: context.watch<RecordModel>().camera?.facing ==
-                                Constants.defaultCamera
-                            ? 0
-                            : 0.5,
-                        duration: Constants.duration * 2,
-                        child: CircleButton(
-                            color: Constants.colorBackgroundUnderCard
-                                .withOpacity(0.3),
-                            iconColor: Constants.colorCard.withOpacity(0.8),
-                            size: 55,
-                            useScaleAnimation: true,
-                            iconData: Icons.flip_camera_android,
-                            onPressed: (v) async {
-                              if (_model.flipWait) return;
-                              var camera = _cameraToFlit();
-                              if (camera == null) return;
-                              _model.flipTurns =
-                                  camera.facing == 'Font' ? 0.5 : 0;
-                              _model.setFlipWait(true);
-                              await _flip();
-                              _model.setFlipWait(false);
-                            })))
+                    right: 0,
+                    child: Container(
+                        height: 200,
+                        // color: Colors.amber,
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              AnimatedBuilder(
+                                  animation: _controller,
+                                  builder: (context, child) {
+                                    return HoverClick(
+                                        onPressedL: (_) {
+                                          // var model = context.read<RecordModel>();
+                                          // model.setModeMenuVisible(!model.modeMenuVisible);
+                                          _playAnimation();
+                                        },
+                                        child: Container(
+                                            width: width.value,
+                                            height: height.value,
+                                            decoration: BoxDecoration(
+                                                // color: Colors.pink,
+                                                color: Constants
+                                                    .colorBgUnderCard
+                                                    .withOpacity(0.3),
+                                                borderRadius: BorderRadius.only(
+                                                    topLeft: Radius.circular(
+                                                        _borderRadius.value),
+                                                    topRight: Radius.circular(
+                                                        _borderRadius.value),
+                                                    bottomLeft: Radius.circular(
+                                                        _borderRadius.value),
+                                                    bottomRight:
+                                                        Radius.circular(
+                                                            _borderRadius
+                                                                .value)))));
+                                  }),
+                              CircleButton(
+                                  color: Constants.colorBgUnderCard
+                                      .withOpacity(0.3),
+                                  iconColor:
+                                      Constants.colorCard.withOpacity(0.8),
+                                  size: 70,
+                                  useScaleAnimation: true,
+                                  iconData: Icons.photo_camera,
+                                  onPressed: (v) {
+                                    MyRep().takeImage();
+                                  }),
+                              AnimatedRotation(
+                                  turns: context
+                                              .watch<RecordModel>()
+                                              .camera
+                                              ?.facing ==
+                                          Constants.defaultCamera
+                                      ? 0
+                                      : 0.5,
+                                  duration: Constants.duration * 2,
+                                  child: CircleButton(
+                                      color: Constants.colorBgUnderCard
+                                          .withOpacity(0.3),
+                                      iconColor:
+                                          Constants.colorCard.withOpacity(0.8),
+                                      size: 55,
+                                      useScaleAnimation: true,
+                                      iconData: Icons.flip_camera_android,
+                                      onPressed: (v) async {
+                                        if (_model.flipWait) return;
+                                        var camera = _cameraToFlit();
+                                        if (camera == null) return;
+                                        _model.flipTurns =
+                                            camera.facing == 'Font' ? 0.5 : 0;
+                                        _model.setFlipWait(true);
+                                        await _flip();
+                                        _model.setFlipWait(false);
+                                      }))
+                            ])))
               ]));
         });
   }

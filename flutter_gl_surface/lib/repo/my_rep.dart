@@ -152,6 +152,10 @@ class MyRep {
     return history;
   }
 
+  void takeImage() {
+    // TODO: image
+  }
+
   // Future<List<HistoryRecord>> history() async {
   //   var history = <HistoryRecord>[];
   //   var path = '${FileUtils.homeDir}/history/';

@@ -1,16 +1,21 @@
 # flutter_demo
 
 - camera settings
-- recent refactor UI
-
-- make preview hero animation
 
 - make a photo button
+- capture animation frame
+
+- lock rotation
+
+- recent refactor UI
+    - make preview hero animation
+    - nice formating
+
+- pause camera when not onResume
+
 - make auto photo mode
 
 - settings menu
-
-- nice formating
 
 - add navigator in history
     - show list of sessions

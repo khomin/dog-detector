@@ -8,7 +8,7 @@ class Constants {
 
   static const colorBar = Color.fromARGB(255, 213, 212, 232);
   static const colorCard = Colors.white;
-  static const colorBackgroundUnderCard = Color(0xfff1f2f4);
+  static const colorBgUnderCard = Color(0xfff1f2f4);
   static const colorTextAccent = Colors.black;
   static const colorTextSecond = Color(0x70515155);
 
@@ -19,6 +19,9 @@ class Constants {
 
   static const duration = Duration(milliseconds: 200);
   static const durationPanel = Duration(milliseconds: 100);
+
+  static int minAreaDefault = 2000;
+  static int minCaptureintervalDefault = 1;
 
   // static const double learnCountForBreak = 20;
   // static const int reapedToLeanDefault = 10;

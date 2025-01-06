@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
 import 'package:flutter_demo/pages/components/custom_checkbox.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
+import 'package:flutter_demo/pages/model/camera_model.dart';
+import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/resource/disposable_stream.dart';
@@ -15,6 +17,7 @@ class CameraSettingsPage extends StatefulWidget {
 
 class CameraSettingsPageState extends State<CameraSettingsPage> {
   final _dispStream = DisposableStream();
+  // late final CameraModel _model;
 
   @override
   void initState() {
@@ -29,10 +32,9 @@ class CameraSettingsPageState extends State<CameraSettingsPage> {
     super.dispose();
   }
 
-  double _sliderValue = 0.0;
-
   @override
   Widget build(BuildContext context) {
+    // _model = context.read<CameraModel>();
     return Scaffold(
         backgroundColor: Constants.colorBar,
         body: Stack(children: [
@@ -75,46 +77,52 @@ class CameraSettingsPageState extends State<CameraSettingsPage> {
                                 style: TextStyle(
                                     fontSize: 14,
                                     color: Constants.colorTextAccent))),
-                        Expanded(
-                            child: Slider(
-                                value: _sliderValue,
-                                min: 0.0,
-                                max: 100.0,
-                                divisions: 100,
-                                activeColor: Constants.colorSecondary,
-                                inactiveColor: Constants.colorSecondary,
-                                thumbColor: Constants.colorPrimary,
-                                label: _sliderValue.round().toString(),
-                                onChanged: (double newValue) {
-                                  setState(() {
-                                    _sliderValue = newValue;
-                                  });
-                                }))
+                        Expanded(child: Builder(builder: (context) {
+                          var minArea = context
+                              .select<CameraModel, int>((v) => v.minArea);
+                          return Slider(
+                              value: minArea.toDouble(),
+                              min: 100.0,
+                              max: 100000.0,
+                              divisions: 100,
+                              activeColor: Constants.colorSecondary,
+                              inactiveColor: Constants.colorSecondary,
+                              thumbColor: Constants.colorPrimary,
+                              label: minArea.toString(),
+                              onChanged: (double newValue) {
+                                context
+                                    .read<CameraModel>()
+                                    .setMinArea(newValue.toInt());
+                              });
+                        }))
                       ]),
                       //
                       // capture image interval
                       Row(children: [
                         const Padding(
                             padding: EdgeInsets.only(left: 25),
-                            child: Text('Capture image interval',
+                            child: Text('Capture interval',
                                 style: TextStyle(
                                     fontSize: 14,
                                     color: Constants.colorTextAccent))),
-                        Expanded(
-                            child: Slider(
-                                value: _sliderValue,
-                                min: 0.0,
-                                max: 100.0,
-                                divisions: 100,
-                                activeColor: Constants.colorSecondary,
-                                inactiveColor: Constants.colorSecondary,
-                                thumbColor: Constants.colorPrimary,
-                                label: _sliderValue.round().toString(),
-                                onChanged: (double newValue) {
-                                  setState(() {
-                                    _sliderValue = newValue;
-                                  });
-                                }))
+                        Expanded(child: Builder(builder: (context) {
+                          var captureSec = context.select<CameraModel, int>(
+                              (v) => v.captureIntervalSec);
+                          return Slider(
+                              value: captureSec.toDouble(),
+                              min: 1.0,
+                              max: 30.0,
+                              divisions: 100,
+                              activeColor: Constants.colorSecondary,
+                              inactiveColor: Constants.colorSecondary,
+                              thumbColor: Constants.colorPrimary,
+                              label: captureSec.toString(),
+                              onChanged: (double newValue) {
+                                context
+                                    .read<CameraModel>()
+                                    .setCaptureImageIntVal(newValue.toInt());
+                              });
+                        }))
                       ]),
                       // enable area on images
                       Row(children: [

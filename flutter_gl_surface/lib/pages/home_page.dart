@@ -82,7 +82,7 @@ class MainPageState extends State<MainPage> {
               SliverToBoxAdapter(child: _header()),
               DecoratedSliver(
                   decoration: const BoxDecoration(
-                    color: Constants.colorBackgroundUnderCard,
+                    color: Constants.colorBgUnderCard,
                   ),
                   sliver: SliverList.builder(
                       itemCount: 10,
@@ -111,7 +111,7 @@ class MainPageState extends State<MainPage> {
                   height: 40,
                   width: 100,
                   decoration: BoxDecoration(
-                      color: Constants.colorBackgroundUnderCard,
+                      color: Constants.colorBgUnderCard,
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20),
                           topRight: Radius.circular(20))))),
@@ -124,7 +124,7 @@ class MainPageState extends State<MainPage> {
                   height: 50,
                   decoration: BoxDecoration(
                       // color: Colors.red,
-                      color: Constants.colorBackgroundUnderCard,
+                      color: Constants.colorBgUnderCard,
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.2),
@@ -250,7 +250,7 @@ class MainPageState extends State<MainPage> {
                           height: 50,
                           // color: Colors.pink,
                           decoration: BoxDecoration(
-                              color: Constants.colorBackgroundUnderCard,
+                              color: Constants.colorBgUnderCard,
                               borderRadius:
                                   BorderRadius.all(Radius.circular(10))),
                           child: Column(
