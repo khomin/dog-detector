@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_demo/pages/components/animated_camera_menu.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
 import 'package:flutter_demo/pages/components/hover_click.dart';
 import 'package:flutter_demo/pages/components/my_cliper.dart';
@@ -28,53 +29,9 @@ class CapturePageState extends State<CapturePage>
   late RecordModel _model;
   final tag = 'capturePage';
 
-  late final Animation<double> opacity;
-  late final Animation<double> width;
-  late final Animation<double> height;
-  late final Animation<double> _borderRadius;
-  late final Animation<double> _leftOffset;
-  late AnimationController _controller;
-
   @override
   void initState() {
     super.initState();
-
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-    WidgetsBinding.instance.addObserver(this);
-
-    width = Tween<double>(
-      begin: 55.0,
-      end: 120.0,
-    ).animate(CurvedAnimation(
-        parent: _controller.view,
-        curve: const Interval(
-          0.125,
-          0.250,
-          curve: Curves.ease,
-        )));
-    height = Tween<double>(begin: 55.0, end: 200.0).animate(CurvedAnimation(
-        parent: _controller.view,
-        curve: const Interval(
-          0.250,
-          0.375,
-          curve: Curves.ease,
-        )));
-    _borderRadius =
-        Tween<double>(begin: 60.0, end: 25.0).animate(CurvedAnimation(
-            parent: _controller.view,
-            curve: const Interval(
-              0.000,
-              0.125,
-              curve: Curves.ease,
-            )
-            // curve: Curves.easeInOut,
-            ));
-    _leftOffset = Tween<double>(begin: 40.0, end: 10.0).animate(CurvedAnimation(
-        parent: _controller.view,
-        curve: const Interval(0.150, 0.225, curve: Curves.easeIn)));
 
     Future.microtask(() async {
       _model.setOrientationWait(true);
@@ -84,18 +41,6 @@ class CapturePageState extends State<CapturePage>
       await _updateRotation();
       _model.setOrientationWait(false);
     });
-  }
-
-  Future<void> _playAnimation() async {
-    try {
-      if (_controller.isForwardOrCompleted) {
-        await _controller.reverse().orCancel;
-      } else {
-        await _controller.forward().orCancel;
-      }
-    } on TickerCanceled {
-      // The animation got canceled, probably because we were disposed.
-    }
   }
 
   Future _start() async {
@@ -359,35 +304,7 @@ class CapturePageState extends State<CapturePage>
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              AnimatedBuilder(
-                                  animation: _controller,
-                                  builder: (context, child) {
-                                    return HoverClick(
-                                        onPressedL: (_) {
-                                          // var model = context.read<RecordModel>();
-                                          // model.setModeMenuVisible(!model.modeMenuVisible);
-                                          _playAnimation();
-                                        },
-                                        child: Container(
-                                            width: width.value,
-                                            height: height.value,
-                                            decoration: BoxDecoration(
-                                                // color: Colors.pink,
-                                                color: Constants
-                                                    .colorBgUnderCard
-                                                    .withOpacity(0.3),
-                                                borderRadius: BorderRadius.only(
-                                                    topLeft: Radius.circular(
-                                                        _borderRadius.value),
-                                                    topRight: Radius.circular(
-                                                        _borderRadius.value),
-                                                    bottomLeft: Radius.circular(
-                                                        _borderRadius.value),
-                                                    bottomRight:
-                                                        Radius.circular(
-                                                            _borderRadius
-                                                                .value)))));
-                                  }),
+                              AnimatedCameraMenu(),
                               CircleButton(
                                   color: Constants.colorBgUnderCard
                                       .withOpacity(0.3),
