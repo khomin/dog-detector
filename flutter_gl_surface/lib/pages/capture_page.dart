@@ -295,16 +295,38 @@ class CapturePageState extends State<CapturePage>
 
                 Positioned(
                     left: 0,
-                    bottom: 50,
+                    bottom: 55,
                     right: 0,
-                    child: Container(
-                        height: 200,
+                    child: SizedBox(
+                        height: 80,
                         // color: Colors.amber,
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              AnimatedCameraMenu(),
+                              //
+                              // mode (auto/manual)
+                              CircleButton(
+                                  color: Constants.colorBgUnderCard
+                                      .withOpacity(0.3),
+                                  iconColor:
+                                      Constants.colorCard.withOpacity(0.8),
+                                  size: 55,
+                                  useScaleAnimation: true,
+                                  iconData: context
+                                          .watch<RecordModel>()
+                                          .modeMenuVisible
+                                      ? Icons.hdr_auto
+                                      : Icons.do_disturb,
+                                  onPressed: (v) async {
+                                    // MyRep().takeImage();
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 150));
+                                    _model.setModeMenuVisible(
+                                        !_model.modeMenuVisible);
+                                  }),
+                              //
+                              // center
                               CircleButton(
                                   color: Constants.colorBgUnderCard
                                       .withOpacity(0.3),
@@ -316,6 +338,8 @@ class CapturePageState extends State<CapturePage>
                                   onPressed: (v) {
                                     MyRep().takeImage();
                                   }),
+                              //
+                              // right
                               AnimatedRotation(
                                   turns: context
                                               .watch<RecordModel>()
