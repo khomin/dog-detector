@@ -2,6 +2,7 @@ package com.example.detector
 
 import android.content.Context
 import android.opengl.GLSurfaceView
+import android.util.Log
 import android.view.View
 import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
@@ -27,6 +28,7 @@ class MyGLSurfacePlatformView(
 ) : PlatformView, MethodChannel.MethodCallHandler {
     private val glSurfaceView: GLSurfaceView = GLSurfaceView(context)
     private val methodChannel: MethodChannel = MethodChannel(messenger, "camera/cmd")
+    private val tag = "MyGLSurface"
     init {
         glSurfaceView.visibility = View.GONE
         methodChannel.setMethodCallHandler(this)
@@ -49,31 +51,36 @@ class MyGLSurfacePlatformView(
         when (call.method) {
             "init_render" -> {
                 val captureRep = (context.applicationContext as App?)?.captureRep
-                if(captureRep == null) {
-                    result.error("", "cannot init", "")
-                    return
-                }
-                captureRep.initRender(glSurfaceView)
+                captureRep?.initRender(glSurfaceView)
                 result.success(true)
             }
             "start_camera" -> {
                 val id = args["id"] as String
+                val minArea = args["minArea"] as Int
+                val captureIntervalSec = args["captureIntervalSec"] as Int
+                val showAreaOnCapture = args["showAreaOnCapture"] as Boolean
                 val captureRep = (context.applicationContext as App?)?.captureRep
-                if(captureRep == null) {
-                    result.error("", "cannot open", "")
-                    return
-                }
                 runBlocking {
-                    val size = captureRep.start(id)
+                    val size = captureRep?.start(id, minArea, captureIntervalSec, showAreaOnCapture)
                     result.success(mapOf(
-                        "size_width" to size.width,
-                        "size_height" to size.height))
+                        "size_width" to size?.width,
+                        "size_height" to size?.height))
                 }
             }
             "stop_camera" -> {
                 val captureRep = (context.applicationContext as App?)?.captureRep
                 runBlocking {
                     captureRep?.stop()
+                    result.success(true)
+                }
+            }
+            "update_configuration" -> {
+                val minArea = args["minArea"] as Int
+                val captureIntervalSec = args["captureIntervalSec"] as Int
+                val showAreaOnCapture = args["showAreaOnCapture"] as Boolean
+                val captureRep = (context.applicationContext as App?)?.captureRep
+                runBlocking {
+                    captureRep?.updateConfiguration(minArea, captureIntervalSec, showAreaOnCapture)
                     result.success(true)
                 }
             }

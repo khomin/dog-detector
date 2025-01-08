@@ -42,11 +42,26 @@ class MyRep {
   factory MyRep() {
     if (_instance == null) {
       var i = MyRep._internal();
+      i._init();
       _instance = i;
     }
     return _instance!;
   }
   final tag = 'myRep';
+
+  void _init() {
+    _mainChannel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'onCapture':
+          var path = call.arguments['path'] as String;
+          logDebug('BTEST_onCapture: $path');
+          break;
+        case 'onMovement':
+          logDebug('BTEST_onMovement');
+          break;
+      }
+    });
+  }
 
   Future<void> registerView() async {
     try {
@@ -92,10 +107,19 @@ class MyRep {
     }
   }
 
-  Future<void> startCamera(String id) async {
+  Future<void> startCamera(
+      {required String id,
+      required int minArea,
+      required int captureIntervalSec,
+      required bool showAreaOnCapture}) async {
     try {
-      var r = await _cameraChannel
-          .invokeMethod('start_camera', <String, dynamic>{'id': id});
+      var r =
+          await _cameraChannel.invokeMethod('start_camera', <String, dynamic>{
+        'id': id,
+        'minArea': minArea,
+        'captureIntervalSec': captureIntervalSec,
+        'showAreaOnCapture': showAreaOnCapture
+      });
       _frameSize = Size((r['size_width'] as int).toDouble(),
           (r['size_height'] as int).toDouble());
       onFrameSize.add(_frameSize);
@@ -107,6 +131,22 @@ class MyRep {
   Future stopCamera() async {
     try {
       await _cameraChannel.invokeMethod('stop_camera', <String, dynamic>{});
+    } on PlatformException catch (e) {
+      logError('$tag: error: ${e.message}');
+    }
+  }
+
+  Future<void> updateConfiguration(
+      {required int minArea,
+      required int captureIntervalSec,
+      required bool showAreaOnCapture}) async {
+    try {
+      await _cameraChannel
+          .invokeMethod('update_configuration', <String, dynamic>{
+        'minArea': minArea,
+        'captureIntervalSec': captureIntervalSec,
+        'showAreaOnCapture': showAreaOnCapture
+      });
     } on PlatformException catch (e) {
       logError('$tag: error: ${e.message}');
     }

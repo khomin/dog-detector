@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <thread>
-
+#include <chrono>
 #include <opencv2/opencv.hpp>
 #include <GLES2/gl2.h>
 #include "libyuv/convert.h"
@@ -24,14 +24,77 @@ cv::Mat inFrame;
 int viewWidth = 0;
 int viewHeight = 0;
 int sensorOrientation = 0;
-int deviceOrientation= 0;
+int deviceOrientation = 0;
+std::string appLocalDir;
 CameraFace cameraFacing = CameraFace::back;
+int minArea = 0;
+int captureIntervalSec = 0;
+bool showAreaOnCapture = true;
+std::chrono::steady_clock::time_point lastCaptureTime;
+std::chrono::steady_clock::time_point lastMoveReportTime;
+
+static JavaVM *mJVM;
+jweak onSourceMethodRef = nullptr;
+jmethodID onCaptureMethodId = nullptr;
+jmethodID onMovementMethodId = nullptr;
 
 std::condition_variable condVar;
 std::mutex condLock;
 std::atomic<bool> isRun = false;
 
-cv::Mat resizeWithAspectRatio(const cv::Mat& frame, int width, int height);
+void captureFrame(cv::Mat& frame);
+void reportOfMovement();
+
+JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+    mJVM = vm;
+    return JNI_VERSION_1_6;
+}
+
+bool shouldCaptureFrame() {
+    auto now = std::chrono::steady_clock::now();
+    auto dur = now - lastCaptureTime;
+    auto f_secs = std::chrono::duration_cast<std::chrono::duration<float>>(dur);
+    auto count = (int) f_secs.count();
+    return count >= captureIntervalSec;
+}
+
+bool shouldReportMovement() {
+    auto now = std::chrono::steady_clock::now();
+    auto dur = now - lastMoveReportTime;
+    auto f_secs = std::chrono::duration_cast<std::chrono::duration<float>>(dur);
+    auto count = (int) f_secs.count();
+    return count >= 1;
+}
+
+std::string getCurrentDateString() {
+    // Get current time as a time_point
+    auto now = std::chrono::system_clock::now();
+    // Convert time_point to time_t
+    std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
+    // Convert time_t to tm struct
+    std::tm now_tm;
+#ifdef _WIN32
+    localtime_s(&now_tm, &now_time_t);  // For Windows
+#else
+    localtime_r(&now_time_t, &now_tm);  // For Unix/Linux
+#endif
+    // Create a string stream to format the date
+    std::ostringstream oss;
+    oss << std::put_time(&now_tm, "%Y-%m-%d");  // Format: YYYY-MM-DD
+    return oss.str();  // Get the formatted date as a std::string
+}
+
+std::string getCurrentTimeString() {
+    // Get current time as a time_point
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
+    // Convert to tm structure for broken-down time
+    std::tm now_tm = *std::localtime(&now_time_t);
+    // Use std::ostringstream to format the string
+    std::ostringstream oss;
+    oss << std::put_time(&now_tm, "%Y-%m-%d %H-%M-") << std::setw(3) << std::setfill('0') << (now.time_since_epoch().count() % 1000);
+    return oss.str();
+}
 
 extern "C"
 JNIEXPORT long JNICALL
@@ -52,8 +115,21 @@ Java_com_example_detector_CaptureRep_genTextureNative(JNIEnv *env, jobject thiz)
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint width, jint height) {
-    isRun = true;
+Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint width, jint height, jint minArea_, jint captureIntervalSec_, jboolean showAreaOnCapture_, jstring appLocalDir_) {
+    {
+        std::lock_guard<std::mutex> l(lock);
+        isRun = true;
+        minArea = minArea_;
+        captureIntervalSec = captureIntervalSec_;
+        showAreaOnCapture = showAreaOnCapture_;
+        jboolean isCopy;
+        const char *convertedValue = (env)->GetStringUTFChars(appLocalDir_, &isCopy);
+        if(isCopy) {
+            appLocalDir = convertedValue;
+            env->ReleaseStringUTFChars(appLocalDir_, convertedValue);
+        }
+        lastCaptureTime = std::chrono::steady_clock::now();
+    }
     auto th = std::thread([&] {
         // Background subtractor
         cv::Ptr<cv::BackgroundSubtractor> bgSubtractor = cv::createBackgroundSubtractorMOG2(500, 50, true);
@@ -68,8 +144,9 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
             {
                 std::unique_lock<std::mutex> lk(condLock);
                 condVar.wait(lk, [&]() { return !inFrame.empty(); });
-                frame = inFrame.clone();
-                inFrame.release();
+                frame = std::move(inFrame);
+//                frame = inFrame.clone();
+//                inFrame.release();
             }
             // Convert to grayscale
             cv::Mat gray;
@@ -96,7 +173,7 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
             for (const auto& contour : contours) {
                 // Filter by area
                 double area = cv::contourArea(contour);
-                if (area > 2000) {
+                if (area > minArea) { //2000) {
                     movementDetected = true;
 
                     // Draw bounding box (adjust coordinates for the full frame)
@@ -105,21 +182,27 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
 //                                  cv::Point(roi.x + boundingBox.x, roi.y + boundingBox.y),
 //                                  cv::Point(roi.x + boundingBox.x + boundingBox.width, roi.y + boundingBox.y + boundingBox.height),
 //                                  cv::Scalar(0, 255, 0), 2);
-                    cv::rectangle(frame,
-                                  cv::Point(boundingBox.x, boundingBox.y),
-                                  cv::Point(boundingBox.x + boundingBox.width, boundingBox.y + boundingBox.height),
-                                  cv::Scalar(0, 255, 0), 2);
+
+                    if(showAreaOnCapture) {
+                        cv::rectangle(frame,
+                                      cv::Point(boundingBox.x, boundingBox.y),
+                                      cv::Point(boundingBox.x + boundingBox.width,
+                                                boundingBox.y + boundingBox.height),
+                                      cv::Scalar(0, 255, 0), 2);
+                    }
                 }
             }
 
             // Draw ROI boundary
 //            cv::rectangle(frame, roi, cv::Scalar(255, 0, 0), 2);
 
-            // Print movement status
             if (movementDetected) {
-                std::cout << "Movement detected in ROI!" << std::endl;
-            } else {
-                std::cout << "No movement in ROI." << std::endl;
+                if(shouldCaptureFrame()) {
+                    captureFrame(frame);
+                }
+                if(shouldReportMovement()) {
+                    reportOfMovement();
+                }
             }
             {
                 std::lock_guard<std::mutex> l(lock);
@@ -153,8 +236,9 @@ Java_com_example_detector_CaptureRep_putFrameNative(JNIEnv *env, jobject thiz,
     jbyte *u_plane_byte = env->GetByteArrayElements(u_plane, nullptr);
     jbyte *v_plane_byte = env->GetByteArrayElements(v_plane, nullptr);
 
-    auto dst_argb_size = width * height * 4;
-    auto dst_argb = std::shared_ptr<uint8_t>(new uint8_t[dst_argb_size]);
+//    auto dst_argb_size = width * height * 4;
+//    std::vector<uint8_t> dst_argb(dst_argb_size);
+    auto argbFrame = cv::Mat(height, width, CV_8UC4);
     libyuv::Android420ToABGR((uint8_t *) y_plane_byte,
                          yStride,
                          (uint8_t *) u_plane_byte,
@@ -162,12 +246,14 @@ Java_com_example_detector_CaptureRep_putFrameNative(JNIEnv *env, jobject thiz,
                          (uint8_t *) v_plane_byte,
                          vStride,
                          uvPixelStride,
-                         dst_argb.get(),
+                         argbFrame.data,
                          width * 4,
                          width, height);
     {
         std::lock_guard<std::mutex> l(lock);
-        inFrame = cv::Mat(height, width, CV_8UC4, dst_argb.get());
+//        inFrame2.data
+        inFrame = argbFrame;
+//        inFrame = cv::Mat(height, width, CV_8UC4, dst_argb.data());
         condVar.notify_one();
     }
     env->ReleaseByteArrayElements(y_plane, y_plane_byte, 0);
@@ -203,32 +289,51 @@ Java_com_example_detector_CaptureRep_updateViewSizeNative(JNIEnv *env, jobject t
     cameraFacing = (CameraFace) facing;
 }
 
-cv::Mat resizeWithAspectRatio(const cv::Mat& frame, int width, int height) {
-    // Get current frame dimensions
-    int frameWidth = frame.cols;
-    int frameHeight = frame.rows;
-
-    // Calculate the aspect ratios
-    float frameAspectRatio = static_cast<float>(frameWidth) / static_cast<float>(frameHeight);
-    float viewAspectRatio = static_cast<float>(viewWidth) / static_cast<float>(viewHeight);
-
-    // Variables to hold the new dimensions
-    int newWidth, newHeight;
-
-    // Determine new dimensions to maintain aspect ratio
-    if (frameAspectRatio > viewAspectRatio) {
-        // Frame is wider than the view, constrain width
-        newWidth = viewWidth;
-        newHeight = static_cast<int>(viewWidth / frameAspectRatio);
-    } else {
-        // Frame is taller than or equal to the view, constrain height
-        newHeight = viewHeight;
-        newWidth = static_cast<int>(viewHeight * frameAspectRatio);
+void captureFrame(cv::Mat& frame) {
+    JNIEnv *env;
+    if(onCaptureMethodId != nullptr) {
+        auto not_jni_thread = (*mJVM).GetEnv((void **) &env, JNI_VERSION_1_6) == JNI_EDETACHED;
+        if (not_jni_thread) mJVM->AttachCurrentThread(&env, nullptr);
+        auto dateStr = getCurrentDateString();
+        auto fileName = getCurrentTimeString() + ".jpeg";
+        auto path = appLocalDir + "/" + dateStr + "/" + fileName;
+        auto resStatus = cv::imwrite(path, frame);
+        jstring obj_msg_j = env->NewStringUTF(resStatus ? path.c_str() : "");
+        env->CallVoidMethod(onSourceMethodRef, onCaptureMethodId, obj_msg_j);
+        env->DeleteLocalRef(obj_msg_j);
+        if (not_jni_thread) mJVM->DetachCurrentThread();
     }
+    lastCaptureTime = std::chrono::steady_clock::now();
+}
 
-    // Resize the frame
-    cv::Mat resizedFrame;
-    cv::resize(frame, resizedFrame, cv::Size(newWidth, newHeight));
+void reportOfMovement() {
+    JNIEnv *env;
+    if(onMovementMethodId != nullptr) {
+        auto not_jni_thread = (*mJVM).GetEnv((void **) &env, JNI_VERSION_1_6) == JNI_EDETACHED;
+        if (not_jni_thread) mJVM->AttachCurrentThread(&env, nullptr);
+        env->CallVoidMethod(onSourceMethodRef, onMovementMethodId);
+        if (not_jni_thread) mJVM->DetachCurrentThread();
+    }
+    lastMoveReportTime = std::chrono::steady_clock::now();
+}
 
-    return resizedFrame;
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_detector_CaptureRep_setListenerNative(JNIEnv *env, jobject thiz, jobject listener) {
+    onSourceMethodRef = env->NewGlobalRef(listener);
+    jclass callbackClass = env->GetObjectClass(onSourceMethodRef);
+    onCaptureMethodId = env->GetMethodID(callbackClass, "onCapture", "(Ljava/lang/String;)V");
+    onMovementMethodId = env->GetMethodID(callbackClass, "onMovement", "()V");
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_detector_CaptureRep_updateConfigurationNative(JNIEnv *env, jobject thiz, jint minArea_,
+                                                         jint captureIntervalSec_,
+                                                         jboolean showAreaOnCapture_) {
+    {
+        std::lock_guard<std::mutex> l(lock);
+        minArea = minArea_;
+        captureIntervalSec = captureIntervalSec_;
+        showAreaOnCapture = showAreaOnCapture_;
+    }
 }

@@ -21,7 +21,7 @@ class Constants {
   static const durationPanel = Duration(milliseconds: 100);
 
   static int minAreaDefault = 2000;
-  static int minCaptureintervalDefault = 1;
+  static int minCaptIntvalDefault = 1;
 
   // static const double learnCountForBreak = 20;
   // static const int reapedToLeanDefault = 10;

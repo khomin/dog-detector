@@ -3,8 +3,8 @@ import 'package:flutter_demo/pages/components/circle_button.dart';
 import 'package:flutter_demo/pages/components/custom_checkbox.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/pages/model/camera_model.dart';
-import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
+import 'package:flutter_demo/repo/settings_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/resource/disposable_stream.dart';
 import 'package:provider/provider.dart';
@@ -17,13 +17,17 @@ class CameraSettingsPage extends StatefulWidget {
 
 class CameraSettingsPageState extends State<CameraSettingsPage> {
   final _dispStream = DisposableStream();
-  // late final CameraModel _model;
+  late CameraModel _model;
 
   @override
   void initState() {
     super.initState();
-
-    Future.microtask(() {});
+    Future.microtask(() async {
+      _model.init(
+          captureIntervalSec: await SettingsRep().getCaptureIntervalSec(),
+          minArea: await SettingsRep().getCaptureMinArea(),
+          showAreaOnCapture: await SettingsRep().getCaptureShowArea());
+    });
   }
 
   @override
@@ -34,7 +38,7 @@ class CameraSettingsPageState extends State<CameraSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // _model = context.read<CameraModel>();
+    _model = context.read<CameraModel>();
     return Scaffold(
         backgroundColor: Constants.colorBar,
         body: Stack(children: [
@@ -70,60 +74,63 @@ class CameraSettingsPageState extends State<CameraSettingsPage> {
                     children: [
                       //
                       // min area
-                      Row(children: [
-                        const Padding(
-                            padding: EdgeInsets.only(left: 25),
-                            child: Text('Min area',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Constants.colorTextAccent))),
-                        Expanded(child: Builder(builder: (context) {
-                          var minArea = context
-                              .select<CameraModel, int>((v) => v.minArea);
-                          return Slider(
-                              value: minArea.toDouble(),
-                              min: 100.0,
-                              max: 100000.0,
-                              divisions: 100,
-                              activeColor: Constants.colorSecondary,
-                              inactiveColor: Constants.colorSecondary,
-                              thumbColor: Constants.colorPrimary,
-                              label: minArea.toString(),
-                              onChanged: (double newValue) {
-                                context
-                                    .read<CameraModel>()
-                                    .setMinArea(newValue.toInt());
-                              });
-                        }))
-                      ]),
+                      Builder(builder: (context) {
+                        var minArea =
+                            context.select<CameraModel, int>((v) => v.minArea);
+                        return Row(children: [
+                          Padding(
+                              padding: const EdgeInsets.only(left: 25),
+                              child: Text('Min area [$minArea]',
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Constants.colorTextAccent))),
+                          Expanded(
+                              child: Slider(
+                                  value: minArea.toDouble(),
+                                  min: 100.0,
+                                  max: 100000.0,
+                                  divisions: 100,
+                                  activeColor: Constants.colorSecondary,
+                                  inactiveColor: Constants.colorSecondary,
+                                  thumbColor: Constants.colorPrimary,
+                                  label: minArea.toString(),
+                                  onChanged: (double newValue) {
+                                    context
+                                        .read<CameraModel>()
+                                        .setMinArea(newValue.toInt());
+                                  }))
+                        ]);
+                      }),
                       //
                       // capture image interval
-                      Row(children: [
-                        const Padding(
-                            padding: EdgeInsets.only(left: 25),
-                            child: Text('Capture interval',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Constants.colorTextAccent))),
-                        Expanded(child: Builder(builder: (context) {
-                          var captureSec = context.select<CameraModel, int>(
-                              (v) => v.captureIntervalSec);
-                          return Slider(
-                              value: captureSec.toDouble(),
-                              min: 1.0,
-                              max: 30.0,
-                              divisions: 100,
-                              activeColor: Constants.colorSecondary,
-                              inactiveColor: Constants.colorSecondary,
-                              thumbColor: Constants.colorPrimary,
-                              label: captureSec.toString(),
-                              onChanged: (double newValue) {
-                                context
-                                    .read<CameraModel>()
-                                    .setCaptureImageIntVal(newValue.toInt());
-                              });
-                        }))
-                      ]),
+                      Builder(builder: (context) {
+                        var captureSec = context.select<CameraModel, int>(
+                            (v) => v.captureIntervalSec);
+                        return Row(children: [
+                          Padding(
+                              padding: const EdgeInsets.only(left: 25),
+                              child: Text('Capture interval [$captureSec] sec',
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Constants.colorTextAccent))),
+                          Expanded(
+                              child: Slider(
+                                  value: captureSec.toDouble(),
+                                  min: 1.0,
+                                  max: 30.0,
+                                  divisions: 100,
+                                  activeColor: Constants.colorSecondary,
+                                  inactiveColor: Constants.colorSecondary,
+                                  thumbColor: Constants.colorPrimary,
+                                  label: captureSec.toString(),
+                                  onChanged: (double newValue) {
+                                    context
+                                        .read<CameraModel>()
+                                        .setCaptureImageIntVal(
+                                            newValue.toInt());
+                                  }))
+                        ]);
+                      }),
                       // enable area on images
                       Row(children: [
                         const Padding(
@@ -135,8 +142,15 @@ class CameraSettingsPageState extends State<CameraSettingsPage> {
                         const Spacer(),
                         Padding(
                             padding: const EdgeInsets.only(right: 10),
-                            child:
-                                CustomCheckBox(value: true, onChanged: () {}))
+                            child: Builder(builder: (context) {
+                              var showArea = context.select<CameraModel, bool>(
+                                  (v) => v.showAreaOnCapture);
+                              return CustomCheckBox(
+                                  value: showArea,
+                                  onChanged: (v) {
+                                    context.read<CameraModel>().setShowArea(v);
+                                  });
+                            }))
                       ]),
                     ])),
             Builder(builder: (context) {

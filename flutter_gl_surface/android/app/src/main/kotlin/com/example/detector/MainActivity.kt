@@ -13,8 +13,11 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformViewRegistry
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 
 class MainActivity: FlutterActivity() {
+    private lateinit var methodChannel: MethodChannel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (hasPermissions(this)) {
@@ -32,9 +35,9 @@ class MainActivity: FlutterActivity() {
         val surfaceFactory = MyGLSurfaceViewFactory(flutterEngine.dartExecutor.binaryMessenger, null)
         val registry: PlatformViewRegistry = flutterEngine.platformViewsController.registry
         registry.registerViewFactory("my_gl_surface_view", surfaceFactory)
+        methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "main/cmd")
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "main/cmd")
-            .setMethodCallHandler { call, result ->
+        methodChannel.setMethodCallHandler { call, result ->
                 try {
                     val args = call.arguments as HashMap<*, *>
                     when (call.method) {
@@ -58,8 +61,31 @@ class MainActivity: FlutterActivity() {
                 } catch (e: Exception) {
                     Log.e(TAG, "Error parsing", e)
                 }
-
             }
+
+        val captureRep = (context.applicationContext as App?)?.captureRep
+        if(captureRep != null) {
+            captureRep.setNativeListener(object : NativeListener {
+                override fun onCapture(path: String) {
+                    runBlocking(Dispatchers.Main) {
+                        methodChannel.invokeMethod("onCapture", mapOf("path" to path))
+                    }
+                }
+                override fun onMovement() {
+                    runBlocking(Dispatchers.Main) {
+                        methodChannel.invokeMethod("onMovement", null)
+                    }
+                }
+            })
+        } else {
+            Log.e(TAG, "cannot get capture repository")
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        val captureRep = (context.applicationContext as App?)?.captureRep
+        captureRep?.setNativeListener(null)
     }
 
     companion object {

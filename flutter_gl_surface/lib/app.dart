@@ -33,6 +33,7 @@ class AppState extends State<App> {
   void initState() {
     super.initState();
     _appModel = AppModel();
+
     () async {
       await FileUtils.init();
       Loggy.initLoggy(logPrinter: LogPrinter());
@@ -146,9 +147,9 @@ class AppState extends State<App> {
                                                 icon: Icon(Icons
                                                     .photo_camera_front_sharp),
                                                 label: 'Capture'),
-                                            // BottomNavigationBarItem(
-                                            //     icon: Icon(Icons.help_rounded),
-                                            //     label: 'Help'),
+                                            BottomNavigationBarItem(
+                                                icon: Icon(Icons.notifications),
+                                                label: 'Alert'),
                                             BottomNavigationBarItem(
                                                 icon: Icon(Icons.settings),
                                                 label: 'Settings'),

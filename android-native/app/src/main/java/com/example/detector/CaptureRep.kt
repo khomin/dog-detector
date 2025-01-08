@@ -34,7 +34,7 @@ enum class CameraFacing { Front, Back }
 
 class CameraDescription(val size: List<Size>, val id: String, val facing: CameraFacing, val sensorOrientation: Int) {}
 
-class CaptureRep(val context: Context) {
+class CaptureRep(val context: Context, val appLocalDir: String) {
     private var cameraDescription: CameraDescription ?= null
     private var cameraSize: Size = Size(0,0)
     private var render: MyRenderer?= null
@@ -60,9 +60,14 @@ class CaptureRep(val context: Context) {
         cameraHandler = Handler(cameraThread!!.looper)
         imageReaderThread = HandlerThread("imageReaderThread").apply { start() }
         imageReaderHandler = Handler(imageReaderThread!!.looper)
+
     }
 
-    suspend fun start(cameraId: String): Size {
+    fun setNativeListener(nativeListener: NativeListener?) {
+        setListenerNative(nativeListener)
+    }
+
+    suspend fun start(cameraId: String, minArea: Int, captureIntervalSec: Int, showAreaOnCapture: Boolean): Size {
         stop()
         val desc = getDescription(cameraId, context)
         if(desc == null) {
@@ -72,13 +77,25 @@ class CaptureRep(val context: Context) {
         isRunning = true
         cameraDescription = desc
         cameraSize = desc.size.lastOrNull() ?: return Size(0, 0)
-        openCamera(cameraId, cameraSize.width, cameraSize.height, desc.facing,  context)
+        openCamera(cameraId, cameraSize.width, cameraSize.height, desc.facing,  minArea, captureIntervalSec, showAreaOnCapture, context)
         return Size(cameraSize.width, cameraSize.height)
     }
 
     suspend fun stop() {
         stopCamera()
         isRunning = false
+    }
+
+    suspend fun updateConfiguration(minArea: Int, captureIntervalSec: Int, showAreaOnCapture: Boolean) {
+        mutex.withLock {
+            try {
+                if(isRunning) {
+                    updateConfigurationNative(minArea, captureIntervalSec, showAreaOnCapture)
+                }
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+        }
     }
 
     fun getCameras(context: Context): List<CameraDescription?> {
@@ -133,7 +150,7 @@ class CaptureRep(val context: Context) {
         }
     }
 
-    private suspend fun openCamera(id: String, width: Int, height: Int, facing: CameraFacing, context: Context) {
+    private suspend fun openCamera(id: String, width: Int, height: Int, facing: CameraFacing, minArea: Int, captureIntervalSec: Int, showAreaOnCapture: Boolean, context: Context) {
         mutex.withLock {
             val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
             if (ActivityCompat.checkSelfPermission(
@@ -156,7 +173,7 @@ class CaptureRep(val context: Context) {
                         .get(CameraCharacteristics.SENSOR_ORIENTATION)?.let {
                             sensorOrientation = it
                             initSession(Size(width, height))
-                            startNative(width, height)
+                            startNative(width, height, minArea, captureIntervalSec, showAreaOnCapture, appLocalDir)
                         }
                 }
 
@@ -333,7 +350,7 @@ class CaptureRep(val context: Context) {
         return null
     }
 
-    private external fun startNative(width: Int,  height: Int)
+    private external fun startNative(width: Int,  height: Int, minArea: Int, captureIntervalSec: Int, showAreaOnCapture: Boolean, appLocalDir: String)
     private external fun stopNative()
     private external fun putFrameNative(
         yPlane: ByteArray?,
@@ -355,6 +372,8 @@ class CaptureRep(val context: Context) {
         deviceOrientation: Int,
         facing: Int
     )
+    external fun setListenerNative(listener: NativeListener?)
+    external fun updateConfigurationNative(minArea: Int, captureIntervalSec: Int, showAreaOnCapture: Boolean)
 
     fun initRender(surfaceView: GLSurfaceView) {
         this.surfaceView = surfaceView

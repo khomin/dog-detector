@@ -10,7 +10,10 @@ class App : Application() {
         super.onCreate()
         Log.d(TAG, "onCreate: $this")
 
-        captureRep = CaptureRep(this)
+        captureRep = CaptureRep(
+            this,
+            getExternalFilesDir(null)?.path ?: ""
+        )
     }
 
     companion object {

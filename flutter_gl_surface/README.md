@@ -1,9 +1,13 @@
 # flutter_demo
 
-- camera settings
+- camera settings -> cpp -> settings
 
 - make a photo button
 - capture animation frame
+
+- capture from c++ or dart?
+    - nativeCapture()
+    - onCapture()
 
 - lock rotation
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_demo/pages/components/animated_camera_buttons.dart';
 import 'package:flutter_demo/pages/components/animated_camera_menu.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
 import 'package:flutter_demo/pages/components/hover_click.dart';
@@ -27,6 +28,8 @@ class CapturePageState extends State<CapturePage>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   final _dispStream = DisposableStream();
   late RecordModel _model;
+  late final AppLifecycleListener _listener;
+  Timer? _updateLayoutTm;
   final tag = 'capturePage';
 
   @override
@@ -34,6 +37,26 @@ class CapturePageState extends State<CapturePage>
     super.initState();
 
     Future.microtask(() async {
+      _listener = AppLifecycleListener(onStateChange: (value) {
+        // logDebug('BTEST_STATE=$value');
+        switch (value) {
+          case AppLifecycleState.inactive:
+          case AppLifecycleState.hidden:
+          case AppLifecycleState.detached:
+          case AppLifecycleState.paused:
+            // if (_model.run) {
+            _model.setRun(run: false, camera: null);
+            MyRep().stopCamera();
+            // }
+            break;
+          case AppLifecycleState.resumed:
+            // if (_model.run) {
+            _start();
+            // }
+            break;
+        }
+      });
+
       _model.setOrientationWait(true);
       await MyRep().registerView();
       await MyRep().getCameras();
@@ -41,6 +64,16 @@ class CapturePageState extends State<CapturePage>
       await _updateRotation();
       _model.setOrientationWait(false);
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _listener.dispose();
+    _dispStream.dispose();
+    _model.setRun(run: false, camera: null, mounted: false);
+    MyRep().stopCamera();
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   Future _start() async {
@@ -67,7 +100,11 @@ class CapturePageState extends State<CapturePage>
       logError('$tag: cannot initialize camera');
       return;
     }
-    await MyRep().startCamera(camera.id);
+    await MyRep().startCamera(
+        id: camera.id,
+        captureIntervalSec: await SettingsRep().getCaptureIntervalSec(),
+        minArea: await SettingsRep().getCaptureMinArea(),
+        showAreaOnCapture: await SettingsRep().getCaptureShowArea());
     SettingsRep().setCameraUsed(camera.id);
     _model.setRun(run: true, camera: camera);
   }
@@ -77,8 +114,11 @@ class CapturePageState extends State<CapturePage>
     if (camera == null) return;
     _model.setRun(run: true, camera: camera);
     await MyRep().stopCamera();
-    // await MyRep().initRender();
-    await MyRep().startCamera(camera.id);
+    await MyRep().startCamera(
+        id: camera.id,
+        captureIntervalSec: await SettingsRep().getCaptureIntervalSec(),
+        minArea: await SettingsRep().getCaptureMinArea(),
+        showAreaOnCapture: await SettingsRep().getCaptureShowArea());
     SettingsRep().setCameraUsed(camera.id);
   }
 
@@ -92,17 +132,6 @@ class CapturePageState extends State<CapturePage>
     }
     return front;
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _dispStream.dispose();
-    _model.setRun(run: false, camera: null, mounted: false);
-    MyRep().stopCamera();
-    WidgetsBinding.instance.removeObserver(this);
-  }
-
-  Timer? _updateLayoutTm;
 
   @override
   void didChangeMetrics() {
@@ -304,6 +333,7 @@ class CapturePageState extends State<CapturePage>
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
+                              // AnimatedCameraButtons()
                               //
                               // mode (auto/manual)
                               CircleButton(
