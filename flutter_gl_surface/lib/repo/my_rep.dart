@@ -165,7 +165,7 @@ class MyRep {
 
   Future<List<HistoryRecord>> history() async {
     var history = <HistoryRecord>[];
-    var path = '${FileUtils.homeDir}/history/';
+    var path = '${FileUtils.homeDir}/gallery/';
     try {
       var dir = Directory(path);
       var folders = dir.listSync();

@@ -307,20 +307,20 @@ class CapturePageState extends State<CapturePage>
                       return const SizedBox();
                     })),
                 // camera
-                Positioned(
-                    left: 0,
-                    right: 0,
-                    top: 20,
-                    child: Builder(builder: (context) {
-                      var model = context.watch<RecordModel>();
-                      return Container(
-                          color: Colors.black26,
-                          child: Center(
-                              child: Text(
-                                  'Camera: ${model.camera?.facing}:${model.camera?.id}\nrotation=${model.surfaceLayout.rotation}\nratio=${model.surfaceLayout.ratio}\nsensor=${model.camera?.sensor}\nsize=${model.camera?.size}',
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 15))));
-                    })),
+                // Positioned(
+                //     left: 0,
+                //     right: 0,
+                //     top: 20,
+                //     child: Builder(builder: (context) {
+                //       var model = context.watch<RecordModel>();
+                //       return Container(
+                //           color: Colors.black26,
+                //           child: Center(
+                //               child: Text(
+                //                   'Camera: ${model.camera?.facing}:${model.camera?.id}\nrotation=${model.surfaceLayout.rotation}\nratio=${model.surfaceLayout.ratio}\nsensor=${model.camera?.sensor}\nsize=${model.camera?.size}',
+                //                   style: const TextStyle(
+                //                       color: Colors.white, fontSize: 15))));
+                //     })),
 
                 Positioned(
                     left: 0,

@@ -296,7 +296,14 @@ void captureFrame(cv::Mat& frame) {
         if (not_jni_thread) mJVM->AttachCurrentThread(&env, nullptr);
         auto dateStr = getCurrentDateString();
         auto fileName = getCurrentTimeString() + ".jpeg";
-        auto path = appLocalDir + "/" + dateStr + "/" + fileName;
+        auto path = appLocalDir + "/gallery/" + dateStr + "/" + fileName;
+
+        // Get the parent directory of the file path
+        std::filesystem::path dir = std::filesystem::path(path).parent_path();
+        // Create the directory if it does not exist
+        if (!std::filesystem::exists(dir)) {
+            std::filesystem::create_directories(dir);
+        }
         auto resStatus = cv::imwrite(path, frame);
         jstring obj_msg_j = env->NewStringUTF(resStatus ? path.c_str() : "");
         env->CallVoidMethod(onSourceMethodRef, onCaptureMethodId, obj_msg_j);

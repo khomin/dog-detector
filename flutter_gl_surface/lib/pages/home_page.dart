@@ -52,10 +52,14 @@ class MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Constants.colorBar,
-        body: CustomScrollView(
-            physics: const ClampingScrollPhysics(),
-            controller: _scrollCtr,
-            slivers: [
+        body: Container(
+            // color: Colors.yellow,
+            // margin: EdgeInsets.only(top: 100),
+            child: CustomScrollView(
+                physics: const ClampingScrollPhysics(),
+                controller: _scrollCtr,
+                // primary: false,
+                slivers: [
               SliverAppBar(
                   backgroundColor: Constants.colorBar,
                   toolbarHeight: kToolbarHeight,
@@ -80,21 +84,19 @@ class MainPageState extends State<MainPage> {
                       ]),
                       centerTitle: true)),
               SliverToBoxAdapter(child: _header()),
-              DecoratedSliver(
-                  decoration: const BoxDecoration(
-                    color: Constants.colorBgUnderCard,
-                  ),
-                  sliver: SliverList.builder(
-                      itemCount: 10,
-                      itemBuilder: (context, index) {
-                        if (index == 10 - 1) {
-                          return Padding(
-                              padding: const EdgeInsets.only(bottom: 20.0),
-                              child: _item1());
-                        }
-                        return _item1();
-                      }))
-            ]));
+              //
+              // -
+              // DecoratedSliver(
+              //     decoration: const BoxDecoration(
+              //       color: Constants.colorBgUnderCard,
+              //     ),
+              //     sliver: _gallery())
+              SliverFillRemaining(
+                  // fillOverscroll: false,
+                  // fillOverscroll: true,
+                  // hasScrollBody: false,
+                  child: _gallery())
+            ])));
   }
 
   Widget _header() {
@@ -218,6 +220,79 @@ class MainPageState extends State<MainPage> {
                   ])))
         ]));
   }
+
+  Widget _gallery() {
+    return Builder(builder: (context) {
+      var model = context.read<AppModel>();
+      //   return SliverList.builder(
+      //       itemCount: 1,
+      //       itemBuilder: (context, index) {
+      //         // return Expanded(child: Container(color: Colors.green));
+      //         return Column(children: [
+      //           Container(
+      //             color: Colors.green,
+      //             // height:
+      //             //     NavigatorRep().size.height - (kToolbarHeight + 60 + 70)
+      //           )
+      //         ]);
+      //         if (index == 10 - 1) {
+      //           return Padding(
+      //               padding: const EdgeInsets.only(bottom: 20.0),
+      //               child: _item1());
+      //         }
+      //         return _item1();
+      //       });
+
+      // model.history;
+      return Container(
+          // padding: EdgeInsets.only(bottom: 100),
+          decoration: const BoxDecoration(
+              // color: Colors.yellow,
+              color: Constants.colorBgUnderCard
+              // color: Constants.colorTextAccent,
+              // borderRadius: BorderRadius.only(
+              //     topLeft: Radius.circular(20), topRight: Radius.circular(20))
+              ),
+          // height: double.infinity,
+          // child: Text('11')
+          child: model.history.isEmpty
+              ? Center(child: Text('No history yet'))
+              : CustomScrollView(
+                  primary: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  // controller: _scrollCtr,
+                  slivers: [
+                      SliverList.builder(
+                          itemCount: model.history.length,
+                          itemBuilder: (context, index) {
+                            if (index == 10 - 1) {
+                              return Padding(
+                                  padding: const EdgeInsets.only(bottom: 20.0),
+                                  child: _item1());
+                            }
+                            return _item1();
+                          })
+                    ]));
+    });
+  }
+
+  // DecoratedSliver(
+  //     decoration: const BoxDecoration(
+  //       color: Constants.colorBgUnderCard,
+  //     ),
+  //     sliver: Builder(builder: (context) {
+  //       return SliverList.builder(
+  //           itemCount: 1,
+  //           itemBuilder: (context, index) {
+  //             if (index == 10 - 1) {
+  //               return Padding(
+  //                   padding: const EdgeInsets.only(bottom: 20.0),
+  //                   child: _item1());
+  //             }
+  //             return _item1();
+  //           });
+  //     }))
+  // }
 
   Widget _item1() {
     return Builder(builder: (context) {
