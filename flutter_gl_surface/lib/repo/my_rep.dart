@@ -31,9 +31,14 @@ class Camera {
 class MyRep {
   var cameraMap = <String, Camera>{};
   final onCameraChanged = BehaviorSubject<void>();
+  bool captureActive = false;
   final onFrameSize = BehaviorSubject<Size>.seeded(const Size(0, 0));
+  final onCaptureTime = BehaviorSubject<Duration?>();
   var _frameSize = const Size(0, 0);
   // private
+  Timer? _captureTm;
+  DateTime? _captureStart;
+  Duration? _captureDuration;
   static const _cameraChannel = MethodChannel('camera/cmd');
   static const _mainChannel = MethodChannel('main/cmd');
 
@@ -161,6 +166,26 @@ class MyRep {
       logError('$tag: error: $e');
     }
     return 0;
+  }
+
+  void setCaptureActive(bool v) {
+    if (captureActive != v) {
+      captureActive = v;
+      if (captureActive) {
+        _captureStart = DateTime.now();
+        _captureTm = Timer.periodic(const Duration(seconds: 1), (timer) {
+          _captureDuration = _captureStart?.difference(DateTime.now()).abs();
+          onCaptureTime.add(_captureDuration);
+        });
+        _captureDuration = const Duration();
+        onCaptureTime.add(_captureDuration);
+      } else {
+        _captureTm?.cancel();
+        _captureStart = null;
+        _captureDuration = null;
+        onCaptureTime.add(null);
+      }
+    }
   }
 
   Future<List<HistoryRecord>> history() async {

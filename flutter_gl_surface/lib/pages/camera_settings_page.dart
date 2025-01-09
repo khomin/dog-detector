@@ -109,7 +109,7 @@ class CameraSettingsPageState extends State<CameraSettingsPage> {
                         return Row(children: [
                           Padding(
                               padding: const EdgeInsets.only(left: 25),
-                              child: Text('Capture interval [$captureSec] sec',
+                              child: Text('Capture filter [$captureSec] sec',
                                   style: const TextStyle(
                                       fontSize: 14,
                                       color: Constants.colorTextAccent))),

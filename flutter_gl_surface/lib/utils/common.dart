@@ -7,6 +7,10 @@ import 'package:jiffy/jiffy.dart';
 
 enum ScreenType { minimum, full }
 
+extension DurationFormat on Duration {
+  String format() => '$this'.split('.')[0].padLeft(8, '0');
+}
+
 class Common {
   ScreenType calcLayout(BuildContext context) {
     var view = View.of(context).platformDispatcher.views.first;

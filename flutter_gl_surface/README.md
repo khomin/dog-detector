@@ -1,13 +1,8 @@
 # flutter_demo
 
-- camera settings -> cpp -> settings
 
 - make a photo button
 - capture animation frame
-
-- capture from c++ or dart?
-    - nativeCapture()
-    - onCapture()
 
 - lock rotation
 
@@ -28,6 +23,10 @@
 - rename bundle app name
 
 # done
++ capture from c++ or dart?
+    - nativeCapture()
+    - onCapture()
++ camera settings -> cpp -> settings
 + remember last used camera (use as default)
 + record start at openening
 + record flip camera button

@@ -63,9 +63,10 @@ class AppState extends State<App> {
             var collapse = context.select<AppModel, bool>((v) => v.collapse);
             return Container(
                 color: Constants.colorBar,
+                margin: EdgeInsets.all(20),
                 child: SafeArea(
                     child: Stack(children: [
-                  const CameraSettingsPage(),
+                  // const CameraSettingsPage(),
                   AnimatedPositioned(
                       duration: Constants.durationPanel,
                       curve: Curves.easeIn,

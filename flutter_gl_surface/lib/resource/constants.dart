@@ -15,6 +15,9 @@ class Constants {
   static const colorPrimary = Color.fromARGB(255, 139, 135, 219);
   static const colorSecondary = Color.fromARGB(255, 170, 167, 225);
 
+  static const colorButtonBg = Colors.black12;
+  static const colorButton = Colors.black26;
+
   static const defaultCamera = 'Back';
 
   static const duration = Duration(milliseconds: 200);
