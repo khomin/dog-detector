@@ -150,7 +150,7 @@ class CapturePageState extends State<CapturePage>
     _updateLayoutTm?.cancel();
     _updateLayoutTm = Timer(const Duration(milliseconds: 300), () async {
       await _updateRotation();
-      Timer(Duration(milliseconds: 100), () {
+      Timer(const Duration(milliseconds: 100), () {
         _model.setOrientationWait(false);
       });
     });
@@ -216,63 +216,48 @@ class CapturePageState extends State<CapturePage>
     return Scaffold(
         backgroundColor: Constants.colorBar,
         // backgroundColor: Colors.transparent,
-        body: Padding(
-            padding: EdgeInsets.all(20),
-            child: CustomScrollView(
-                physics: const NeverScrollableScrollPhysics(),
-                slivers: [
-                  SliverToBoxAdapter(
-                      child: SizedBox(
-                          height: kToolbarHeight,
-                          child: Row(children: [
-                            const Padding(
-                                padding: EdgeInsets.only(left: 25),
-                                child: Text('Capture',
-                                    style: TextStyle(fontSize: 25))),
-                            //
-                            // // duration
-                            // RepaintBoundary(
-                            //     child: Container(
-                            //         width: 130,
-                            //         height: 40,
-                            //         child: RepaintBoundary(
-                            //             child: Stack(children: [
-                            //           RepaintBoundary(
-                            //               child: Container(
-                            //                   width: 130,
-                            //                   height: 40,
-                            //                   child: StreamBuilder(
-                            //                       stream: MyRep().onCaptureTime,
-                            //                       builder: (context, snapshot) {
-                            //                         var duration = snapshot.data;
-                            //                         if (duration == null) {
-                            //                           return const SizedBox();
-                            //                         }
-                            //                         return Text(duration.format());
-                            //                         return RoundBox(
-                            //                             text: duration.format(),
-                            //                             color:
-                            //                                 Constants.colorPrimary,
-                            //                             borderRadius: 40);
-                            //                       })))
-                            //         ])))),
-                            const Spacer(),
-                            CircleButton(
-                                color: Colors.transparent,
-                                iconColor:
-                                    Constants.colorTextAccent.withOpacity(0.8),
-                                size: 70,
-                                // margin: EdgeInsets.only(bottom: 10),
-                                vertTransform: true,
-                                iconData: Icons.arrow_back_ios_new,
-                                // iconData: Icons.arrow_back_ios,
-                                onPressed: (p0) {
-                                  var model = context.read<AppModel>();
-                                  model.setCollapse(!model.collapse);
-                                })
-                          ]))),
-                  SliverFillRemaining(child: _camera())
-                ])));
+        body: CustomScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(
+                  child: SizedBox(
+                      height: kToolbarHeight,
+                      child: Row(children: [
+                        const Padding(
+                            padding: EdgeInsets.only(left: 25),
+                            child: Text('Capture',
+                                style: TextStyle(fontSize: 25))),
+                        //
+                        // duration
+                        StreamBuilder(
+                            stream: MyRep().onCaptureTime,
+                            builder: (context, snapshot) {
+                              var duration = snapshot.data;
+                              if (duration == null) {
+                                return const SizedBox();
+                              }
+                              return RoundBox(
+                                  text: duration.format(),
+                                  color: Constants.colorPrimary,
+                                  borderRadius: 40);
+                            }),
+                        const Spacer(),
+                        CircleButton(
+                            color: Colors.transparent,
+                            iconColor:
+                                Constants.colorTextAccent.withOpacity(0.8),
+                            size: 70,
+                            // margin: EdgeInsets.only(bottom: 10),
+                            vertTransform: true,
+                            iconData: Icons.arrow_back_ios_new,
+                            // iconData: Icons.arrow_back_ios,
+                            onPressed: (p0) {
+                              var model = context.read<AppModel>();
+                              model.setCollapse(!model.collapse);
+                            })
+                      ]))),
+              SliverFillRemaining(child: _camera())
+            ]));
   }
 
   Widget _camera() {
@@ -280,6 +265,7 @@ class CapturePageState extends State<CapturePage>
         value: _model,
         builder: (context, child) {
           return Container(
+              // margin: EdgeInsets.all(10),
               decoration: const BoxDecoration(
                   color: Constants.colorTextAccent,
                   borderRadius: BorderRadius.only(
@@ -287,58 +273,62 @@ class CapturePageState extends State<CapturePage>
                       topRight: Radius.circular(20))),
               height: double.infinity,
               child: Stack(alignment: Alignment.center, children: [
-                // Positioned(
-                //     top: 0,
-                //     left: 0,
-                //     right: 0,
-                //     bottom: -(NavigatorRep().size.height + 20 / 3),
-                //     child: Builder(builder: (context) {
-                //       //   var rotation = context.read<RecordModel>().rotation;
-                //       // _updateRotation();
-                //       // var rotation =
-                //       //     context.watch<RecordModel>().rotation;
-                //       // var camera = context
-                //       //     .select<RecordModel, Camera?>((v) => v.camera);
-                //       // var rotation = 0;
-                //       // var camera = context.read<RecordModel>().camera;
-                //       var model = context.watch<RecordModel>();
-                //       // var rotation = _model.rotation;
-                //       logDebug(
-                //           'BTEST: rotation=${model.surfaceLayout.rotation}, ratio=${model.surfaceLayout.ratio}');
-                //       return Column(children: [
-                //         Flexible(
-                //             child: RotatedBox(
-                //                 quarterTurns: model.surfaceLayout.rotation,
-                //                 child: AspectRatio(
-                //                     aspectRatio: model.surfaceLayout.ratio,
-                //                     child: Opacity(
-                //                         opacity: model.orientationpWait ? 0 : 1,
-                //                         child: ClipRRect(
-                //                             borderRadius:
-                //                                 BorderRadius.circular(20.0),
-                //                             child: const AndroidView(
-                //                                 viewType: 'my_gl_surface_view',
-                //                                 creationParams: null,
-                //                                 creationParamsCodec:
-                //                                     StandardMessageCodec()))))))
-                //       ]);
-                //     })),
                 Positioned(
+                    top: 0,
                     left: 0,
-                    // right: 0,
-                    // top: 0,
-                    // bottom: 0,
-                    child: RepaintBoundary(child: Builder(builder: (context) {
-                      var model = context.watch<RecordModel>();
-                      if (model.orientationpWait) {
-                        return const Center(
-                            child: SizedBox(
-                                width: 60,
-                                height: 60,
-                                child: CircularProgressIndicator()));
-                      }
-                      return const SizedBox();
-                    }))),
+                    right: 0,
+                    bottom: -(NavigatorRep().size.height + 20 / 3),
+                    child: Builder(builder: (context) {
+                      //   var rotation = context.read<RecordModel>().rotation;
+                      // _updateRotation();
+                      // var rotation =
+                      //     context.watch<RecordModel>().rotation;
+                      // var camera = context
+                      //     .select<RecordModel, Camera?>((v) => v.camera);
+                      // var rotation = 0;
+                      // var camera = context.read<RecordModel>().camera;
+                      // var model = context.watch<RecordModel>();
+                      // var rotation = _model.rotation;
+                      var layout = context.select<RecordModel, SurfaceLayout>(
+                          (v) => v.surfaceLayout);
+                      logDebug(
+                          'BTEST: rotation=${layout.rotation}, ratio=${layout.ratio}');
+                      return Column(children: [
+                        Flexible(
+                            child: RotatedBox(
+                                quarterTurns: layout.rotation,
+                                child: AspectRatio(
+                                    aspectRatio: layout.ratio,
+                                    child: //Opacity(
+                                        // opacity: model.orientationpWait ? 0 : 1,
+                                        // child:
+                                        ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(20.0),
+                                            child: const AndroidView(
+                                                viewType: 'my_gl_surface_view',
+                                                creationParams: null,
+                                                creationParamsCodec:
+                                                    StandardMessageCodec())))))
+                      ]);
+                    })),
+                Positioned.fill(
+                    child: Stack(alignment: Alignment.center, children: [
+                  RepaintBoundary(child: Builder(builder: (context) {
+                    var wait = context
+                        .select<RecordModel, bool>((v) => v.orientationpWait);
+                    if (wait) {
+                      return const SizedBox(
+                          width: 60,
+                          height: 60,
+                          child: CircularProgressIndicator());
+                    }
+                    return const SizedBox();
+                  }))
+                ])),
+                //
+                // buttons
+                Positioned(left: 0, bottom: 0, right: 0, child: _buttons())
                 // camera
                 // Positioned(
                 //     left: 0,
@@ -354,125 +344,61 @@ class CapturePageState extends State<CapturePage>
                 //                   style: const TextStyle(
                 //                       color: Colors.white, fontSize: 15))));
                 //     })),
-
-                Positioned(
-                    left: 0,
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                        height: 130,
-                        // color: Colors.amber,
-                        decoration: BoxDecoration(
-                            color: Constants.colorButtonBg //.withOpacity(0.5),
-                            // borderRadius:
-                            //     const BorderRadius.all(Radius.circular(30))
-                            ),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              //
-                              // last captured frame
-                              Container(
-                                  width: 55,
-                                  height: 55,
-                                  child: Center(child: Text('TODO')),
-                                  decoration: BoxDecoration(
-                                      color: Constants.colorButton,
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(30)))),
-                              //
-                              // center
-                              Builder(builder: (context) {
-                                // var on = context.watch<RecordModel>().captureOn;
-                                // var on = context.select<RecordModel, bool?>(
-                                //         (v) => v.captureActive) ??
-                                //     false;
-                                return AnimatedCameraButton(
-                                  onCapture: () {
-                                    MyRep().setCaptureActive(true);
-                                  },
-                                  onStop: () {
-                                    MyRep().setCaptureActive(false);
-                                  },
-                                );
-                                // return CircleButton(
-                                //     color: Constants.colorBgUnderCard
-                                //         .withOpacity(0.3),
-                                //     // iconColor: on
-                                //     //     ? Colors.red.withOpacity(0.8)
-                                //     //     : Constants.colorCard.withOpacity(0.8),
-                                //     iconColor: Colors.red.withOpacity(0.8),
-                                //     size: 70,
-                                //     useScaleAnimation: true,
-                                //     iconSize: 50,
-                                //     iconData: on
-                                //         ? Icons.radio_button_on
-                                //         : Icons.circle, //Icons.photo_camera,
-                                //     onPressed: (v) {
-                                //       context
-                                //           .read<RecordModel>()
-                                //           .setCaptureOn(!on);
-                                //       // MyRep().takeImage();
-                                //     });
-                              }),
-                              //
-                              // right
-                              AnimatedRotation(
-                                  turns: context
-                                              .watch<RecordModel>()
-                                              .camera
-                                              ?.facing ==
-                                          Constants.defaultCamera
-                                      ? 0
-                                      : 0.5,
-                                  duration: Constants.duration * 2,
-                                  child: CircleButton(
-                                      color: Constants.colorButton,
-                                      iconColor:
-                                          Constants.colorCard.withOpacity(0.8),
-                                      size: 55,
-                                      useScaleAnimation: true,
-                                      iconData: Icons.flip_camera_android,
-                                      onPressed: (v) async {
-                                        if (_model.flipWait) return;
-                                        var camera = _cameraToFlit();
-                                        if (camera == null) return;
-                                        _model.flipTurns =
-                                            camera.facing == 'Font' ? 0.5 : 0;
-                                        _model.setFlipWait(true);
-                                        await _flip();
-                                        _model.setFlipWait(false);
-                                      }))
-                            ]))),
-                // Positioned(
-                //     top: 10,
-                //     left: 10,
-                //     // right: 10,
-                //     // bottom: 0,
-                //     child: RepaintBoundary(
-                //         child: Container(
-                //             width: 130,
-                //             height: 40,
-                //             child: RepaintBoundary(
-                //                 child: StreamBuilder(
-                //                     stream: MyRep().onCaptureTime,
-                //                     builder: (context, snapshot) {
-                //                       var duration = snapshot.data;
-                //                       if (duration == null) {
-                //                         return const SizedBox();
-                //                       }
-                //                       return RepaintBoundary(
-                //                           child: Container(
-                //                               width: 130,
-                //                               height: 40,
-                //                               child: Text(duration.format())));
-                //                       return RoundBox(
-                //                           text: duration.format(),
-                //                           color: Constants.colorPrimary,
-                //                           borderRadius: 40);
-                //                     })))))
               ]));
         });
+  }
+
+  Widget _buttons() {
+    return RepaintBoundary(
+        child: Container(
+            height: 130,
+            decoration: const BoxDecoration(color: Constants.colorButtonBg),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  //
+                  // last captured frame
+                  Container(
+                      width: 55,
+                      height: 55,
+                      child: const Center(child: Text('TODO')),
+                      decoration: const BoxDecoration(
+                          color: Constants.colorButton,
+                          borderRadius: BorderRadius.all(Radius.circular(30)))),
+                  //
+                  // center
+                  AnimatedCameraButton(onCapture: () {
+                    MyRep().setCaptureActive(true);
+                  }, onStop: () {
+                    MyRep().setCaptureActive(false);
+                  }),
+                  //
+                  // right
+                  RepaintBoundary(child: Builder(builder: (context) {
+                    var camera =
+                        context.select<RecordModel, Camera?>((v) => v.camera);
+                    return AnimatedRotation(
+                        turns:
+                            camera?.facing == Constants.defaultCamera ? 0 : 0.5,
+                        duration: Constants.duration * 2,
+                        child: CircleButton(
+                            color: Constants.colorButton,
+                            iconColor: Constants.colorCard.withOpacity(0.8),
+                            size: 55,
+                            useScaleAnimation: true,
+                            iconData: Icons.flip_camera_android,
+                            onPressed: (v) async {
+                              if (_model.flipWait) return;
+                              var camera = _cameraToFlit();
+                              if (camera == null) return;
+                              _model.flipTurns =
+                                  camera.facing == 'Font' ? 0.5 : 0;
+                              _model.setFlipWait(true);
+                              await _flip();
+                              _model.setFlipWait(false);
+                            }));
+                  }))
+                ])));
   }
 }

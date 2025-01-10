@@ -46,6 +46,7 @@ class ButtonRoundCorner extends StatelessWidget {
                   alignment: Alignment.center,
                   // ap
                   backgroundColor: color,
+                  animationDuration: Duration.zero,
                   // maximumSize: Size(150 / 2, 70),
                   // fixedSize: Size(150 / 2, 70),
                   shadowColor: Colors.transparent,

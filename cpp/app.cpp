@@ -235,9 +235,6 @@ Java_com_example_detector_CaptureRep_putFrameNative(JNIEnv *env, jobject thiz,
     jbyte *y_plane_byte = env->GetByteArrayElements(y_plane, nullptr);
     jbyte *u_plane_byte = env->GetByteArrayElements(u_plane, nullptr);
     jbyte *v_plane_byte = env->GetByteArrayElements(v_plane, nullptr);
-
-//    auto dst_argb_size = width * height * 4;
-//    std::vector<uint8_t> dst_argb(dst_argb_size);
     auto argbFrame = cv::Mat(height, width, CV_8UC4);
     libyuv::Android420ToABGR((uint8_t *) y_plane_byte,
                          yStride,
@@ -251,9 +248,7 @@ Java_com_example_detector_CaptureRep_putFrameNative(JNIEnv *env, jobject thiz,
                          width, height);
     {
         std::lock_guard<std::mutex> l(lock);
-//        inFrame2.data
         inFrame = argbFrame;
-//        inFrame = cv::Mat(height, width, CV_8UC4, dst_argb.data());
         condVar.notify_one();
     }
     env->ReleaseByteArrayElements(y_plane, y_plane_byte, 0);

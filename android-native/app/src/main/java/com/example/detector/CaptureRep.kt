@@ -69,16 +69,27 @@ class CaptureRep(val context: Context, val appLocalDir: String) {
 
     suspend fun start(cameraId: String, minArea: Int, captureIntervalSec: Int, showAreaOnCapture: Boolean): Size {
         stop()
-        val desc = getDescription(cameraId, context)
-        if(desc == null) {
-            Log.e(tag, "camera info is null")
-            return Size(0, 0)
+        mutex.withLock {
+            val desc = getDescription(cameraId, context)
+            if (desc == null) {
+                Log.e(tag, "camera info is null")
+                return Size(0, 0)
+            }
+            isRunning = true
+            cameraDescription = desc
+            cameraSize = desc.size.lastOrNull() ?: return Size(0, 0)
+            openCamera(
+                cameraId,
+                cameraSize.width,
+                cameraSize.height,
+                desc.facing,
+                minArea,
+                captureIntervalSec,
+                showAreaOnCapture,
+                context
+            )
+            return Size(cameraSize.width, cameraSize.height)
         }
-        isRunning = true
-        cameraDescription = desc
-        cameraSize = desc.size.lastOrNull() ?: return Size(0, 0)
-        openCamera(cameraId, cameraSize.width, cameraSize.height, desc.facing,  minArea, captureIntervalSec, showAreaOnCapture, context)
-        return Size(cameraSize.width, cameraSize.height)
     }
 
     suspend fun stop() {
@@ -150,152 +161,125 @@ class CaptureRep(val context: Context, val appLocalDir: String) {
         }
     }
 
-    private suspend fun openCamera(id: String, width: Int, height: Int, facing: CameraFacing, minArea: Int, captureIntervalSec: Int, showAreaOnCapture: Boolean, context: Context) {
-        mutex.withLock {
-            val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.CAMERA
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.e(tag, "Camera permission is not granted")
-                return
-            }
-            manager.openCamera(id, object : CameraDevice.StateCallback() {
-                override fun onOpened(device: CameraDevice) {
-                    camera = device
-                    cameraId = id
-                    cameraFacing = facing
-                    val cameraManager =
-                        context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-                    // get sensor orientation
-                    cameraManager.getCameraCharacteristics(id)
-                        .get(CameraCharacteristics.SENSOR_ORIENTATION)?.let {
-                            sensorOrientation = it
-                            initSession(Size(width, height))
-                            startNative(width, height, minArea, captureIntervalSec, showAreaOnCapture, appLocalDir)
-                        }
-                }
-
-                override fun onDisconnected(device: CameraDevice) {
-                    Log.w(tag, "Camera $cameraId has been disconnected")
-                    device.close()
-                }
-
-                override fun onError(device: CameraDevice, error: Int) {
-                    device.close()
-                }
-            }, cameraHandler)
+    private fun openCamera(id: String, width: Int, height: Int, facing: CameraFacing, minArea: Int, captureIntervalSec: Int, showAreaOnCapture: Boolean, context: Context) {
+        val manager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.e(tag, "Camera permission is not granted")
+            return
         }
-    }
+        manager.openCamera(id, object : CameraDevice.StateCallback() {
+            override fun onOpened(device: CameraDevice) {
+                camera = device
+                cameraId = id
+                cameraFacing = facing
+                val cameraManager =
+                    context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+                // get sensor orientation
+                cameraManager.getCameraCharacteristics(id)
+                    .get(CameraCharacteristics.SENSOR_ORIENTATION)?.let {
+                        sensorOrientation = it
+                        coroutineScope.launch(Dispatchers.Main) {
+                            try {
+                                imageReader = ImageReader.newInstance(
+                                    width, height, ImageFormat.YUV_420_888, 2
+                                )
+                                val imageReaderSafe = imageReader ?: return@launch
+                                val cameraSafe = camera ?: return@launch
+                                val targets = listOf(imageReaderSafe.surface)
 
-    private fun initSession(frameSize: Size)  {
-        coroutineScope.launch(Dispatchers.Main) {
-            imageReader = ImageReader.newInstance(
-                frameSize.width, frameSize.height, ImageFormat.YUV_420_888, 2
-            )
-            val imageReaderSafe = imageReader ?: return@launch
-            val cameraSafe = camera ?: return@launch
-            val targets = listOf(imageReaderSafe.surface)
+                                session = createCaptureSession(cameraSafe, targets, cameraHandler)
 
-            session = createCaptureSession(cameraSafe, targets, cameraHandler)
+                                var yPlaneBuffer = ByteArray(0)
+                                var uPlaneBuffer = ByteArray(0)
+                                var vPlaneBuffer = ByteArray(0)
 
-            var yPlaneBuffer = ByteArray(0)
-            var uPlaneBuffer = ByteArray(0)
-            var vPlaneBuffer = ByteArray(0)
+                                imageReaderSafe.setOnImageAvailableListener({ reader ->
+                                    val i: Image? = reader.acquireLatestImage()
+                                    if (i != null) {
+                                        try {
+                                            val planes: Array<Image.Plane> = i.planes
+                                            // init buffers first time
+                                            if (yPlaneBuffer.isEmpty()) {
+                                                yPlaneBuffer =
+                                                    ByteArray(planes[0].buffer.remaining())
+                                            }
+                                            if (uPlaneBuffer.isEmpty()) {
+                                                uPlaneBuffer =
+                                                    ByteArray(planes[1].buffer.remaining())
+                                            }
+                                            if (vPlaneBuffer.isEmpty()) {
+                                                vPlaneBuffer =
+                                                    ByteArray(planes[2].buffer.remaining())
+                                            }
+                                            // Use existing buffers
+                                            planes[0].buffer.get(yPlaneBuffer)
+                                            planes[1].buffer.get(uPlaneBuffer)
+                                            planes[2].buffer.get(vPlaneBuffer)
 
-            imageReaderSafe.setOnImageAvailableListener({ reader ->
-                val i: Image? = reader.acquireLatestImage()
-                if (i != null) {
-                    try {
-                        val planes: Array<Image.Plane> = i.planes
-                        // init buffers first time
-                        if(yPlaneBuffer.isEmpty()) {
-                            yPlaneBuffer = ByteArray(planes[0].buffer.remaining())
+                                            putFrameNative(
+                                                yPlaneBuffer,
+                                                planes[0].rowStride,
+                                                uPlaneBuffer,
+                                                planes[1].rowStride,
+                                                vPlaneBuffer,
+                                                planes[2].rowStride,
+                                                planes[1].pixelStride,
+                                                i.width,
+                                                i.height
+                                            )
+                                        } catch (ex: Exception) {
+                                            ex.printStackTrace()
+                                        } finally {
+                                            i.close() // Make sure to close in finally to ensure it gets called
+                                        }
+                                    }
+                                }, imageReaderHandler)
+
+                                val captureRequest = session?.device?.createCaptureRequest(
+                                    CameraDevice.TEMPLATE_PREVIEW
+                                )?.apply {
+                                    addTarget(imageReaderSafe.surface)
+                                }
+                                if (captureRequest != null) {
+                                    val fpsRange: Range<Int> = Range(20, 25)
+                                    captureRequest.set(
+                                        CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE,
+                                        fpsRange
+                                    )
+                                    session?.setRepeatingRequest(
+                                        captureRequest.build(),
+                                        captureCallback,
+                                        cameraHandler
+                                    )
+                                }
+                                startNative(
+                                    width,
+                                    height,
+                                    minArea,
+                                    captureIntervalSec,
+                                    showAreaOnCapture,
+                                    appLocalDir
+                                )
+                            } catch (ex: Exception) {
+                                Log.e(tag, ex.message, ex)
+                            }
                         }
-                        if(uPlaneBuffer.isEmpty()) {
-                            uPlaneBuffer = ByteArray(planes[1].buffer.remaining())
-                        }
-                        if(vPlaneBuffer.isEmpty()) {
-                            vPlaneBuffer = ByteArray(planes[2].buffer.remaining())
-                        }
-                        // Use existing buffers
-                        planes[0].buffer.get(yPlaneBuffer)
-                        planes[1].buffer.get(uPlaneBuffer)
-                        planes[2].buffer.get(vPlaneBuffer)
-
-                        putFrameNative(
-                            yPlaneBuffer,
-                            planes[0].rowStride,
-                            uPlaneBuffer,
-                            planes[1].rowStride,
-                            vPlaneBuffer,
-                            planes[2].rowStride,
-                            planes[1].pixelStride,
-                            i.width,
-                            i.height
-                        )
-                    } catch (ex: Exception) {
-                        ex.printStackTrace()
-                    } finally {
-                        i.close() // Make sure to close in finally to ensure it gets called
                     }
-                }
-            }, imageReaderHandler)
-
-//            imageReaderSafe.setOnImageAvailableListener({ reader ->
-//                val i: Image? = reader.acquireLatestImage()
-//                if (i != null) {
-//                    // yuv420 to argb in cpp
-//                    try {
-//                        val planes: Array<Image.Plane> = i.planes
-//                        var buffer = planes[0].buffer
-//                        val yPlane = ByteArray(planes[0].buffer.remaining())
-//                        buffer[yPlane]
-//
-//                        buffer = planes[1].buffer
-//                        val uPlane = ByteArray(planes[1].buffer.remaining())
-//                        buffer[uPlane]
-//
-//                        buffer = planes[2].buffer
-//                        val vPlane = ByteArray(planes[2].buffer.remaining())
-//                        buffer[vPlane]
-//
-//                        val yRowStride = planes[0].rowStride
-//                        val uvRowStride = planes[1].rowStride
-//                        val vRowStride = planes[2].rowStride
-//                        val uvPixelStride = planes[1].pixelStride
-//                        val width = i.width
-//                        val height = i.height
-//                        putFrameNative(
-//                            yPlane,
-//                            yRowStride,
-//                            uPlane,
-//                            uvRowStride,
-//                            vPlane,
-//                            vRowStride,
-//                            uvPixelStride,
-//                            width,
-//                            height
-//                        )
-//                    } catch (ex: Exception) {
-//                        ex.printStackTrace()
-//                    }
-//                }
-//                i?.close()
-//            }, imageReaderHandler)
-
-            val captureRequest = session?.device?.createCaptureRequest(
-                CameraDevice.TEMPLATE_RECORD
-            )?.apply {
-                addTarget(imageReaderSafe.surface)
             }
-            if (captureRequest != null) {
-                val fpsRange: Range<Int> = Range(25, 25)
-                captureRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-                session?.setRepeatingRequest(captureRequest.build(), captureCallback, cameraHandler)
+
+            override fun onDisconnected(device: CameraDevice) {
+                Log.w(tag, "Camera $cameraId has been disconnected")
+                device.close()
             }
-        }
+
+            override fun onError(device: CameraDevice, error: Int) {
+                device.close()
+            }
+        }, cameraHandler)
     }
 
     private suspend fun createCaptureSession(

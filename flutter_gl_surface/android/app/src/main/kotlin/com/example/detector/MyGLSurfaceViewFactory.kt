@@ -10,6 +10,7 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MessageCodec
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodCall
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 class MyGLSurfaceViewFactory(
@@ -55,12 +56,12 @@ class MyGLSurfacePlatformView(
                 result.success(true)
             }
             "start_camera" -> {
-                val id = args["id"] as String
-                val minArea = args["minArea"] as Int
-                val captureIntervalSec = args["captureIntervalSec"] as Int
-                val showAreaOnCapture = args["showAreaOnCapture"] as Boolean
-                val captureRep = (context.applicationContext as App?)?.captureRep
-                runBlocking {
+                runBlocking(Dispatchers.IO) {
+                    val id = args["id"] as String
+                    val minArea = args["minArea"] as Int
+                    val captureIntervalSec = args["captureIntervalSec"] as Int
+                    val showAreaOnCapture = args["showAreaOnCapture"] as Boolean
+                    val captureRep = (context.applicationContext as App?)?.captureRep
                     val size = captureRep?.start(id, minArea, captureIntervalSec, showAreaOnCapture)
                     result.success(mapOf(
                         "size_width" to size?.width,
@@ -68,25 +69,25 @@ class MyGLSurfacePlatformView(
                 }
             }
             "stop_camera" -> {
-                val captureRep = (context.applicationContext as App?)?.captureRep
-                runBlocking {
+                runBlocking(Dispatchers.IO) {
+                    val captureRep = (context.applicationContext as App?)?.captureRep
                     captureRep?.stop()
                     result.success(true)
                 }
             }
             "update_configuration" -> {
-                val minArea = args["minArea"] as Int
-                val captureIntervalSec = args["captureIntervalSec"] as Int
-                val showAreaOnCapture = args["showAreaOnCapture"] as Boolean
-                val captureRep = (context.applicationContext as App?)?.captureRep
-                runBlocking {
+                runBlocking(Dispatchers.IO) {
+                    val minArea = args["minArea"] as Int
+                    val captureIntervalSec = args["captureIntervalSec"] as Int
+                    val showAreaOnCapture = args["showAreaOnCapture"] as Boolean
+                    val captureRep = (context.applicationContext as App?)?.captureRep
                     captureRep?.updateConfiguration(minArea, captureIntervalSec, showAreaOnCapture)
                     result.success(true)
                 }
             }
             "get_cameras" -> {
-                val captureRep = (context.applicationContext as App?)?.captureRep
-                runBlocking {
+                runBlocking(Dispatchers.IO) {
+                    val captureRep = (context.applicationContext as App?)?.captureRep
                     if (captureRep == null) {
                         result.error("", "cannot open", "")
                         return@runBlocking

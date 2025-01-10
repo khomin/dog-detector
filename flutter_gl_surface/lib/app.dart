@@ -61,115 +61,121 @@ class AppState extends State<App> {
           return LayoutBuilder(builder: (context, constraints) {
             Common().calcLayout(context);
             var collapse = context.select<AppModel, bool>((v) => v.collapse);
-            return Container(
-                color: Constants.colorBar,
-                margin: EdgeInsets.all(20),
-                child: SafeArea(
-                    child: Stack(children: [
-                  // const CameraSettingsPage(),
-                  AnimatedPositioned(
-                      duration: Constants.durationPanel,
-                      curve: Curves.easeIn,
-                      top: collapse ? NavigatorRep().size.height / 3 : 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: Stack(children: [
-                        Scaffold(
-                            backgroundColor: Constants.colorBgUnderCard,
-                            body: Stack(children: [
-                              StreamBuilder(
-                                  stream: NavigatorRep().routeBloc.onGoto,
-                                  builder: (context, snapshot) {
-                                    var page = snapshot.data?.type;
-                                    // var arg = snapshot.data?.arg;
-                                    switch (page) {
-                                      case PageType.main:
-                                        return const MainPage();
-                                      case PageType.capture:
-                                        return const CapturePage();
-                                      // case PageType.alert:
-                                      //   return AlertPage(arg: arg);
-                                      case PageType.settings:
-                                        return const SettingsPage();
-                                      default:
-                                        return const MainPage();
-                                    }
-                                  }),
-                              AnimatedOpacity(
-                                  opacity: collapse ? 0.5 : 0.0,
-                                  duration: Constants.duration,
-                                  child: IgnorePointer(
-                                      ignoring: !collapse,
-                                      child: HoverClick(
-                                          onPressedL: (p0) {
-                                            context
-                                                .read<AppModel>()
-                                                .setCollapse(false);
-                                          },
-                                          child: Container(
-                                              color:
-                                                  Constants.colorBgUnderCard))))
-                            ]),
-                            bottomNavigationBar: Container(
-                                height: 70,
-                                decoration: BoxDecoration(
-                                    color: Constants.colorCard,
-                                    // color: Colors.amber,
-                                    // borderRadius: BorderRadius.only(
-                                    //     topLeft: Radius.circular(20),
-                                    //     topRight: Radius.circular(20)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 0),
-                                      )
-                                    ]),
-                                child: StreamBuilder(
-                                    stream: NavigatorRep().routeBloc.onGoto,
-                                    builder: (context, snapshot) {
-                                      var page = snapshot.data?.type;
-                                      return BottomNavigationBar(
-                                          elevation: 0,
-                                          selectedFontSize: 12,
-                                          unselectedFontSize: 12,
-                                          type: BottomNavigationBarType.fixed,
-                                          backgroundColor: Colors.transparent,
-                                          // backgroundColor: Constants.colorCard,
-                                          unselectedItemColor: Constants
-                                              .colorTextSecond
-                                              .withOpacity(0.8),
-                                          items: const <BottomNavigationBarItem>[
-                                            BottomNavigationBarItem(
-                                                icon: Icon(Icons.home),
-                                                label: 'Home'),
-                                            BottomNavigationBarItem(
-                                                icon: Icon(Icons
-                                                    .photo_camera_front_sharp),
-                                                label: 'Capture'),
-                                            BottomNavigationBarItem(
-                                                icon: Icon(Icons.notifications),
-                                                label: 'Alert'),
-                                            BottomNavigationBarItem(
-                                                icon: Icon(Icons.settings),
-                                                label: 'Settings'),
-                                          ],
-                                          currentIndex: page?.index ?? 0,
-                                          selectedItemColor:
-                                              Constants.colorPrimary,
-                                          onTap: (value) async {
-                                            if (collapse) {
-                                              context
-                                                  .read<AppModel>()
-                                                  .setCollapse(false);
-                                            }
-                                            NavigatorRep().routeBloc.goto(Panel(
-                                                type: PageType.values[value]));
-                                          });
-                                    })))
-                      ]))
-                ])));
+            return RepaintBoundary(
+                child: Container(
+                    color: Constants.colorBar,
+                    child: SafeArea(
+                        child: Stack(children: [
+                      const CameraSettingsPage(),
+                      AnimatedPositioned(
+                          duration: Constants.durationPanel,
+                          curve: Curves.easeIn,
+                          top: collapse ? NavigatorRep().size.height / 3 : 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: Stack(children: [
+                            Scaffold(
+                                backgroundColor: Constants.colorBgUnderCard,
+                                body: Stack(children: [
+                                  StreamBuilder(
+                                      stream: NavigatorRep().routeBloc.onGoto,
+                                      builder: (context, snapshot) {
+                                        var page = snapshot.data?.type;
+                                        // var arg = snapshot.data?.arg;
+                                        switch (page) {
+                                          case PageType.main:
+                                            return const MainPage();
+                                          case PageType.capture:
+                                            return const CapturePage();
+                                          // case PageType.alert:
+                                          //   return AlertPage(arg: arg);
+                                          case PageType.settings:
+                                            return const SettingsPage();
+                                          default:
+                                            return const MainPage();
+                                        }
+                                      }),
+                                  AnimatedOpacity(
+                                      opacity: collapse ? 0.5 : 0.0,
+                                      duration: Constants.duration,
+                                      child: IgnorePointer(
+                                          ignoring: !collapse,
+                                          child: HoverClick(
+                                              onPressedL: (p0) {
+                                                context
+                                                    .read<AppModel>()
+                                                    .setCollapse(false);
+                                              },
+                                              child: Container(
+                                                  color: Constants
+                                                      .colorBgUnderCard))))
+                                ]),
+                                bottomNavigationBar: Container(
+                                    height: 70,
+                                    decoration: BoxDecoration(
+                                        color: Constants.colorCard,
+                                        // color: Colors.amber,
+                                        // borderRadius: BorderRadius.only(
+                                        //     topLeft: Radius.circular(20),
+                                        //     topRight: Radius.circular(20)),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.2),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 0),
+                                          )
+                                        ]),
+                                    child: StreamBuilder(
+                                        stream: NavigatorRep().routeBloc.onGoto,
+                                        builder: (context, snapshot) {
+                                          var page = snapshot.data?.type;
+                                          return BottomNavigationBar(
+                                              elevation: 0,
+                                              selectedFontSize: 12,
+                                              unselectedFontSize: 12,
+                                              type:
+                                                  BottomNavigationBarType.fixed,
+                                              backgroundColor:
+                                                  Colors.transparent,
+                                              // backgroundColor: Constants.colorCard,
+                                              unselectedItemColor: Constants
+                                                  .colorTextSecond
+                                                  .withOpacity(0.8),
+                                              items: const <BottomNavigationBarItem>[
+                                                BottomNavigationBarItem(
+                                                    icon: Icon(Icons.home),
+                                                    label: 'Home'),
+                                                BottomNavigationBarItem(
+                                                    icon: Icon(Icons
+                                                        .photo_camera_front_sharp),
+                                                    label: 'Capture'),
+                                                BottomNavigationBarItem(
+                                                    icon: Icon(
+                                                        Icons.notifications),
+                                                    label: 'Alert'),
+                                                BottomNavigationBarItem(
+                                                    icon: Icon(Icons.settings),
+                                                    label: 'Settings'),
+                                              ],
+                                              currentIndex: page?.index ?? 0,
+                                              selectedItemColor:
+                                                  Constants.colorPrimary,
+                                              onTap: (value) async {
+                                                if (collapse) {
+                                                  context
+                                                      .read<AppModel>()
+                                                      .setCollapse(false);
+                                                }
+                                                NavigatorRep().routeBloc.goto(
+                                                    Panel(
+                                                        type: PageType
+                                                            .values[value]));
+                                              });
+                                        })))
+                          ]))
+                    ]))));
           });
         });
   }
