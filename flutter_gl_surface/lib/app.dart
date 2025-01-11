@@ -16,6 +16,7 @@ import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:flutter_demo/utils/file_utils.dart';
 import 'package:flutter_demo/utils/log_printer.dart';
+import 'package:jiffy/jiffy.dart';
 import 'package:loggy/loggy.dart';
 import 'package:provider/provider.dart';
 
@@ -38,6 +39,7 @@ class AppState extends State<App> {
       await FileUtils.init();
       Loggy.initLoggy(logPrinter: LogPrinter());
       _appModel.setReady(true);
+      Jiffy.setLocale('uk');
       // Timer(const Duration(milliseconds: 100), () async {
       //   await MyRep().getCameras();
       // });

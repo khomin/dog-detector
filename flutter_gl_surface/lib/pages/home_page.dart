@@ -1,17 +1,15 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'dart:io';
 
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
-import 'package:flutter_demo/pages/components/history_item_thumb.dart';
+import 'package:flutter_demo/pages/home/history_grid_dialog.dart';
+import 'package:flutter_demo/pages/home/history_item.dart';
+import 'package:flutter_demo/pages/home/history_view_dialog.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
-import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/material.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -52,15 +50,11 @@ class MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Constants.colorBar,
-        body: Container(
-            // color: Colors.yellow,
-            // margin: EdgeInsets.only(top: 100),
-            child: CustomScrollView(
-                physics: const ClampingScrollPhysics(),
-                controller: _scrollCtr,
-                // primary: false,
-                slivers: [
-              SliverAppBar(
+        body: CustomScrollView(
+            physics: const ClampingScrollPhysics(),
+            controller: _scrollCtr,
+            slivers: [
+              const SliverAppBar(
                   backgroundColor: Constants.colorBar,
                   toolbarHeight: kToolbarHeight,
                   flexibleSpace: FlexibleSpaceBar(
@@ -70,17 +64,6 @@ class MainPageState extends State<MainPage> {
                             child:
                                 Text('Home', style: TextStyle(fontSize: 25))),
                         Spacer(),
-                        // CircleButton(
-                        //     color: Colors.transparent,
-                        //     // iconColor:
-                        //     //     Constants.colorTextAccent.withOpacity(0.8),
-                        //     iconColor: const Color.fromARGB(255, 17, 48, 19),
-                        //     size: 70,
-                        //     iconData: Icons.tab_unselected_rounded,
-                        //     onPressed: (p0) async {
-                        //       // var model = context.read<AppModel>();
-                        //       // model.setCollapse(!model.collapse);
-                        //     })
                       ]),
                       centerTitle: true)),
               SliverToBoxAdapter(child: _header()),
@@ -91,12 +74,13 @@ class MainPageState extends State<MainPage> {
               //       color: Constants.colorBgUnderCard,
               //     ),
               //     sliver: _gallery())
-              SliverFillRemaining(
-                  // fillOverscroll: false,
-                  // fillOverscroll: true,
-                  // hasScrollBody: false,
-                  child: _gallery())
-            ])));
+              // SliverFillRemaining(
+              //     // fillOverscroll: false,
+              //     // fillOverscroll: true,
+              //     // hasScrollBody: false,
+              //     // child: _gallery()
+              SliverToBoxAdapter(child: _gallery())
+            ]));
   }
 
   Widget _header() {
@@ -112,7 +96,7 @@ class MainPageState extends State<MainPage> {
               child: Container(
                   height: 40,
                   width: 100,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                       color: Constants.colorBgUnderCard,
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20),
@@ -122,7 +106,7 @@ class MainPageState extends State<MainPage> {
               left: 0,
               right: 0,
               child: Container(
-                  margin: EdgeInsets.only(left: 20, right: 20),
+                  margin: const EdgeInsets.only(left: 20, right: 20),
                   height: 50,
                   decoration: BoxDecoration(
                       // color: Colors.red,
@@ -131,11 +115,11 @@ class MainPageState extends State<MainPage> {
                         BoxShadow(
                           color: Colors.black.withOpacity(0.2),
                           blurRadius: 10,
-                          offset: Offset(0, 0),
+                          offset: const Offset(0, 0),
                         )
                       ]),
                   child: Row(children: [
-                    Padding(
+                    const Padding(
                         padding: EdgeInsets.only(left: 10, right: 10),
                         child: Icon(
                           Icons.search_outlined,
@@ -191,7 +175,7 @@ class MainPageState extends State<MainPage> {
                                                     )
                                                   ],
                                                   borderRadius:
-                                                      BorderRadius.all(
+                                                      const BorderRadius.all(
                                                           Radius.circular(20))),
                                               child: Center(
                                                   child: Column(
@@ -223,259 +207,39 @@ class MainPageState extends State<MainPage> {
 
   Widget _gallery() {
     return Builder(builder: (context) {
-      var model = context.read<AppModel>();
-      //   return SliverList.builder(
-      //       itemCount: 1,
-      //       itemBuilder: (context, index) {
-      //         // return Expanded(child: Container(color: Colors.green));
-      //         return Column(children: [
-      //           Container(
-      //             color: Colors.green,
-      //             // height:
-      //             //     NavigatorRep().size.height - (kToolbarHeight + 60 + 70)
-      //           )
-      //         ]);
-      //         if (index == 10 - 1) {
-      //           return Padding(
-      //               padding: const EdgeInsets.only(bottom: 20.0),
-      //               child: _item1());
-      //         }
-      //         return _item1();
-      //       });
-
-      // model.history;
-      return Container(
-          // padding: EdgeInsets.only(bottom: 100),
-          decoration: const BoxDecoration(
-              // color: Colors.yellow,
-              color: Constants.colorBgUnderCard
-              // color: Constants.colorTextAccent,
-              // borderRadius: BorderRadius.only(
-              //     topLeft: Radius.circular(20), topRight: Radius.circular(20))
-              ),
-          // height: double.infinity,
-          // child: Text('11')
-          child: model.history.isEmpty
-              ? Center(child: Text('No history yet'))
-              : CustomScrollView(
-                  primary: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  // controller: _scrollCtr,
-                  slivers: [
-                      SliverList.builder(
-                          itemCount: model.history.length,
-                          itemBuilder: (context, index) {
-                            if (index == 10 - 1) {
-                              return Padding(
-                                  padding: const EdgeInsets.only(bottom: 20.0),
-                                  child: _item1());
-                            }
-                            return _item1();
-                          })
-                    ]));
-    });
-  }
-
-  // DecoratedSliver(
-  //     decoration: const BoxDecoration(
-  //       color: Constants.colorBgUnderCard,
-  //     ),
-  //     sliver: Builder(builder: (context) {
-  //       return SliverList.builder(
-  //           itemCount: 1,
-  //           itemBuilder: (context, index) {
-  //             if (index == 10 - 1) {
-  //               return Padding(
-  //                   padding: const EdgeInsets.only(bottom: 20.0),
-  //                   child: _item1());
-  //             }
-  //             return _item1();
-  //           });
-  //     }))
-  // }
-
-  Widget _item1() {
-    return Builder(builder: (context) {
       var history =
           context.select<AppModel, List<HistoryRecord>>((v) => v.history);
       return Container(
-          margin:
-              const EdgeInsets.only(left: 25, right: 25, top: 20, bottom: 5),
-          decoration: BoxDecoration(
-              color: Constants.colorCard,
-              boxShadow: [
-                BoxShadow(
-                  // color: Colors.black.withOpacity(0.2),
-                  color: Constants.colorBar.withOpacity(0.5),
-                  blurRadius: 15,
-                  offset: const Offset(0, 0),
-                )
-              ],
-              borderRadius: BorderRadius.all(Radius.circular(20))),
-          height: 270,
-          child: Column(children: [
-            if (history.isNotEmpty)
-              Column(children: [
-                // header
-                Padding(
-                    padding: EdgeInsets.only(left: 20, top: 10),
-                    child: Row(children: [
-                      Container(
-                          width: 50,
-                          height: 50,
-                          // color: Colors.pink,
-                          decoration: BoxDecoration(
-                              color: Constants.colorBgUnderCard,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10))),
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('28',
-                                    style: TextStyle(
-                                        color: Constants.colorTextAccent
-                                            .withOpacity(0.5),
-                                        fontSize: 16,
-                                        // fontFamily: 'Salsa',
-                                        fontWeight: FontWeight.bold)),
-                                Text('DEC',
-                                    style: TextStyle(
-                                        color: Constants.colorTextSecond,
-                                        fontSize: 12,
-                                        fontFamily: 'Salsa',
-                                        fontWeight: FontWeight.w600))
-                              ])),
-                      Padding(
-                          padding: EdgeInsets.only(left: 10),
-                          child:
-                              //
-                              SizedBox(
-                                  // width: 50,
-                                  height: 50,
-                                  // color: Colors.pink,
-                                  // decoration: BoxDecoration(
-                                  //     color: Constants.colorBackgroundUnderCard,
-                                  //     borderRadius:
-                                  //         BorderRadius.all(Radius.circular(10))),
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text('Saturday',
-                                            style: TextStyle(
-                                                color: Constants.colorTextAccent
-                                                    .withOpacity(0.5),
-                                                fontSize: 16,
-                                                // fontFamily: 'Salsa',
-                                                fontWeight: FontWeight.bold)),
-                                        Text('2024',
-                                            style: TextStyle(
-                                                color:
-                                                    Constants.colorTextSecond,
-                                                fontSize: 12,
-                                                fontFamily: 'Salsa',
-                                                fontWeight: FontWeight.w600))
-                                      ]))),
-                      const Spacer(),
-                      Padding(
-                          padding: EdgeInsets.only(right: 20),
-                          child: Row(children: [
-                            Icon(Icons.photo_library_sharp,
-                                size: 18,
-                                color:
-                                    Constants.colorTextAccent.withOpacity(0.5)),
-                            const SizedBox(width: 4),
-                            Text('64',
-                                style: TextStyle(
-                                    color: Constants.colorTextSecond,
-                                    fontSize: 12,
-                                    // fontFamily: 'Salsa',
-                                    fontWeight: FontWeight.bold)),
-                          ]))
-                    ])),
-                Padding(
-                    padding: EdgeInsets.only(
-                        left: 20, right: 20, top: 10, bottom: 10),
-                    child: Stack(children: [
-                      ClipRRect(
-                          borderRadius: BorderRadius.circular(20.0),
-                          child: Image.file(File(history.first.path),
-                              width: double.infinity,
-                              height: 180,
-                              fit: BoxFit.cover)),
-                      // Positioned(
-                      //     right: 5,
-                      //     bottom: 0,
-                      //     // top: 0,
-                      //     child: Container(
-                      //         // margin: EdgeInsets.only(top: 20, bottom: 20),
-                      //         decoration: BoxDecoration(
-                      //             // color: Colors.yellow,
-                      //             // color: Constants.colorBackgroundUnderCard
-                      //             //     .withOpacity(0.2),
-                      //             borderRadius: BorderRadius.all(
-                      //                 Radius.circular(10))),
-                      //         child: Row(children: [
-                      //           // Icon(Icons.image, color: Colors.white),
-                      //           Image.file(File(history.first.path),
-                      //               width: 80, height: 80),
-                      //           Image.file(File(history.first.path),
-                      //               width: 80, height: 80),
-                      //           Image.file(File(history.first.path),
-                      //               width: 80, height: 80),
-                      //         ])))
-                      // Positioned(
-                      //     right: 0,
-                      //     bottom: 0,
-                      //     child: Image.file(File(history.first.path),
-                      //         width: 80, height: 80)),
-                      // Positioned(
-                      //     right: 0,
-                      //     bottom: 40,
-                      //     child: Image.file(File(history.first.path),
-                      //         width: 80, height: 80)),
-                      // Positioned(
-                      //     right: 0,
-                      //     bottom: 80,
-                      //     child: Image.file(File(history.first.path),
-                      //         width: 80, height: 80))
-                    ]))
-                // body
-                // _itemSubLine(
-                //     text: 'Sessions',
-                //     value: '${history.length}',
-                //     firstLine: true),
-                // _itemSubLine(text: 'Images', value: '450', firstLine: false),
-                // _itemSubLine(text: 'Storage', value: '4.5Gb', firstLine: false)
-              ]),
-            // history.isNotEmpty
-            //     ? Container(
-            //         // color: Colors.pink,
-            //         height: 60,
-            //         width: double.infinity,
-            //         margin: const EdgeInsets.only(left: 10, right: 10, top: 15),
-            //         child: Row(children: [
-            //           ListView.builder(
-            //               scrollDirection: Axis.horizontal,
-            //               shrinkWrap: true,
-            //               itemCount: history.length,
-            //               itemBuilder: (context, index) {
-            //                 var i = history[index];
-            //                 return HistoryItemThumbnail(
-            //                     history: i,
-            //                     padding: const EdgeInsets.only(right: 2),
-            //                     size: const Size(50, 50),
-            //                     onPressed: () {
-            //                       NavigatorRep().routeBloc.goto(
-            //                           Panel(type: PageType.history, arg: i));
-            //                     });
-            //               })
-            //         ]))
-            //     : const Flexible(
-            //         child: Center(child: Text("You don't have history yet")))
-          ]));
+          height: ((270 + 28) * history.length).toDouble(),
+          decoration: const BoxDecoration(color: Constants.colorBgUnderCard),
+          width: 300,
+          child: history.isEmpty
+              ? const Center(child: Text('No history yet'))
+              : CustomScrollView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  slivers: [
+                      SliverList.builder(
+                          itemCount: history.length,
+                          itemBuilder: (context, index) {
+                            // if (index == 10 - 1) {
+                            //   return Padding(
+                            //       padding: const EdgeInsets.only(bottom: 20.0),
+                            //       child: _item1());
+                            // }
+                            var model = history[index];
+                            return HistoryItem(
+                                history: model,
+                                onPressed: () {
+                                  HistoryGridDialog()
+                                      .show(
+                                          context: context,
+                                          models: model.items,
+                                          // animationTicker: this,
+                                          initialIndex: index)
+                                      .then((value) {});
+                                });
+                          })
+                    ]));
     });
   }
 }

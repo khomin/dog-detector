@@ -229,18 +229,46 @@ class CapturePageState extends State<CapturePage>
                                 style: TextStyle(fontSize: 25))),
                         //
                         // duration
-                        StreamBuilder(
-                            stream: MyRep().onCaptureTime,
-                            builder: (context, snapshot) {
-                              var duration = snapshot.data;
-                              if (duration == null) {
-                                return const SizedBox();
-                              }
-                              return RoundBox(
-                                  text: duration.format(),
-                                  color: Constants.colorPrimary,
-                                  borderRadius: 40);
-                            }),
+                        Container(
+                            // color: Colors.pink.withOpacity(0.3),
+                            width: 130,
+                            height: 50,
+                            margin: EdgeInsets.only(left: 20),
+                            child: RepaintBoundary(
+                                child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                  StreamBuilder(
+                                      stream: MyRep().onCaptureTime,
+                                      builder: (context, snapshot) {
+                                        var duration = snapshot.data;
+                                        // if (duration == null) {
+                                        //   return const SizedBox();
+                                        // }
+                                        // return AnimatedOpacity(
+                                        //     opacity: duration == null ? 0.0 : 1.0,
+                                        //     duration: const Duration(seconds: 1),
+                                        //     child:
+                                        return AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 200),
+                                            // margin: EdgeInsets.only(left: 20),
+                                            // color: duration == null
+                                            //     ? Colors.transparent
+                                            //     : Constants.colorPrimary,
+                                            // width: 10,
+                                            // height: 10,
+                                            width: duration == null ? 10 : 130,
+                                            height: duration == null ? 10 : 30,
+                                            child: RoundBox(
+                                                text: duration?.format() ?? '',
+                                                // color: Constants.colorPrimary,
+                                                color: const Color.fromARGB(
+                                                        255, 211, 19, 5)
+                                                    .withOpacity(0.8),
+                                                borderRadius: 40));
+                                      })
+                                ]))),
                         const Spacer(),
                         CircleButton(
                             color: Colors.transparent,
@@ -312,20 +340,20 @@ class CapturePageState extends State<CapturePage>
                                                     StandardMessageCodec())))))
                       ]);
                     })),
-                Positioned.fill(
-                    child: Stack(alignment: Alignment.center, children: [
-                  RepaintBoundary(child: Builder(builder: (context) {
-                    var wait = context
-                        .select<RecordModel, bool>((v) => v.orientationpWait);
-                    if (wait) {
-                      return const SizedBox(
-                          width: 60,
-                          height: 60,
-                          child: CircularProgressIndicator());
-                    }
-                    return const SizedBox();
-                  }))
-                ])),
+                // Positioned.fill(
+                //     child: Stack(alignment: Alignment.center, children: [
+                //   RepaintBoundary(child: Builder(builder: (context) {
+                //     var wait = context
+                //         .select<RecordModel, bool>((v) => v.orientationpWait);
+                //     if (wait) {
+                //       return const SizedBox(
+                //           width: 60,
+                //           height: 60,
+                //           child: CircularProgressIndicator());
+                //     }
+                //     return const SizedBox();
+                //   }))
+                // ])),
                 //
                 // buttons
                 Positioned(left: 0, bottom: 0, right: 0, child: _buttons())

@@ -1,17 +1,27 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:flutter_demo/pages/components/animated_camera_button.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:flutter_demo/utils/file_utils.dart';
+import 'package:jiffy/jiffy.dart';
 import 'package:loggy/loggy.dart';
 import 'package:rxdart/rxdart.dart';
 
 class HistoryRecord {
   HistoryRecord(
-      {required this.date, required this.dateNice, required this.path});
+      {required this.date,
+      required this.dateHeader,
+      required this.dateSub,
+      required this.dateMonth,
+      required this.items,
+      required this.path});
   DateTime date;
-  String dateNice;
+  String dateHeader;
+  String dateSub;
+  String dateMonth;
   String path;
+  List<HistoryRecord> items;
 }
 
 class Camera {
@@ -192,23 +202,78 @@ class MyRep {
     try {
       var dir = Directory(path);
       var folders = dir.listSync();
-      for (var it in folders) {
-        var dir2 = Directory(it.path);
-        var files = dir2.listSync();
-
-        var name = FileUtils.getFileName(it.path);
-        var date = Common().parseFileNameToDate(name);
-
-        var file = files.firstOrNull;
-        if (file != null) {
-          // var name = FileUtils.getFileName(file.path);
-          // var date = Common().parseFileNameToDate(name);
-          history.add(HistoryRecord(
-              date: DateTime.now(),
-              dateNice: Common().formatDateInt(date.microsecondsSinceEpoch),
-              path: file.path));
+      var mapByYear = <int, Map<int, List<HistoryRecord>>>{};
+      var allFiles = <FileSystemEntity>[];
+      for (var folder in folders) {
+        var files = Directory(folder.path).listSync();
+        allFiles.addAll(files);
+        for (var file in files) {
+          var name = FileUtils.getFileName(file.path);
+          var date = Common().parseFileNameToDate(name);
+          var dayOfYear = Jiffy.parseFromDateTime(date).dayOfYear;
+          if (mapByYear[date.year] == null) {
+            mapByYear[date.year] = <int, List<HistoryRecord>>{};
+          }
+          mapByYear[date.year]?[dayOfYear] = [];
         }
       }
+      var now = DateTime.now();
+      for (var file in allFiles) {
+        var name = FileUtils.getFileName(file.path);
+        var date = Common().parseFileNameToDate(name);
+        String header = '';
+        String sub = '';
+        var dateJiffy = Jiffy.parseFromDateTime(date);
+        var jiffyNow = Jiffy.parseFromDateTime(now);
+
+        // same year & month & day:
+        //   header = Monday
+        //   sub    = Today
+        if (dateJiffy.year == jiffyNow.year &&
+            dateJiffy.dayOfYear == jiffyNow.dayOfYear) {
+          header = Common().dayOfWeekString(dateJiffy.dayOfWeek);
+          sub = 'Today';
+        } else if (dateJiffy.year == jiffyNow.year &&
+            dateJiffy.month == jiffyNow.month) {
+          // same year & month:
+          //   header = Monday
+          //   sub    = x days ago
+          header = Common().dayOfWeekString(dateJiffy.dayOfWeek);
+          var dayAgo = jiffyNow.dateTime.day - date.day;
+          sub = dayAgo == 1 ? '$dayAgo day ago' : '$dayAgo days ago';
+        } else {
+          // other year:
+          //   header = Monday
+          //   sub    = year
+          header = Common().dayOfWeekString(dateJiffy.dayOfWeek);
+          sub = dateJiffy.year.toString();
+        }
+        mapByYear[date.year]?[dateJiffy.dayOfYear]?.add(HistoryRecord(
+            date: date,
+            dateHeader: header,
+            dateSub: sub,
+            dateMonth: Common().monthString(date.month),
+            items: [],
+            path: file.path));
+      }
+      mapByYear.forEach((key, valueYear) {
+        valueYear.forEach((key, valueDayOfYear) {
+          valueDayOfYear.sort((a, b) {
+            return a.date.compareTo(b.date);
+          });
+          var item = valueDayOfYear.first;
+          history.add(HistoryRecord(
+              date: valueDayOfYear.first.date,
+              dateHeader: item.dateHeader,
+              dateSub: item.dateSub,
+              dateMonth: item.dateMonth,
+              items: valueDayOfYear,
+              path: item.path));
+        });
+      });
+      history.sort((a, b) {
+        return b.date.compareTo(a.date);
+      });
     } catch (ex) {
       logWarning('$tag: ex');
     }

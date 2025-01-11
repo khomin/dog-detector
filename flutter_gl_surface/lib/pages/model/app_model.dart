@@ -18,7 +18,7 @@ class AppModel with ChangeNotifier {
   }
 
   void setHistory(List<HistoryRecord> v) {
-    if (v != history) {
+    if (history != v) {
       history = v;
       notifyListeners();
     }
