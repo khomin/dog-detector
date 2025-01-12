@@ -2,12 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_demo/pages/components/animated_camera_button.dart';
+import 'package:flutter_demo/components/animated_camera_button.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:flutter_demo/utils/file_utils.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:loggy/loggy.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HistoryRecord with ChangeNotifier {
   HistoryRecord({
@@ -58,11 +59,12 @@ class MyRep {
   bool captureActive = false;
   final onFrameSize = BehaviorSubject<Size>.seeded(const Size(0, 0));
   final onCaptureTime = BehaviorSubject<CaptureTime?>();
-  var _frameSize = const Size(0, 0);
+  final onHistory = BehaviorSubject<List<HistoryRecord>>();
+  var historyCache = <HistoryRecord>[];
   // private
+  var _frameSize = const Size(0, 0);
   Timer? _captureTm;
   DateTime? _captureStart;
-  Duration? _captureDuration;
   static const _cameraChannel = MethodChannel('camera/cmd');
   static const _mainChannel = MethodChannel('main/cmd');
 
@@ -141,6 +143,8 @@ class MyRep {
       required int minArea,
       required int captureIntervalSec,
       required bool showAreaOnCapture}) async {
+    // TODO: wrong orientation
+    // TODO: wrong pixel format in files
     try {
       var r =
           await _cameraChannel.invokeMethod('start_camera', <String, dynamic>{
@@ -201,23 +205,20 @@ class MyRep {
           var duration = (_captureStart?.difference(DateTime.now()).abs()) ??
               Duration.zero;
           onCaptureTime.add(CaptureTime(duration: duration, isFirstEv: false));
-          _captureDuration = duration;
         });
-        _captureDuration = const Duration();
         onCaptureTime
             .add(CaptureTime(duration: const Duration(), isFirstEv: true));
       } else {
         _captureTm?.cancel();
         _captureStart = null;
-        _captureDuration = null;
         onCaptureTime.add(null);
       }
     }
   }
 
-  Future<List<HistoryRecord>> history() async {
-    var history = <HistoryRecord>[];
+  Future<List<HistoryRecord>> getHistory() async {
     var path = '${FileUtils.homeDir}/gallery/';
+    historyCache = [];
     try {
       var dir = Directory(path);
       var folders = dir.listSync();
@@ -281,7 +282,7 @@ class MyRep {
             return a.date.compareTo(b.date);
           });
           var item = valueDayOfYear.first;
-          history.add(HistoryRecord(
+          historyCache.add(HistoryRecord(
               date: valueDayOfYear.first.date,
               dateHeader: item.dateHeader,
               dateSub: item.dateSub,
@@ -290,46 +291,55 @@ class MyRep {
               path: item.path));
         });
       });
-      history.sort((a, b) {
+      historyCache.sort((a, b) {
         return b.date.compareTo(a.date);
       });
     } catch (ex) {
       logWarning('$tag: ex');
     }
-    return history;
+    onHistory.add(historyCache);
+    return historyCache;
   }
 
   void takeImage() {
     // TODO: image
   }
 
-  void share(List<HistoryRecord> list) {
-    // tODO: share
-  }
-
-  void delete(List<HistoryRecord> list) {
-    // TODO: delete
-  }
-
-  // Future<List<HistoryRecord>> history() async {
-  //   var history = <HistoryRecord>[];
-  //   var path = '${FileUtils.homeDir}/history/';
-  //   try {
-  //     var dir = Directory(path);
-  //     var folders = dir.listSync();
-  //     // top lavel
-  //     for (var it in folders) {
-  //       var dir2 = Directory(it.path);
-  //       var files = dir2.listSync();
-  //       // files
-  //       for (var it2 in files) {
-  //         history.add(HistoryRecord(
-  //             date: DateTime.now(), dateNice: 'Yesterday', path: it2.path));
-  //       }
-  //     }
-  //   } catch (ex) {
-  //     logWarning('$tag: ex');
+  // Future deleteAll(List<HistoryRecord> list) async {
+  //   // TODO: delete
+  //   for (var it in list) {
+  //     await File(it.path).delete();
+  //     await Directory(it.path).delete(recursive: true)
+  //     // historyCache.removeWhere((element) => element == it);
   //   }
-  //   return history;
   // }
+
+  Future delete(List<HistoryRecord> list) async {
+    // TODO: delete
+    for (var it in list) {
+      for (var it2 in it.items) {
+        try {
+          await File(it2.path).delete();
+        } catch (ex) {
+          logWarning('$tag: delete [$ex]');
+        }
+      }
+      try {
+        await File(it.path).delete();
+      } catch (ex) {
+        logWarning('$tag: delete [$ex]');
+      }
+      // await Directory(it.path).delete(recursive: true);
+      // historyCache.removeWhere((element) => element == it);
+    }
+  }
+
+  void share(List<HistoryRecord> list) {
+    if (list.isEmpty) return;
+    var listPath = <XFile>[];
+    for (var it in list) {
+      listPath.add(XFile(it.path));
+    }
+    Share.shareXFiles(listPath, text: 'Check out this image!');
+  }
 }

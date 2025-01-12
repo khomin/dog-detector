@@ -1,11 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/pages/components/click_detector.dart';
-import 'package:flutter_demo/pages/components/hover_click.dart';
+import 'package:flutter_demo/components/click_detector.dart';
+import 'package:flutter_demo/components/hover_click.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/selection_repo.dart';
 import 'package:flutter_demo/resource/constants.dart';
+import 'package:flutter_demo/resource/disposable_stream.dart';
 
 class ViewItem2 extends StatefulWidget {
   const ViewItem2(
@@ -29,6 +30,7 @@ class ViewItem2State extends State<ViewItem2> with TickerProviderStateMixin {
   late AnimationController _controller;
   late final Animation<double> _width;
   late final Animation<double> _opacity;
+  final _dispStream = DisposableStream();
 
   @override
   void initState() {
@@ -36,11 +38,7 @@ class ViewItem2State extends State<ViewItem2> with TickerProviderStateMixin {
 
     _controller = AnimationController(
         duration: const Duration(milliseconds: 200), vsync: this);
-    _controller.addStatusListener((status) {
-      //   if (status == AnimationStatus.completed) {
-      //     _controller.reverse();
-      //   }
-    });
+    _controller.addStatusListener((status) {});
 
     _width = Tween<double>(
       begin: 1.0,
@@ -54,6 +52,18 @@ class ViewItem2State extends State<ViewItem2> with TickerProviderStateMixin {
     ).animate(CurvedAnimation(
         parent: _controller.view,
         curve: const Interval(0.000, 0.50, curve: Curves.linear)));
+
+    if (widget.history.selection) {
+      _scale();
+    }
+
+    _dispStream.add(widget.selectionRep.selectedStream.listen((value) {
+      if (value == 0) {
+        widget.history.selection = false;
+        // _controller.forward();
+        _controller.reverse().orCancel;
+      }
+    }));
   }
 
   void _onClick() async {
@@ -88,6 +98,12 @@ class ViewItem2State extends State<ViewItem2> with TickerProviderStateMixin {
     } else {
       await _controller.forward().orCancel;
     }
+  }
+
+  @override
+  void dispose() {
+    _dispStream.dispose();
+    super.dispose();
   }
 
   @override

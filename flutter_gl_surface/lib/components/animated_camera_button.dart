@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_demo/pages/components/button_round_corner.dart';
-import 'package:flutter_demo/pages/components/circle_button.dart';
-import 'package:flutter_demo/pages/components/hover_click.dart';
-import 'package:flutter_demo/pages/components/my_cliper.dart';
+import 'package:flutter_demo/components/button_round_corner.dart';
+import 'package:flutter_demo/components/circle_button.dart';
+import 'package:flutter_demo/components/hover_click.dart';
+import 'package:flutter_demo/components/my_cliper.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/pages/model/record_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';

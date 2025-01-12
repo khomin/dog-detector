@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/pages/components/circle_button.dart';
+import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 

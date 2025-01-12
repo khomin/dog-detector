@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_demo/pages/components/animated_camera_button.dart';
-import 'package:flutter_demo/pages/components/animated_camera_buttons.dart';
-import 'package:flutter_demo/pages/components/animated_camera_menu.dart';
-import 'package:flutter_demo/pages/components/circle_button.dart';
-import 'package:flutter_demo/pages/components/hover_click.dart';
-import 'package:flutter_demo/pages/components/my_cliper.dart';
-import 'package:flutter_demo/pages/components/round_box.dart';
+import 'package:flutter_demo/components/animated_camera_button.dart';
+import 'package:flutter_demo/components/animated_camera_buttons.dart';
+import 'package:flutter_demo/components/animated_camera_menu.dart';
+import 'package:flutter_demo/components/circle_button.dart';
+import 'package:flutter_demo/components/hover_click.dart';
+import 'package:flutter_demo/components/my_cliper.dart';
+import 'package:flutter_demo/components/round_box.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/pages/model/record_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
@@ -391,7 +391,7 @@ class CapturePageState extends State<CapturePage>
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   //
-                  // last captured frame
+                  // TODO: last captured frame
                   Container(
                       width: 55,
                       height: 55,
@@ -401,6 +401,7 @@ class CapturePageState extends State<CapturePage>
                       child: const Center(child: Text('TODO'))),
                   //
                   // center
+                  // TODO: start-stopAnalize or something
                   AnimatedCameraButton(
                       activeDefault: MyRep().captureActive,
                       onCapture: () {
@@ -411,6 +412,7 @@ class CapturePageState extends State<CapturePage>
                       }),
                   //
                   // right
+                  // TODO: initial value with no animation
                   RepaintBoundary(child: Builder(builder: (context) {
                     var camera =
                         context.select<RecordModel, Camera?>((v) => v.camera);

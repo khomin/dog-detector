@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/pages/model/camera_model.dart';
-import 'package:flutter_demo/pages/settings_page.dart';
-import 'package:flutter_demo/pages/camera_settings_page.dart';
-import 'package:flutter_demo/pages/components/hover_click.dart';
-import 'package:flutter_demo/pages/alert_page.dart';
-import 'package:flutter_demo/pages/home_page.dart';
+import 'package:flutter_demo/pages/settings/settings_page.dart';
+import 'package:flutter_demo/components/camera_settings_page.dart';
+import 'package:flutter_demo/components/hover_click.dart';
+import 'package:flutter_demo/pages/alert/alert_page.dart';
+import 'package:flutter_demo/pages/home/home_page.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
-import 'package:flutter_demo/pages/capture_page.dart';
+import 'package:flutter_demo/pages/capture/capture_page.dart';
 import 'package:flutter_demo/pages/model/record_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
@@ -151,7 +151,7 @@ class AppState extends State<App> {
                                                     label: 'Home'),
                                                 BottomNavigationBarItem(
                                                     icon: Icon(Icons
-                                                        .photo_camera_front_sharp),
+                                                        .create_new_folder_rounded),
                                                     label: 'Capture'),
                                                 BottomNavigationBarItem(
                                                     icon: Icon(

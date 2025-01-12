@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/pages/components/circle_button.dart';
-import 'package:flutter_demo/pages/home/view_item1.dart';
+import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
-import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:provider/provider.dart';
 
@@ -19,16 +17,6 @@ class AlertPageState extends State<AlertPage> {
   @override
   void initState() {
     super.initState();
-
-    Future.microtask(() {
-      _fetch();
-    });
-  }
-
-  Future _fetch() async {
-    var history = await MyRep().history();
-    if (!mounted) return;
-    context.read<AppModel>().setHistory(history);
   }
 
   @override

@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter_demo/pages/components/circle_button.dart';
+import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
+import 'package:flutter_demo/repo/selection_repo.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
@@ -11,7 +12,6 @@ class FullViewDialog {
   Future<FullViewItem?> show(
       {required BuildContext context,
       GlobalKey? key,
-      // required TickerProvider animationTicker,
       required List<HistoryRecord> models,
       int initialIndex = 0}) {
     return showGeneralDialog(
@@ -200,8 +200,8 @@ class FullViewItemState extends State<FullViewItem> {
               radius: 20,
               useScaleAnimation: true,
               iconData: Icons.share,
-              onPressed: (v) {
-                MyRep().share(widget.history);
+              onPressed: (_) {
+                MyRep().share([_current.model]);
               })
         ]));
   }

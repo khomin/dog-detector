@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_demo/pages/components/circle_button.dart';
+import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/pages/home/view_item1.dart';
 import 'package:flutter_demo/pages/home/view_item2.dart';
 import 'package:flutter_demo/pages/home/history_view_dialog.dart';
@@ -127,11 +127,14 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
 
   @override
   void dispose() {
-    super.dispose();
     _scrollController.dispose();
     _animationController.dispose();
+    for (var it in widget.history) {
+      it.selection = false;
+    }
     _testTimer?.cancel();
     _dispStream.dispose();
+    super.dispose();
   }
 
   // void _animation() {
@@ -177,21 +180,6 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
               //     (Platform.isIOS || Platform.isAndroid) ? 0 : null,
               title: _header()),
           body: Column(children: [
-            // Text('ddjd'),
-            // TOOD: header
-            // _header(),
-            // DialogHeader(
-            //     isCollapsed: true,
-            //     height: UiHelper.isMobile()
-            //         ? ConstValues.dialogHeaderLargeHeight
-            //         : ConstValues.dialogHeaderMiddle,
-            //     color: Colors.black.withOpacity(0.9),
-            //     close: () {
-            //       Navigator.pop(context);
-            //     },
-            //     child: _header()),
-            //
-            // pageBuilder
             _view()
             // _page()
           ]));
@@ -240,7 +228,6 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
               stream: _selectionRep.selectedStream,
               builder: (context, snapshot) {
                 var cnt = snapshot.data ?? 0;
-
                 return Row(children: [
                   Row(children: [
                     const SizedBox(width: 25),
@@ -273,8 +260,10 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
                               radius: 20,
                               iconData: Icons.share,
                               useScaleAnimation: true,
-                              onPressed: (v) {
-                                MyRep().share(widget.history);
+                              onPressed: (_) {
+                                var v =
+                                    _selectionRep.getSelected(SearchType.media);
+                                MyRep().share(v);
                               })
                         ]))
                   ]),
@@ -284,14 +273,14 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
                       iconColor: Constants.colorTextAccent.withOpacity(0.8),
                       size: 50,
                       radius: 18,
-                      // margin: EdgeInsets.only(bottom: 10),
                       vertTransform: true,
                       iconData: Icons.close,
-                      // iconData: Icons.arrow_back_ios,
                       onPressed: (p0) {
-                        Navigator.of(context).pop();
-                        // var model = context.read<AppModel>();
-                        // model.setCollapse(!model.collapse);
+                        if (_selectionRep.selectedCnt > 0) {
+                          _selectionRep.stopSelection();
+                        } else {
+                          Navigator.of(context).pop();
+                        }
                       }),
                   const SizedBox(width: 8)
                 ]);

@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/pages/components/circle_button.dart';
-import 'package:flutter_demo/pages/components/click_detector.dart';
-import 'package:flutter_demo/pages/components/hover_click.dart';
-import 'package:flutter_demo/pages/components/slidable_item.dart';
+import 'package:flutter_demo/components/circle_button.dart';
+import 'package:flutter_demo/components/click_detector.dart';
+import 'package:flutter_demo/components/hover_click.dart';
+import 'package:flutter_demo/components/slidable_item.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -15,12 +15,14 @@ class ViewItem1 extends StatefulWidget {
   const ViewItem1(
       {required this.history,
       required this.onPressed,
+      required this.onDelete,
       this.size,
       this.padding,
       this.showText = true,
       super.key});
   final HistoryRecord history;
   final Function() onPressed;
+  final Function() onDelete;
   final Size? size;
   final EdgeInsets? padding;
   final bool showText;
@@ -55,9 +57,9 @@ class ViewItem1State extends State<ViewItem1> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    super.dispose();
     _controller.dispose();
     _slideCtr.dispose();
+    super.dispose();
   }
 
   void _onClick() async {
@@ -99,7 +101,7 @@ class ViewItem1State extends State<ViewItem1> with TickerProviderStateMixin {
               iconData: Icons.delete_outline,
               onPressed: (v) {
                 _slideCtr.close();
-                MyRep().delete([history]);
+                widget.onDelete();
               }),
           direction: SlideDirection.right,
           child: ClickDetector(

@@ -113,34 +113,37 @@ class SelectionRep {
   //   }
   // }
 
-  // Future stopSearch({bool mounted = true}) async {
-  //   try {
-  //     _scan?.clear();
-  //     _scan?.stop();
-  //     onBusy.add(false);
-  //     _scan?.onAllMsgCount = null;
-  //     _scan?.onBusy = null;
-  //     _scan?.onMediaMsgCount = null;
-  //     _scan?.onFileMsgCount = null;
-  //     _scan?.onLinkMsgCount = null;
-  //     _scan?.onResult = null;
-  //     active = false;
-  //     onStatus.add(SearchStatus.off);
-  //     onForward.add([]);
-  //     selectedStream.add(0);
-  //   } catch (ex) {
-  //     logWarning('$tag: stop, ex: [$ex]');
-  //   }
-  // }
+  Future stopSelection({bool mounted = true}) async {
+    try {
+      // _scan?.clear();
+      // _scan?.stop();
+      onBusy.add(false);
+      // _scan?.onAllMsgCount = null;
+      // _scan?.onBusy = null;
+      // _scan?.onMediaMsgCount = null;
+      // _scan?.onFileMsgCount = null;
+      // _scan?.onLinkMsgCount = null;
+      // _scan?.onResult = null;
+      for (var it in history) {
+        it.selection = false;
+      }
+      active = false;
+      onStatus.add(SearchStatus.off);
+      onForward.add([]);
+      selectedStream.add(0);
+    } catch (ex) {
+      logWarning('$tag: stop, ex: [$ex]');
+    }
+  }
 
-  void forwardSelected(SearchType type) {
-    Iterable<HistoryRecord> list;
+  List<HistoryRecord> getSelected(SearchType type) {
+    var list = <HistoryRecord>[];
     switch (type) {
       // case SearchType.text:
       //   list = textResult.where((it) => it.isSelected);
       //   break;
       case SearchType.media:
-        list = history.where((it) => it.selection);
+        list = history.where((it) => it.selection).toList();
         break;
       // case SearchType.file:
       //   list = fileList.where((it) => it.isSelected);
@@ -149,13 +152,38 @@ class SelectionRep {
       //   list = linkList.where((it) => it.isSelected);
       //   break;
     }
-    if (list.isEmpty) return;
+    if (list.isEmpty) return [];
     selectedStream.add(0);
-    onForward.add(list.toList());
+    // onForward.add(list.toList());
     for (var it in list) {
       it.selection = false;
     }
+    return list;
   }
+
+  // void forwardSelected(SearchType type) {
+  //   Iterable<HistoryRecord> list;
+  //   switch (type) {
+  //     // case SearchType.text:
+  //     //   list = textResult.where((it) => it.isSelected);
+  //     //   break;
+  //     case SearchType.media:
+  //       list = history.where((it) => it.selection);
+  //       break;
+  //     // case SearchType.file:
+  //     //   list = fileList.where((it) => it.isSelected);
+  //     //   break;
+  //     // case SearchType.links:
+  //     //   list = linkList.where((it) => it.isSelected);
+  //     //   break;
+  //   }
+  //   if (list.isEmpty) return;
+  //   selectedStream.add(0);
+  //   onForward.add(list.toList());
+  //   for (var it in list) {
+  //     it.selection = false;
+  //   }
+  // }
 
   void releaseSelection() {
     var v = selectedStream.valueOrNull ?? 0;

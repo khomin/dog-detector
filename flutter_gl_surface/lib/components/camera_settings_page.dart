@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/pages/components/circle_button.dart';
-import 'package:flutter_demo/pages/components/custom_checkbox.dart';
+import 'package:flutter_demo/components/circle_button.dart';
+import 'package:flutter_demo/components/custom_checkbox.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/pages/model/camera_model.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
