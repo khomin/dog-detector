@@ -1,20 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
-import 'package:flutter_demo/pages/components/hover_click.dart';
-import 'package:flutter_demo/pages/components/my_cliper.dart';
-import 'package:flutter_demo/pages/model/app_model.dart';
-import 'package:flutter_demo/pages/model/record_model.dart';
-import 'package:flutter_demo/repo/my_rep.dart';
-import 'package:flutter_demo/repo/nav_rep.dart';
-import 'package:flutter_demo/repo/settings_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
-import 'package:flutter_demo/resource/disposable_stream.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:loggy/loggy.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 class AnimatedCameraButtons extends StatefulWidget {
@@ -66,7 +54,7 @@ class AnimatedCameraButtonsState extends State<AnimatedCameraButtons>
 
     tabInfoItems = [
       for (final tab in tabs)
-        CircleButton(
+        RoundButton(
             color: Constants.colorBgUnderCard.withOpacity(0.3),
             iconColor: Constants.colorCard.withOpacity(0.8),
             size: 55,
@@ -135,20 +123,6 @@ class AnimatedCameraButtonsState extends State<AnimatedCameraButtons>
         curve: const Interval(0.150, 0.225, curve: Curves.easeIn)));
   }
 
-  Future<void> _playAnimation() async {
-    try {
-      if (_controller.isForwardOrCompleted) {
-        // _doStop();
-        await _controller.reverse().orCancel;
-      } else {
-        // _doPlay();
-        await _controller.forward().orCancel;
-      }
-    } on TickerCanceled {
-      // The animation got canceled, probably because we were disposed.
-    }
-  }
-
   // void _doPlay() {
   //   Timer(Duration(milliseconds: 1), () {
   //     setState(() {
@@ -193,6 +167,7 @@ class AnimatedCameraButtonsState extends State<AnimatedCameraButtons>
   @override
   void dispose() {
     super.dispose();
+    _controller.dispose();
     // _dispStream.dispose();
     // _model.setRun(run: false, camera: null, mounted: false);
     // MyRep().stopCamera();

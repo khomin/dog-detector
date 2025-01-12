@@ -18,6 +18,8 @@ class Constants {
   static const colorButtonBg = Colors.black12;
   static const colorButton = Colors.black26;
 
+  static const colorButtonRed = Color.fromARGB(255, 214, 24, 10);
+
   static const defaultCamera = 'Back';
 
   static const duration = Duration(milliseconds: 200);

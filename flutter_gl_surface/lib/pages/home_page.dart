@@ -3,12 +3,15 @@ import 'dart:io';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
-import 'package:flutter_demo/pages/home/history_grid_dialog.dart';
-import 'package:flutter_demo/pages/home/history_item.dart';
+import 'package:flutter_demo/pages/components/hover_click.dart';
+import 'package:flutter_demo/pages/components/round_box.dart';
+import 'package:flutter_demo/pages/home/grid_dialog.dart';
+import 'package:flutter_demo/pages/home/view_item1.dart';
 import 'package:flutter_demo/pages/home/history_view_dialog.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
+import 'package:flutter_demo/utils/common.dart';
 import 'package:provider/provider.dart';
 
 class MainPage extends StatefulWidget {
@@ -18,13 +21,36 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => MainPageState();
 }
 
-class MainPageState extends State<MainPage> {
+class MainPageState extends State<MainPage> with TickerProviderStateMixin {
   final _scrollCtr = ScrollController();
   final _focus = FocusNode();
+  // var _test = false;
+  late final Animation<double> _width;
+  late final Animation<double> _opacity;
+  late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+
+    _width = Tween<double>(
+      begin: kToolbarHeight,
+      end: kToolbarHeight * 3,
+    ).animate(CurvedAnimation(
+        parent: _controller.view,
+        curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
+
+    _opacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+        parent: _controller.view,
+        curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
 
     Future.microtask(() {
       _fetch();
@@ -46,6 +72,14 @@ class MainPageState extends State<MainPage> {
     _scrollCtr.dispose();
   }
 
+  void _handleOnSlide() {
+    if (_controller.isForwardOrCompleted) {
+      _controller.reverse().orCancel;
+    } else {
+      _controller.forward().orCancel;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,18 +88,161 @@ class MainPageState extends State<MainPage> {
             physics: const ClampingScrollPhysics(),
             controller: _scrollCtr,
             slivers: [
-              const SliverAppBar(
-                  backgroundColor: Constants.colorBar,
-                  toolbarHeight: kToolbarHeight,
-                  flexibleSpace: FlexibleSpaceBar(
-                      title: Row(children: [
-                        Padding(
-                            padding: EdgeInsets.only(left: 25),
-                            child:
-                                Text('Home', style: TextStyle(fontSize: 25))),
-                        Spacer(),
-                      ]),
-                      centerTitle: true)),
+              AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return SliverAppBar(
+                        backgroundColor: Constants.colorBar,
+                        toolbarHeight: _width.value,
+                        // toolbarHeight: _test ? kToolbarHeight * 2 : kToolbarHeight,
+                        // expandedHeight: kToolbarHeight,
+                        // collapsedHeight: kToolbarHeight,
+                        flexibleSpace: Stack(
+                            // alignment: Alignment.center,
+                            children: [
+                              Positioned(
+                                  bottom: 0,
+                                  left: 0,
+                                  right: 0,
+                                  child: Opacity(
+                                      opacity: _opacity.value,
+                                      // opacity: 1,
+                                      child: SizedBox(
+                                          height: _width.value / 1.5,
+                                          // color: Colors.purple.withOpacity(0.3),
+                                          child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                RoundButton(
+                                                    color: Constants
+                                                        .colorButtonRed
+                                                        .withOpacity(0.8),
+                                                    iconColor: Constants
+                                                        .colorCard
+                                                        .withOpacity(0.8),
+                                                    size: 55,
+                                                    radius: 20,
+                                                    useScaleAnimation: true,
+                                                    iconData:
+                                                        Icons.delete_outline,
+                                                    onPressed: (v) {
+                                                      MyRep().setCaptureActive(
+                                                          false);
+                                                      _handleOnSlide();
+                                                    }),
+                                                const SizedBox(width: 15),
+                                                RoundButton(
+                                                    color: Constants
+                                                        .colorSecondary
+                                                        .withOpacity(0.8),
+                                                    iconColor: Constants
+                                                        .colorCard
+                                                        .withOpacity(0.8),
+                                                    size: 55,
+                                                    radius: 20,
+                                                    useScaleAnimation: true,
+                                                    iconData: Icons.close,
+                                                    onPressed: (v) {
+                                                      _handleOnSlide();
+                                                    })
+                                              ])))),
+                              Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  // right: 0,
+                                  child: Container(
+                                      color: Constants.colorBar,
+                                      height: kToolbarHeight,
+                                      child: Row(children: [
+                                        Container(
+                                            width: 100,
+                                            // color: Colors.yellow,
+                                            margin:
+                                                const EdgeInsets.only(left: 25),
+                                            child: const Text('Home',
+                                                style: TextStyle(
+                                                  // fontFamily: 'Sulphur',
+                                                  fontSize: 25,
+                                                  // color: Colors.black38,
+                                                  // fontWeight: FontWeight.bold
+                                                ))),
+                                        //
+                                        // duration
+                                        HoverClick(
+                                            onPressedL: (p0) async {
+                                              _handleOnSlide();
+                                            },
+                                            child: SizedBox(
+                                                width: 130,
+                                                height: 50,
+                                                // color: Colors.orange,
+                                                // margin: const EdgeInsets.only(
+                                                //     left: 20),
+                                                child: RepaintBoundary(
+                                                    child: Stack(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        children: [
+                                                      StreamBuilder(
+                                                          stream: MyRep()
+                                                              .onCaptureTime,
+                                                          initialData: MyRep()
+                                                              .onCaptureTime
+                                                              .valueOrNull,
+                                                          builder: (context,
+                                                              snapshot) {
+                                                            var duration =
+                                                                snapshot.data;
+                                                            return AnimatedContainer(
+                                                                duration:
+                                                                    Duration
+                                                                        .zero,
+                                                                width:
+                                                                    duration ==
+                                                                            null
+                                                                        ? 10
+                                                                        : 130,
+                                                                height:
+                                                                    duration ==
+                                                                            null
+                                                                        ? 10
+                                                                        : 30,
+                                                                child: RoundBox(
+                                                                    text: duration
+                                                                            ?.duration
+                                                                            .format() ??
+                                                                        '',
+                                                                    color: const Color
+                                                                            .fromARGB(
+                                                                            255,
+                                                                            211,
+                                                                            19,
+                                                                            5)
+                                                                        .withOpacity(
+                                                                            0.8),
+                                                                    borderRadius:
+                                                                        40));
+                                                          }),
+                                                      // Positioned(
+                                                      //     bottom: 0, child: Text('1'))
+                                                    ])))),
+                                        const Spacer(),
+                                        // RoundButton(
+                                        //     color: Colors.transparent,
+                                        //     iconColor: Constants.colorTextAccent
+                                        //         .withOpacity(0.8),
+                                        //     size: 70,
+                                        //     iconData: Icons.close_sharp,
+                                        //     onPressed: (p0) async {
+                                        //       var model =
+                                        //           context.read<AppModel>();
+                                        //       model.setCollapse(!model.collapse);
+                                        //     })
+                                      ])))
+                            ]));
+                  }),
               SliverToBoxAdapter(child: _header()),
               //
               // -
@@ -84,7 +261,7 @@ class MainPageState extends State<MainPage> {
   }
 
   Widget _header() {
-    return Container(
+    return SizedBox(
         width: 300,
         height: 60,
         // color: Colors.pink,
@@ -151,7 +328,7 @@ class MainPageState extends State<MainPage> {
                                           fontFamily: 'Sulphur',
                                           fontWeight: FontWeight.bold),
                                       cursorColor: Constants.colorTextSecond)),
-                              CircleButton(
+                              RoundButton(
                                   iconData: Icons.calendar_month,
                                   color: Colors.transparent,
                                   iconSize: 28,
@@ -227,10 +404,10 @@ class MainPageState extends State<MainPage> {
                             //       child: _item1());
                             // }
                             var model = history[index];
-                            return HistoryItem(
+                            return ViewItem1(
                                 history: model,
                                 onPressed: () {
-                                  HistoryGridDialog()
+                                  GridDialog()
                                       .show(
                                           context: context,
                                           models: model.items,

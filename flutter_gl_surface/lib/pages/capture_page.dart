@@ -144,7 +144,7 @@ class CapturePageState extends State<CapturePage>
     // final orientation = MediaQuery.of(context).orientation;
     var view = View.of(context).platformDispatcher.views.first;
     var size = view.physicalSize / view.devicePixelRatio;
-    print("BTEST_Current size: $size");
+    // print("BTEST_Current size: $size");
     logDebug('BTEST: didChange');
     _model.setOrientationWait(true);
     _updateLayoutTm?.cancel();
@@ -223,23 +223,27 @@ class CapturePageState extends State<CapturePage>
                   child: SizedBox(
                       height: kToolbarHeight,
                       child: Row(children: [
-                        const Padding(
-                            padding: EdgeInsets.only(left: 25),
-                            child: Text('Capture',
+                        Container(
+                            width: 100,
+                            // color: Colors.yellow,
+                            margin: const EdgeInsets.only(left: 25),
+                            child: const Text('Capture',
                                 style: TextStyle(fontSize: 25))),
                         //
                         // duration
-                        Container(
+                        SizedBox(
                             // color: Colors.pink.withOpacity(0.3),
                             width: 130,
                             height: 50,
-                            margin: EdgeInsets.only(left: 20),
+                            // margin: EdgeInsets.only(left: 20),
                             child: RepaintBoundary(
                                 child: Stack(
                                     alignment: Alignment.center,
                                     children: [
                                   StreamBuilder(
                                       stream: MyRep().onCaptureTime,
+                                      initialData:
+                                          MyRep().onCaptureTime.valueOrNull,
                                       builder: (context, snapshot) {
                                         var duration = snapshot.data;
                                         // if (duration == null) {
@@ -251,7 +255,7 @@ class CapturePageState extends State<CapturePage>
                                         //     child:
                                         return AnimatedContainer(
                                             duration: const Duration(
-                                                milliseconds: 200),
+                                                milliseconds: 100),
                                             // margin: EdgeInsets.only(left: 20),
                                             // color: duration == null
                                             //     ? Colors.transparent
@@ -261,8 +265,9 @@ class CapturePageState extends State<CapturePage>
                                             width: duration == null ? 10 : 130,
                                             height: duration == null ? 10 : 30,
                                             child: RoundBox(
-                                                text: duration?.format() ?? '',
-                                                // color: Constants.colorPrimary,
+                                                text: duration?.duration
+                                                        .format() ??
+                                                    '',
                                                 color: const Color.fromARGB(
                                                         255, 211, 19, 5)
                                                     .withOpacity(0.8),
@@ -270,7 +275,7 @@ class CapturePageState extends State<CapturePage>
                                       })
                                 ]))),
                         const Spacer(),
-                        CircleButton(
+                        RoundButton(
                             color: Colors.transparent,
                             iconColor:
                                 Constants.colorTextAccent.withOpacity(0.8),
@@ -390,17 +395,20 @@ class CapturePageState extends State<CapturePage>
                   Container(
                       width: 55,
                       height: 55,
-                      child: const Center(child: Text('TODO')),
                       decoration: const BoxDecoration(
                           color: Constants.colorButton,
-                          borderRadius: BorderRadius.all(Radius.circular(30)))),
+                          borderRadius: BorderRadius.all(Radius.circular(30))),
+                      child: const Center(child: Text('TODO'))),
                   //
                   // center
-                  AnimatedCameraButton(onCapture: () {
-                    MyRep().setCaptureActive(true);
-                  }, onStop: () {
-                    MyRep().setCaptureActive(false);
-                  }),
+                  AnimatedCameraButton(
+                      activeDefault: MyRep().captureActive,
+                      onCapture: () {
+                        MyRep().setCaptureActive(true);
+                      },
+                      onStop: () {
+                        MyRep().setCaptureActive(false);
+                      }),
                   //
                   // right
                   RepaintBoundary(child: Builder(builder: (context) {
@@ -410,7 +418,7 @@ class CapturePageState extends State<CapturePage>
                         turns:
                             camera?.facing == Constants.defaultCamera ? 0 : 0.5,
                         duration: Constants.duration * 2,
-                        child: CircleButton(
+                        child: RoundButton(
                             color: Constants.colorButton,
                             iconColor: Constants.colorCard.withOpacity(0.8),
                             size: 55,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class CircleButton extends StatefulWidget {
-  const CircleButton(
+class RoundButton extends StatefulWidget {
+  const RoundButton(
       {required this.iconData,
       required this.color,
       required this.iconColor,
@@ -11,6 +11,7 @@ class CircleButton extends StatefulWidget {
       this.useScaleAnimation = false,
       this.iconSize,
       this.vertTransform = false,
+      this.radius = 30,
       this.size,
       super.key});
   final IconData iconData;
@@ -22,13 +23,14 @@ class CircleButton extends StatefulWidget {
   final double? size;
   final double? iconSize;
   final bool vertTransform;
+  final double radius;
   final Function(Offset)? onPressed;
 
   @override
-  CircleButtonState createState() => CircleButtonState();
+  RoundButtonState createState() => RoundButtonState();
 }
 
-class CircleButtonState extends State<CircleButton>
+class RoundButtonState extends State<RoundButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -66,7 +68,6 @@ class CircleButtonState extends State<CircleButton>
         width: widget.size,
         margin: widget.margin,
         child: Stack(children: [
-          // 2
           ElevatedButton(
               onPressed: () async {
                 widget.onPressed?.call(Offset.zero);
@@ -78,7 +79,8 @@ class CircleButtonState extends State<CircleButton>
               },
               key: widget.key,
               style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(widget.radius)),
                   shadowColor: widget.color,
                   fixedSize:
                       size2 != null ? Size(size2, size2) : const Size(50, 50),

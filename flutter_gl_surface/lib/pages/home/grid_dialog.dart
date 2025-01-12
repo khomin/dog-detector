@@ -2,18 +2,20 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
-import 'package:flutter_demo/pages/home/history_item.dart';
-import 'package:flutter_demo/pages/home/history_item_thumb.dart';
+import 'package:flutter_demo/pages/home/view_item1.dart';
+import 'package:flutter_demo/pages/home/view_item2.dart';
 import 'package:flutter_demo/pages/home/history_view_dialog.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
+import 'package:flutter_demo/repo/selection_repo.dart';
 import 'package:flutter_demo/resource/constants.dart';
+import 'package:flutter_demo/resource/disposable_stream.dart';
 import 'package:loggy/loggy.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:flutter/material.dart';
 
-class HistoryGridDialog {
-  Future<HistoryViewBox?> show(
+class GridDialog {
+  Future<FullViewItem?> show(
       {required BuildContext context,
       GlobalKey? key,
       // required TickerProvider animationTicker,
@@ -56,16 +58,22 @@ class HistoryGridBox extends StatefulWidget {
   State<HistoryGridBox> createState() => HistoryBoxDialogState();
 }
 
-class HistoryBoxDialogState extends State<HistoryGridBox> {
+class HistoryBoxDialogState extends State<HistoryGridBox>
+    with TickerProviderStateMixin {
   // late Current _current;
   // var _doNotScroollToPreviewItem = false;
   // final _scrollTouch = ScrollTouch();
   // late PageController pageController;
   // final List<TransformationController> _controllerList = [];
   // final FocusNode _rawKeyLister = FocusNode();
-  final ScrollController _scrollController = ScrollController();
+  final _scrollController = ScrollController();
+  late final SelectionRep _selectionRep;
   // late ListObserverController _observerController;
   // late final PageController _controller;
+  late AnimationController _animationController;
+  late final Animation<double> _scaleAnimation;
+  var _selectionActive = false;
+  final _dispStream = DisposableStream();
   Timer? _testTimer;
   final tag = 'mediaView';
 
@@ -73,7 +81,39 @@ class HistoryBoxDialogState extends State<HistoryGridBox> {
   void initState() {
     super.initState();
 
-    var startModel = widget.history[widget.initialIndex];
+    _selectionRep = SelectionRep(history: widget.history);
+    // var startModel = widget.history[widget.initialIndex];
+
+    _animationController = AnimationController(
+        duration: const Duration(milliseconds: 200), vsync: this);
+    _animationController.addStatusListener((status) {
+      //   if (status == AnimationStatus.completed) {
+      //     _controller.reverse();
+      //   }
+    });
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+        parent: _animationController.view,
+        curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
+
+    _dispStream.add(_selectionRep.selectedStream.listen((value) {
+      if (value == 0) {
+        _animationController.reverse().orCancel;
+      } else {
+        if (!_selectionActive) {
+          if (_animationController.isForwardOrCompleted) {
+            _animationController.reverse().orCancel;
+          } else {
+            _animationController.forward().orCancel;
+          }
+        }
+      }
+      _selectionActive = value > 0;
+    }));
+
     // _current = Current(index: 0, model: startModel);
     // _current.index = widget.initialIndex;
     // _current.model = startModel;
@@ -89,23 +129,32 @@ class HistoryBoxDialogState extends State<HistoryGridBox> {
   void dispose() {
     super.dispose();
     _scrollController.dispose();
-    // _rawKeyLister.dispose();
+    _animationController.dispose();
     _testTimer?.cancel();
+    _dispStream.dispose();
   }
 
-  void _saveFile() async {
-    // var model = _current.model;
-    // if (model == null) return;
-    // var path = await FileUtils.getDowloadPath(model.record.fileRec.fileName);
-    // if (path == null) return;
-    // if (await MsgRep.saveFileToDir(record: model.record, path: path)) {
-    //   if (mounted) {
-    //     UiHelper.showToast(context, 'Saved in $path', type: ToastType.normal);
-    //   }
-    // } else {
-    //   if (mounted) UiHelper.showToast(context, 'Error');
-    // }
-  }
+  // void _animation() {
+  // if (_animationController.isForwardOrCompleted) {
+  //   _animationController.reverse().orCancel;
+  // } else {
+  //   _animationController.forward().orCancel;
+  // }
+  // }
+
+  // void _saveFile() async {
+  // var model = _current.model;
+  // if (model == null) return;
+  // var path = await FileUtils.getDowloadPath(model.record.fileRec.fileName);
+  // if (path == null) return;
+  // if (await MsgRep.saveFileToDir(record: model.record, path: path)) {
+  //   if (mounted) {
+  //     UiHelper.showToast(context, 'Saved in $path', type: ToastType.normal);
+  //   }
+  // } else {
+  //   if (mounted) UiHelper.showToast(context, 'Error');
+  // }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -164,93 +213,89 @@ class HistoryBoxDialogState extends State<HistoryGridBox> {
               shrinkWrap: true,
               physics: const ClampingScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-              ),
+                  crossAxisCount: 3),
               itemBuilder: (context, index) {
                 var model = widget.history[index];
                 // return Container(color: Colors.pink, width: 100, height: 100);
-                return HistoryItemThumbnail(
+                return ViewItem2(
                     history: model,
                     size: itemWidth.toInt() - 2,
-                    // padding: EdgeInsets.zero,
-                    padding: EdgeInsets.all(1),
+                    selectionRep: _selectionRep,
+                    padding: const EdgeInsets.all(1),
                     onPressed: () {
-                      HistoryViewBoxDialog().show(
+                      FullViewDialog().show(
                           context: context,
                           models: widget.history,
                           initialIndex: index);
                     });
-                // return HistoryViewBox(
-                //     history: widget.history,
-                //     // animationTicker: this,
-                //     initialIndex: index);
               }))
-
-      // Expanded(
-      // child: ScrollConfiguration(
-      //     behavior: NoGlowBehavior(),
-      //     child: GridView.builder(
-      //         itemCount: widget.history.length,
-      //         padding: EdgeInsets.zero,
-      //         // shrinkWrap: true,
-      //         physics: const ClampingScrollPhysics(),
-      //         gridDelegate:
-      //             const SliverGridDelegateWithFixedCrossAxisCount(
-      //           crossAxisCount: 3,
-      //         ),
-      //         itemBuilder: (context, index) {
-      //           // var model = widget.history[index];
-      //           return Container(
-      //               color: Colors.pink, width: 100, height: 100);
-      //           return HistoryViewBox(
-      //               history: widget.history,
-      //               // animationTicker: this,
-      //               initialIndex: index);
-      //           // .then((value) {});
-      //           // return MenuClick(
-      //           //     model: model,
-      //           //     type: ClickType.search,
-      //           //     room: widget.controller.room,
-      //           //     child: MsgBodyThumbnailGalery(
-      //           //         model: model,
-      //           //         room: widget.room,
-      //           //         key: ValueKey('${model.record.sendId}-galery'),
-      //           //         selectedStream: selectedStream,
-      //           //         width: itemWidth,
-      //           //         height: itemWidth));
-      //         })))
     ]));
-    // });
   }
 
   Widget _header() {
     return Builder(builder: (context) {
-      return Container(
+      return SizedBox(
           height: kToolbarHeight,
-          child: Row(children: [
-            Row(children: [
-              const SizedBox(width: 25),
-              Text(widget.history.first.dateHeader,
-                  style: const TextStyle(fontSize: 25)),
-              const SizedBox(width: 25),
-              Text(widget.history.first.dateSub,
-                  style: const TextStyle(fontSize: 18))
-            ]),
-            const Spacer(),
-            CircleButton(
-                color: Colors.transparent,
-                iconColor: Constants.colorTextAccent.withOpacity(0.8),
-                size: 70,
-                // margin: EdgeInsets.only(bottom: 10),
-                vertTransform: true,
-                iconData: Icons.close,
-                // iconData: Icons.arrow_back_ios,
-                onPressed: (p0) {
-                  Navigator.of(context).pop();
-                  // var model = context.read<AppModel>();
-                  // model.setCollapse(!model.collapse);
-                })
-          ]));
+          child: StreamBuilder(
+              stream: _selectionRep.selectedStream,
+              builder: (context, snapshot) {
+                var cnt = snapshot.data ?? 0;
+
+                return Row(children: [
+                  Row(children: [
+                    const SizedBox(width: 25),
+                    SizedBox(
+                        width: 110,
+                        child: cnt == 0
+                            ? Text(widget.history.first.dateHeader,
+                                style: const TextStyle(fontSize: 22))
+                            : Text('$cnt',
+                                style: const TextStyle(fontSize: 18))),
+                    const SizedBox(width: 10),
+                    ScaleTransition(
+                        scale: _scaleAnimation,
+                        child: Row(children: [
+                          RoundButton(
+                              color: Constants.colorButtonRed.withOpacity(0.8),
+                              iconColor: Constants.colorCard.withOpacity(0.8),
+                              size: 45,
+                              radius: 20,
+                              useScaleAnimation: true,
+                              iconData: Icons.delete_outline,
+                              onPressed: (v) {
+                                MyRep().delete(widget.history);
+                              }),
+                          const SizedBox(width: 15),
+                          RoundButton(
+                              color: Constants.colorSecondary.withOpacity(0.8),
+                              iconColor: Constants.colorCard.withOpacity(0.8),
+                              size: 45,
+                              radius: 20,
+                              iconData: Icons.share,
+                              useScaleAnimation: true,
+                              onPressed: (v) {
+                                MyRep().share(widget.history);
+                              })
+                        ]))
+                  ]),
+                  const Spacer(),
+                  RoundButton(
+                      color: Colors.transparent,
+                      iconColor: Constants.colorTextAccent.withOpacity(0.8),
+                      size: 50,
+                      radius: 18,
+                      // margin: EdgeInsets.only(bottom: 10),
+                      vertTransform: true,
+                      iconData: Icons.close,
+                      // iconData: Icons.arrow_back_ios,
+                      onPressed: (p0) {
+                        Navigator.of(context).pop();
+                        // var model = context.read<AppModel>();
+                        // model.setCollapse(!model.collapse);
+                      }),
+                  const SizedBox(width: 8)
+                ]);
+              }));
       //   //
       //   // save file
       //   // Button2(

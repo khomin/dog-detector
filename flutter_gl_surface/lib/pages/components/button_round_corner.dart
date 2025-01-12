@@ -50,7 +50,7 @@ class ButtonRoundCorner extends StatelessWidget {
                   // maximumSize: Size(150 / 2, 70),
                   // fixedSize: Size(150 / 2, 70),
                   shadowColor: Colors.transparent,
-                  textStyle: TextStyle(
+                  textStyle: const TextStyle(
                     fontWeight: FontWeight.w300,
                     fontSize: 12,
                     // color: Theme.of(context).colorScheme.baseColor1,

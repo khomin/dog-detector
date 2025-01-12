@@ -9,16 +9,12 @@ class CustomCheckBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        // margin: const EdgeInsets.only(left: 3, right: 3),
-        // width: 20,
-        // height: 20,
-        child: Checkbox(
-            value: value,
-            onChanged: (value) {
-              if (value == null) return;
-              onChanged(value);
-            }));
+    return Checkbox(
+        value: value,
+        onChanged: (value) {
+          if (value == null) return;
+          onChanged(value);
+        });
     // return HoverClick(
     //     onPressedL: (_) {
     //       onChanged(false);

@@ -90,8 +90,8 @@ class AppState extends State<App> {
                                             return const MainPage();
                                           case PageType.capture:
                                             return const CapturePage();
-                                          // case PageType.alert:
-                                          //   return AlertPage(arg: arg);
+                                          case PageType.alert:
+                                            return const AlertPage();
                                           case PageType.settings:
                                             return const SettingsPage();
                                           default:

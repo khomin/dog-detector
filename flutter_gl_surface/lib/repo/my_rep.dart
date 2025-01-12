@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_demo/pages/components/animated_camera_button.dart';
 import 'package:flutter_demo/utils/common.dart';
@@ -8,20 +9,29 @@ import 'package:jiffy/jiffy.dart';
 import 'package:loggy/loggy.dart';
 import 'package:rxdart/rxdart.dart';
 
-class HistoryRecord {
-  HistoryRecord(
-      {required this.date,
-      required this.dateHeader,
-      required this.dateSub,
-      required this.dateMonth,
-      required this.items,
-      required this.path});
+class HistoryRecord with ChangeNotifier {
+  HistoryRecord({
+    required this.date,
+    required this.dateHeader,
+    required this.dateSub,
+    required this.dateMonth,
+    required this.items,
+    required this.path,
+    // this.selection = false
+  });
   DateTime date;
   String dateHeader;
   String dateSub;
   String dateMonth;
   String path;
   List<HistoryRecord> items;
+  bool get selection => _selection;
+  set selection(bool v) {
+    _selection = v;
+    notifyListeners();
+  }
+
+  bool _selection = false;
 }
 
 class Camera {
@@ -36,12 +46,18 @@ class Camera {
   final Size size;
 }
 
+class CaptureTime {
+  CaptureTime({required this.duration, required this.isFirstEv});
+  Duration duration;
+  bool isFirstEv;
+}
+
 class MyRep {
   var cameraMap = <String, Camera>{};
   final onCameraChanged = BehaviorSubject<void>();
   bool captureActive = false;
   final onFrameSize = BehaviorSubject<Size>.seeded(const Size(0, 0));
-  final onCaptureTime = BehaviorSubject<Duration?>();
+  final onCaptureTime = BehaviorSubject<CaptureTime?>();
   var _frameSize = const Size(0, 0);
   // private
   Timer? _captureTm;
@@ -182,11 +198,14 @@ class MyRep {
       if (captureActive) {
         _captureStart = DateTime.now();
         _captureTm = Timer.periodic(const Duration(seconds: 1), (timer) {
-          _captureDuration = _captureStart?.difference(DateTime.now()).abs();
-          onCaptureTime.add(_captureDuration);
+          var duration = (_captureStart?.difference(DateTime.now()).abs()) ??
+              Duration.zero;
+          onCaptureTime.add(CaptureTime(duration: duration, isFirstEv: false));
+          _captureDuration = duration;
         });
         _captureDuration = const Duration();
-        onCaptureTime.add(_captureDuration);
+        onCaptureTime
+            .add(CaptureTime(duration: const Duration(), isFirstEv: true));
       } else {
         _captureTm?.cancel();
         _captureStart = null;
@@ -282,6 +301,14 @@ class MyRep {
 
   void takeImage() {
     // TODO: image
+  }
+
+  void share(List<HistoryRecord> list) {
+    // tODO: share
+  }
+
+  void delete(List<HistoryRecord> list) {
+    // TODO: delete
   }
 
   // Future<List<HistoryRecord>> history() async {

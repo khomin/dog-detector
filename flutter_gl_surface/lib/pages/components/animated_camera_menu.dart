@@ -1,20 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_demo/pages/components/circle_button.dart';
 import 'package:flutter_demo/pages/components/hover_click.dart';
-import 'package:flutter_demo/pages/components/my_cliper.dart';
-import 'package:flutter_demo/pages/model/app_model.dart';
-import 'package:flutter_demo/pages/model/record_model.dart';
-import 'package:flutter_demo/repo/my_rep.dart';
-import 'package:flutter_demo/repo/nav_rep.dart';
-import 'package:flutter_demo/repo/settings_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
-import 'package:flutter_demo/resource/disposable_stream.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:loggy/loggy.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 class AnimatedCameraMenu extends StatefulWidget {
@@ -127,7 +115,7 @@ class AnimatedCameraMenuState extends State<AnimatedCameraMenu>
   }
 
   void _doPlay() {
-    Timer(Duration(milliseconds: 1), () {
+    Timer(const Duration(milliseconds: 1), () {
       setState(() {
         tabInfoItems = [
           for (final tab in tabs)
@@ -160,7 +148,7 @@ class AnimatedCameraMenuState extends State<AnimatedCameraMenu>
   }
 
   void _doStop() {
-    Timer(Duration(milliseconds: 300), () {
+    Timer(const Duration(milliseconds: 300), () {
       setState(() {
         tabInfoItems = [];
       });
@@ -170,6 +158,7 @@ class AnimatedCameraMenuState extends State<AnimatedCameraMenu>
   @override
   void dispose() {
     super.dispose();
+    _controller.dispose();
     // _dispStream.dispose();
     // _model.setRun(run: false, camera: null, mounted: false);
     // MyRep().stopCamera();

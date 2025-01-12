@@ -4,12 +4,7 @@ import 'package:flutter_demo/pages/components/navigation_observer.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:rxdart/rxdart.dart';
 
-enum PageType {
-  main,
-  capture,
-// alert,
-  settings
-}
+enum PageType { main, capture, alert, settings }
 
 class Panel {
   Panel(

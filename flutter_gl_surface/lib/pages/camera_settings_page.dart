@@ -57,7 +57,7 @@ class CameraSettingsPageState extends State<CameraSettingsPage> {
                             // fontWeight: FontWeight.bold
                           ))),
                   const Spacer(),
-                  CircleButton(
+                  RoundButton(
                       color: Colors.transparent,
                       iconColor: Constants.colorTextAccent.withOpacity(0.8),
                       size: 70,

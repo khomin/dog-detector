@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
-import 'package:flutter_demo/pages/home/history_item.dart';
+import 'package:flutter_demo/pages/home/view_item1.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
@@ -48,7 +48,7 @@ class AlertPageState extends State<AlertPage> {
                             child:
                                 Text('Alert', style: TextStyle(fontSize: 25))),
                         const Spacer(),
-                        CircleButton(
+                        RoundButton(
                             color: Colors.transparent,
                             iconColor:
                                 Constants.colorTextAccent.withOpacity(0.8),

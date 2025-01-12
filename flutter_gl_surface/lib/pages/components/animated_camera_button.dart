@@ -30,9 +30,13 @@ class ExpandModel with ChangeNotifier {
 
 class AnimatedCameraButton extends StatefulWidget {
   const AnimatedCameraButton(
-      {required this.onCapture, required this.onStop, super.key});
+      {required this.onCapture,
+      required this.onStop,
+      this.activeDefault = false,
+      super.key});
   final Function() onCapture;
   final Function() onStop;
+  final bool activeDefault;
   @override
   State<AnimatedCameraButton> createState() => AnimatedCameraButtonState();
 }
@@ -135,6 +139,10 @@ class AnimatedCameraButtonState extends State<AnimatedCameraButton>
     _opacity2 = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
         parent: _controller.view,
         curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
+    if (widget.activeDefault) {
+      _expandModel.setExpanded(true);
+      _controller.forward().orCancel;
+    }
   }
 
   Future<void> _switchAnimation() async {
@@ -145,10 +153,8 @@ class AnimatedCameraButtonState extends State<AnimatedCameraButton>
         widget.onCapture();
       }
       if (_controller.isForwardOrCompleted) {
-        // _doStop();
         await _controller.reverse().orCancel;
       } else {
-        // _doPlay();
         await _controller.forward().orCancel;
       }
     } on TickerCanceled {
@@ -193,13 +199,14 @@ class AnimatedCameraButtonState extends State<AnimatedCameraButton>
   @override
   void dispose() {
     super.dispose();
+    _controller.dispose();
     // _dispStream.dispose();
     // _model.setRun(run: false, camera: null, mounted: false);
     // MyRep().stopCamera();
     // WidgetsBinding.instance.removeObserver(this);
   }
 
-  var _expandModel = ExpandModel();
+  final _expandModel = ExpandModel();
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +230,7 @@ class AnimatedCameraButtonState extends State<AnimatedCameraButton>
                                 .select<ExpandModel, bool>((v) => v.isExpanded);
                             return IgnorePointer(
                                 ignoring: expanded,
-                                child: CircleButton(
+                                child: RoundButton(
                                     color: Constants.colorButtonBg,
                                     iconColor: Colors.red.withOpacity(0.8),
                                     // size: 5, //_widthIconStart.value,

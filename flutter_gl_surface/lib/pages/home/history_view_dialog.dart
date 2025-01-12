@@ -1,18 +1,14 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_demo/pages/components/circle_button.dart';
-import 'package:flutter_demo/pages/home/history_item.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
-import 'package:loggy/loggy.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:flutter/material.dart';
 
-class HistoryViewBoxDialog {
-  Future<HistoryViewBox?> show(
+class FullViewDialog {
+  Future<FullViewItem?> show(
       {required BuildContext context,
       GlobalKey? key,
       // required TickerProvider animationTicker,
@@ -28,7 +24,7 @@ class HistoryViewBoxDialog {
         return Column(
           children: [
             Expanded(
-              child: HistoryViewBox(
+              child: FullViewItem(
                   history: models,
                   initialIndex: initialIndex,
                   // animationTicker: animationTicker,
@@ -41,8 +37,8 @@ class HistoryViewBoxDialog {
   }
 }
 
-class HistoryViewBox extends StatefulWidget {
-  const HistoryViewBox(
+class FullViewItem extends StatefulWidget {
+  const FullViewItem(
       {required this.history,
       required this.initialIndex,
       // required this.animationTicker,
@@ -52,7 +48,7 @@ class HistoryViewBox extends StatefulWidget {
   // final TickerProvider animationTicker;
 
   @override
-  State<HistoryViewBox> createState() => HistoryViewBoxState();
+  State<FullViewItem> createState() => FullViewItemState();
 }
 
 class Current {
@@ -83,7 +79,7 @@ class ScrollTouch with ChangeNotifier {
   }
 }
 
-class HistoryViewBoxState extends State<HistoryViewBox> {
+class FullViewItemState extends State<FullViewItem> {
   late Current _current;
   var _doNotScroollToPreviewItem = false;
   final _scrollTouch = ScrollTouch();
@@ -120,30 +116,30 @@ class HistoryViewBoxState extends State<HistoryViewBox> {
     _testTimer?.cancel();
   }
 
-  void _saveFile() async {
-    // var model = _current.model;
-    // if (model == null) return;
-    // var path = await FileUtils.getDowloadPath(model.record.fileRec.fileName);
-    // if (path == null) return;
-    // if (await MsgRep.saveFileToDir(record: model.record, path: path)) {
-    //   if (mounted) {
-    //     UiHelper.showToast(context, 'Saved in $path', type: ToastType.normal);
-    //   }
-    // } else {
-    //   if (mounted) UiHelper.showToast(context, 'Error');
-    // }
-  }
+  // void _saveFile() async {
+  // var model = _current.model;
+  // if (model == null) return;
+  // var path = await FileUtils.getDowloadPath(model.record.fileRec.fileName);
+  // if (path == null) return;
+  // if (await MsgRep.saveFileToDir(record: model.record, path: path)) {
+  //   if (mounted) {
+  //     UiHelper.showToast(context, 'Saved in $path', type: ToastType.normal);
+  //   }
+  // } else {
+  //   if (mounted) UiHelper.showToast(context, 'Error');
+  // }
+  // }
 
   void _scrollTo(int index) {
     _observerController.jumpTo(index: _current.index);
   }
 
-  void _changeItem({required bool fromLine}) {
-    if (fromLine) {
-      _doNotScroollToPreviewItem = true;
-    }
-    _controller.jumpToPage(_current.index);
-  }
+  // void _changeItem({required bool fromLine}) {
+  //   if (fromLine) {
+  //     _doNotScroollToPreviewItem = true;
+  //   }
+  //   _controller.jumpToPage(_current.index);
+  // }
 
   void _onInteractionStart(ScaleStartDetails details) {}
 
@@ -175,20 +171,38 @@ class HistoryViewBoxState extends State<HistoryViewBox> {
             //     (Platform.isIOS || Platform.isAndroid) ? 0 : null,
             title: _header()),
         body: Column(children: [
-          // TOOD: header
-          // DialogHeader(
-          //     isCollapsed: true,
-          //     height: UiHelper.isMobile()
-          //         ? ConstValues.dialogHeaderLargeHeight
-          //         : ConstValues.dialogHeaderMiddle,
-          //     color: Colors.black.withOpacity(0.9),
-          //     close: () {
-          //       Navigator.pop(context);
-          //     },
-          //     child: _header()),
-          //
-          // pageBuilder
-          _page()
+          _page(),
+          _buttons(),
+        ]));
+  }
+
+  Widget _buttons() {
+    return Container(
+        height: kToolbarHeight,
+        margin: const EdgeInsets.only(bottom: 50),
+        // color: Colors.orange,
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          RoundButton(
+              color: Constants.colorButtonRed.withOpacity(0.8),
+              iconColor: Constants.colorCard.withOpacity(0.8),
+              size: 55,
+              radius: 20,
+              useScaleAnimation: true,
+              iconData: Icons.delete_outline,
+              onPressed: (v) {
+                MyRep().delete(widget.history);
+              }),
+          const SizedBox(width: 15),
+          RoundButton(
+              color: Constants.colorSecondary.withOpacity(0.8),
+              iconColor: Constants.colorCard.withOpacity(0.8),
+              size: 55,
+              radius: 20,
+              useScaleAnimation: true,
+              iconData: Icons.share,
+              onPressed: (v) {
+                MyRep().share(widget.history);
+              })
         ]));
   }
 
@@ -240,7 +254,7 @@ class HistoryViewBoxState extends State<HistoryViewBox> {
                                       _onInteractionEnd(details, index),
                                   transformationController:
                                       _controllerList[index],
-                                  child: _item());
+                                  child: _item(model));
                               // history: model,
                               // onPressed: () {},
                               // animationTicker: widget.animationTicker,
@@ -315,188 +329,46 @@ class HistoryViewBoxState extends State<HistoryViewBox> {
 
   Widget _header() {
     return Builder(builder: (context) {
-      return Container(
+      return SizedBox(
           height: kToolbarHeight,
+          // color: Colors.orange,
           child: Row(children: [
             Row(children: [
               const SizedBox(width: 25),
               Text(widget.history.first.dateHeader,
                   style: const TextStyle(fontSize: 25)),
-              const SizedBox(width: 25),
-              Text(widget.history.first.dateSub,
+              const SizedBox(width: 10),
+              Text(
+                  '${widget.history.first.dateSub}   ${_current.index} of ${widget.history.length}',
                   style: const TextStyle(fontSize: 18))
             ]),
             const Spacer(),
-            CircleButton(
+            RoundButton(
                 color: Colors.transparent,
                 iconColor: Constants.colorTextAccent.withOpacity(0.8),
-                size: 70,
-                // margin: EdgeInsets.only(bottom: 10),
+                size: 50,
+                radius: 18,
                 vertTransform: true,
                 iconData: Icons.close,
-                // iconData: Icons.arrow_back_ios,
                 onPressed: (p0) {
                   Navigator.of(context).pop();
-                  // var model = context.read<AppModel>();
-                  // model.setCollapse(!model.collapse);
-                })
+                }),
+            const SizedBox(width: 8)
           ]));
-      //   //
-      //   // save file
-      //   // Button2(
-      //   //     iconData: Icons.download,
-      //   //     iconColor: Theme.of(context).colorScheme.white,
-      //   //     onPressed: () {
-      //   //       _saveFile();
-      //   //     })
-      // ]));
     });
   }
 
-  Widget _item() {
-    var history = _current.model;
+  Widget _item(HistoryRecord model) {
     return Builder(builder: (context) {
-      return Container(
-          // color: Colors.pink,
-          // margin:
-          //     const EdgeInsets.only(left: 25, right: 25, top: 20, bottom: 5),
-          // decoration: BoxDecoration(
-          //     color: Constants.colorCard,
-          //     boxShadow: [
-          //       BoxShadow(
-          //         color: Constants.colorBar.withOpacity(0.5),
-          //         blurRadius: 15,
-          //         offset: const Offset(0, 0),
-          //       )
-          //     ],
-          //     borderRadius: const BorderRadius.all(Radius.circular(20))),
-          // height: 270,
-          child: Column(children: [
+      return Column(children: [
         Expanded(
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          // header
-          // Padding(
-          //     padding: const EdgeInsets.only(left: 20, top: 10),
-          //     child: Row(children: [
-          //       // Container(
-          //       //     width: 50,
-          //       //     height: 50,
-          //       //     // color: Colors.pink,
-          //       //     decoration: const BoxDecoration(
-          //       //         color: Constants.colorBgUnderCard,
-          //       //         borderRadius: BorderRadius.all(Radius.circular(10))),
-          //       //     child: Column(
-          //       //         mainAxisAlignment: MainAxisAlignment.center,
-          //       //         children: [
-          //       //           //
-          //       //           // day of month
-          //       //           Text('${history.date.day}',
-          //       //               style: TextStyle(
-          //       //                   color: Constants.colorTextAccent
-          //       //                       .withOpacity(0.5),
-          //       //                   fontSize: 16,
-          //       //                   // fontFamily: 'Salsa',
-          //       //                   fontWeight: FontWeight.bold)),
-          //       //           //
-          //       //           // month in string [DEC]
-          //       //           Text(history.dateMonth.toUpperCase().substring(0, 3),
-          //       //               style: const TextStyle(
-          //       //                   color: Constants.colorTextSecond,
-          //       //                   fontSize: 12,
-          //       //                   fontFamily: 'Salsa',
-          //       //                   fontWeight: FontWeight.w600))
-          //       //         ])),
-          //       // Padding(
-          //       //     padding: const EdgeInsets.only(left: 10),
-          //       //     child:
-          //       //         //
-          //       //         SizedBox(
-          //       //             height: 50,
-          //       //             child: Column(
-          //       //                 crossAxisAlignment: CrossAxisAlignment.start,
-          //       //                 mainAxisAlignment: MainAxisAlignment.center,
-          //       //                 children: [
-          //       //                   //
-          //       //                   // header (Yesterday, Today etc)
-          //       //                   Text(history.dateHeader,
-          //       //                       style: TextStyle(
-          //       //                           color: Constants.colorTextAccent
-          //       //                               .withOpacity(0.5),
-          //       //                           fontSize: 16,
-          //       //                           fontWeight: FontWeight.bold)),
-          //       //                   //
-          //       //                   // second line (Year)
-          //       //                   Text(history.dateSub,
-          //       //                       style: const TextStyle(
-          //       //                           color: Constants.colorTextSecond,
-          //       //                           fontSize: 12,
-          //       //                           fontFamily: 'Salsa',
-          //       //                           fontWeight: FontWeight.w600))
-          //       //                 ]))),
-          //       // const Spacer(),
-          //       // Padding(
-          //       //     padding: const EdgeInsets.only(right: 20),
-          //       //     child: Row(children: [
-          //       //       Icon(Icons.photo_library_sharp,
-          //       //           size: 18,
-          //       //           color: Constants.colorTextAccent.withOpacity(0.5)),
-          //       //       const SizedBox(width: 4),
-          //       //       //
-          //       //       // count of photos
-          //       //       Text('${history.items.length}',
-          //       //           style: const TextStyle(
-          //       //               color: Constants.colorTextSecond,
-          //       //               fontSize: 12,
-          //       //               // fontFamily: 'Salsa',
-          //       //               fontWeight: FontWeight.bold)),
-          //       //     ]))
-          //     ])),
-          Stack(alignment: Alignment.center, children: [
-            Image.file(File(history.path),
-                // width: double.infinity,
-                // height: 180,
-                // fit: BoxFit.cover
-                fit: BoxFit.contain),
-            // Positioned(
-            //     right: 5,
-            //     bottom: 0,
-            //     // top: 0,
-            //     child: Container(
-            //         // margin: EdgeInsets.only(top: 20, bottom: 20),
-            //         decoration: BoxDecoration(
-            //             // color: Colors.yellow,
-            //             // color: Constants.colorBackgroundUnderCard
-            //             //     .withOpacity(0.2),
-            //             borderRadius: BorderRadius.all(
-            //                 Radius.circular(10))),
-            //         child: Row(children: [
-            //           // Icon(Icons.image, color: Colors.white),
-            //           Image.file(File(history.first.path),
-            //               width: 80, height: 80),
-            //           Image.file(File(history.first.path),
-            //               width: 80, height: 80),
-            //           Image.file(File(history.first.path),
-            //               width: 80, height: 80),
-            //         ])))
-            // Positioned(
-            //     right: 0,
-            //     bottom: 0,
-            //     child: Image.file(File(history.first.path),
-            //         width: 80, height: 80)),
-            // Positioned(
-            //     right: 0,
-            //     bottom: 40,
-            //     child: Image.file(File(history.first.path),
-            //         width: 80, height: 80)),
-            // Positioned(
-            //     right: 0,
-            //     bottom: 80,
-            //     child: Image.file(File(history.first.path),
-            //         width: 80, height: 80))
-          ])
+          Stack(
+              alignment: Alignment.center,
+              children: [Image.file(File(model.path), fit: BoxFit.contain)])
         ]))
-      ]));
+      ]);
     });
   }
 }

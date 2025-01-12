@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
             primary: Constants.colorPrimary, // Primary color
             secondary: Colors.green, // Secondary color
             surface: Colors.white, // Surface color
-            background: Colors.grey[200]!, // Background color
+            // background: Colors.grey[200]!, // Background color
             error: Colors.red, // Error color
           )),
       home: const App(),
