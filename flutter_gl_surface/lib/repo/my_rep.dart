@@ -305,17 +305,7 @@ class MyRep {
     // TODO: image
   }
 
-  // Future deleteAll(List<HistoryRecord> list) async {
-  //   // TODO: delete
-  //   for (var it in list) {
-  //     await File(it.path).delete();
-  //     await Directory(it.path).delete(recursive: true)
-  //     // historyCache.removeWhere((element) => element == it);
-  //   }
-  // }
-
   Future delete(List<HistoryRecord> list) async {
-    // TODO: delete
     for (var it in list) {
       for (var it2 in it.items) {
         try {

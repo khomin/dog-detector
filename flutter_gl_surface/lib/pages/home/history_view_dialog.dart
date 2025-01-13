@@ -190,7 +190,8 @@ class FullViewItemState extends State<FullViewItem> {
               useScaleAnimation: true,
               iconData: Icons.delete_outline,
               onPressed: (v) {
-                MyRep().delete(widget.history);
+                // TODO: delete
+                MyRep().delete([_current.model]);
               }),
           const SizedBox(width: 15),
           RoundButton(

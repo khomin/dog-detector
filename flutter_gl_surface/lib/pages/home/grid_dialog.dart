@@ -21,6 +21,7 @@ class GridDialog {
       // required TickerProvider animationTicker,
       required List<HistoryRecord> models,
       int initialIndex = 0}) {
+    // TODO: too much black noise
     return showGeneralDialog(
       context: context,
       barrierColor: Colors.black12.withOpacity(0.8),
@@ -250,6 +251,7 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
                               useScaleAnimation: true,
                               iconData: Icons.delete_outline,
                               onPressed: (v) {
+                                // TODO: delete
                                 MyRep().delete(widget.history);
                               }),
                           const SizedBox(width: 15),

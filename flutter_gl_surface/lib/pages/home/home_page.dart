@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/components/circle_button.dart';
@@ -8,7 +6,6 @@ import 'package:flutter_demo/components/hover_click.dart';
 import 'package:flutter_demo/components/round_box.dart';
 import 'package:flutter_demo/pages/home/grid_dialog.dart';
 import 'package:flutter_demo/pages/home/view_item1.dart';
-import 'package:flutter_demo/pages/home/history_view_dialog.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
@@ -58,13 +55,6 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
         parent: _ctrSlideTop.view,
         curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
 
-    // _iconRotate = Tween<double>(
-    //   begin: 0.0,
-    //   end: 0.02,
-    // ).animate(CurvedAnimation(
-    //     parent: _ctrShakeIcon.view,
-    //     curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
-
     _ctrShakeIcon = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -88,16 +78,6 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
     _scrollCtr.addListener(() {
       _focus.unfocus();
     });
-
-    // _ctrShakeIcon.addStatusListener((status) {
-    //   if (status == AnimationStatus.completed) {
-    //     _ctrShakeIcon.reverse();
-    //   }
-    // });
-
-    // _dispStream.add(MyRep().onHistory.listen((value) {
-
-    // }));
 
     Future.microtask(() async {
       await _fetch();
@@ -447,7 +427,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
       if (history.isEmpty) {
         return RotationTransition(
             turns: _iconRotate,
-            child: Container(
+            child: SizedBox(
                 // height: double.infinity, //((270 + 28) * history.length).toDouble(),
                 // decoration: const BoxDecoration(color: Constants.colorBgUnderCard),
                 height: NavigatorRep().size.height / 1.5,
@@ -472,19 +452,20 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                             }
                           }),
                       const SizedBox(height: 20),
-                      Text('There are no entries yet',
+                      const Text('There are no entries yet',
                           style: TextStyle(
                               color: Constants.colorTextAccent, fontSize: 18)),
                       // const SizedBox(height: 5),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Click',
+                            const Text('Click',
                                 style: TextStyle(
                                     color: Constants.colorTextAccent,
                                     fontSize: 18)),
                             Padding(
-                                padding: EdgeInsets.only(left: 8, right: 8),
+                                padding:
+                                    const EdgeInsets.only(left: 8, right: 8),
                                 child: Icon(Icons.create_new_folder_rounded,
                                     color: Constants.colorTextSecond
                                         .withOpacity(0.5))),
@@ -493,14 +474,14 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                             //     child: Text('Capture',
                             //         style: TextStyle(
                             //             color: Colors.black45, fontSize: 18))),
-                            Text('to start',
+                            const Text('to start',
                                 style: TextStyle(
                                     color: Constants.colorTextAccent,
                                     fontSize: 18))
                           ])
                     ])));
       }
-      return Container(
+      return SizedBox(
           height: ((270 + 28) * history.length).toDouble(),
           // decoration: const BoxDecoration(color: Constants.colorBgUnderCard),
           width: 300,
