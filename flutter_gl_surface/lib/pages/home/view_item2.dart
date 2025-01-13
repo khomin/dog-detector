@@ -103,6 +103,7 @@ class ViewItem2State extends State<ViewItem2> with TickerProviderStateMixin {
   @override
   void dispose() {
     _dispStream.dispose();
+    _controller.dispose();
     super.dispose();
   }
 

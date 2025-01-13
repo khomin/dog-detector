@@ -74,6 +74,7 @@ class RoundButtonState extends State<RoundButton>
                 if (widget.useScaleAnimation) {
                   _controller.forward();
                   await Future.delayed(const Duration(milliseconds: 50));
+                  if (!mounted) return;
                   _controller.reverse();
                 }
               },

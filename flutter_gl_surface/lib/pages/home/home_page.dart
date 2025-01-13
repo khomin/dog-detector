@@ -79,9 +79,15 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
       _focus.unfocus();
     });
 
-    Future.microtask(() async {
-      await _fetch();
+    _dispStream.add(MyRep().onHistory.listen((history) {
       if (!mounted) return;
+      context.read<AppModel>().setHistory(history);
+    }));
+
+    Timer(const Duration(milliseconds: 100), () async {
+      var history = await MyRep().getHistory();
+      if (!mounted) return;
+      context.read<AppModel>().setHistory(history);
       if (context.read<AppModel>().history.isEmpty) {
         Timer(const Duration(milliseconds: 200), () {
           if (!mounted) return;
@@ -93,12 +99,6 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
         });
       }
     });
-  }
-
-  Future _fetch() async {
-    var history = await MyRep().getHistory();
-    if (!mounted) return;
-    context.read<AppModel>().setHistory(history);
   }
 
   @override
@@ -118,7 +118,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    var v = kToolbarHeight;
+    // var v = kToolbarHeight;
     return Scaffold(
         backgroundColor: Constants.colorBar,
         body: Stack(alignment: Alignment.center, children: [
@@ -498,14 +498,12 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                             GridDialog()
                                 .show(
                                     context: context,
-                                    models: model.items,
-                                    // animationTicker: this,
+                                    history: model,
                                     initialIndex: index)
                                 .then((value) {});
                           },
                           onDelete: () async {
-                            await MyRep().delete([model]);
-                            _fetch();
+                            await MyRep().deleteHistoryRoot([model]);
                           });
                     })
               ]));

@@ -19,7 +19,8 @@ class AppModel with ChangeNotifier {
 
   void setHistory(List<HistoryRecord> v) {
     if (history != v) {
-      history = v;
+      history = [];
+      history.addAll(v);
       notifyListeners();
     }
   }

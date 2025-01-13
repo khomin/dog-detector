@@ -23,7 +23,7 @@ class GoToResult {
 }
 
 class SelectionRep {
-  SelectionRep({required this.history});
+  SelectionRep({this.history = const []});
   final onResult = BehaviorSubject<List<HistoryRecord>>();
   final onStatus = BehaviorSubject<SearchStatus>()..add(SearchStatus.off);
   final onBusy = BehaviorSubject<bool>();
@@ -35,7 +35,7 @@ class SelectionRep {
   final selectedStream = BehaviorSubject<int>();
   final onForward = BehaviorSubject<List<HistoryRecord>>();
   final searchNode = FocusNode();
-  final List<HistoryRecord> history;
+  List<HistoryRecord> history;
   bool active = false;
 
   // private
@@ -59,6 +59,9 @@ class SelectionRep {
   final tag = 'selectionRep';
 
   void dispose() {
+    for (var it in history) {
+      it.selection = false;
+    }
     searchNode.dispose();
     onResult.close();
     onStatus.close();
@@ -136,7 +139,8 @@ class SelectionRep {
     }
   }
 
-  List<HistoryRecord> getSelected(SearchType type) {
+  List<HistoryRecord> getSelected(
+      {required SearchType type, bool resetSelection = false}) {
     var list = <HistoryRecord>[];
     switch (type) {
       // case SearchType.text:
@@ -155,8 +159,10 @@ class SelectionRep {
     if (list.isEmpty) return [];
     selectedStream.add(0);
     // onForward.add(list.toList());
-    for (var it in list) {
-      it.selection = false;
+    if (resetSelection) {
+      for (var it in list) {
+        it.selection = false;
+      }
     }
     return list;
   }

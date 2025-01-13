@@ -191,7 +191,7 @@ class FullViewItemState extends State<FullViewItem> {
               iconData: Icons.delete_outline,
               onPressed: (v) {
                 // TODO: delete
-                MyRep().delete([_current.model]);
+                MyRep().deleteHistory2([_current.model]);
               }),
           const SizedBox(width: 15),
           RoundButton(

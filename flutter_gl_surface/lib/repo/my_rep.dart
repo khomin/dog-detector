@@ -3,27 +3,29 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_demo/components/animated_camera_button.dart';
+import 'package:flutter_demo/pages/home/grid_dialog.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:flutter_demo/utils/file_utils.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:loggy/loggy.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:collection/collection.dart';
 
 class HistoryRecord with ChangeNotifier {
-  HistoryRecord({
-    required this.date,
-    required this.dateHeader,
-    required this.dateSub,
-    required this.dateMonth,
-    required this.items,
-    required this.path,
-    // this.selection = false
-  });
+  HistoryRecord(
+      {required this.date,
+      required this.dateHeader,
+      required this.dateSub,
+      required this.dateMonth,
+      required this.items,
+      required this.path,
+      required this.folderName});
   DateTime date;
   String dateHeader;
   String dateSub;
   String dateMonth;
+  String folderName;
   String path;
   List<HistoryRecord> items;
   bool get selection => _selection;
@@ -268,11 +270,13 @@ class MyRep {
           header = Common().dayOfWeekString(dateJiffy.dayOfWeek);
           sub = dateJiffy.year.toString();
         }
+        var folderName = file.parent.path;
         mapByYear[date.year]?[dateJiffy.dayOfYear]?.add(HistoryRecord(
             date: date,
             dateHeader: header,
             dateSub: sub,
             dateMonth: Common().monthString(date.month),
+            folderName: folderName,
             items: [],
             path: file.path));
       }
@@ -282,11 +286,13 @@ class MyRep {
             return a.date.compareTo(b.date);
           });
           var item = valueDayOfYear.first;
+          var folderName = File(item.path).parent.path;
           historyCache.add(HistoryRecord(
               date: valueDayOfYear.first.date,
               dateHeader: item.dateHeader,
               dateSub: item.dateSub,
               dateMonth: item.dateMonth,
+              folderName: folderName,
               items: valueDayOfYear,
               path: item.path));
         });
@@ -305,23 +311,49 @@ class MyRep {
     // TODO: image
   }
 
-  Future delete(List<HistoryRecord> list) async {
+  Future<void> deleteHistoryRoot(List<HistoryRecord> list) async {
+    var removeItems = <HistoryRecord>[];
     for (var it in list) {
       for (var it2 in it.items) {
         try {
-          await File(it2.path).delete();
+          removeItems.add(it2);
         } catch (ex) {
           logWarning('$tag: delete [$ex]');
         }
       }
+    }
+    for (var it in removeItems) {
+      // get root item in cache
+      var cacheItem = historyCache.firstWhereOrNull((h1) {
+        return h1.folderName == it.folderName;
+      });
+      cacheItem?.items.removeWhere((element) {
+        return element.path == it.path;
+      });
+      await File(it.path).delete();
+    }
+    historyCache.removeWhere((element) {
+      return element.items.isEmpty;
+    });
+    onHistory.add(historyCache);
+  }
+
+  Future<void> deleteHistory2(List<HistoryRecord> list) async {
+    if (list.isEmpty) return;
+    for (var it in list) {
+      var v = historyCache.firstWhereOrNull((element) {
+        return element.folderName == it.folderName;
+      });
       try {
         await File(it.path).delete();
+        v?.items.removeWhere((element) {
+          return element.path == it.path;
+        });
       } catch (ex) {
         logWarning('$tag: delete [$ex]');
       }
-      // await Directory(it.path).delete(recursive: true);
-      // historyCache.removeWhere((element) => element == it);
     }
+    onHistory.add(historyCache);
   }
 
   void share(List<HistoryRecord> list) {
