@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
-import 'package:flutter_demo/repo/selection_repo.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
@@ -16,10 +15,11 @@ class FullViewDialog {
       int initialIndex = 0}) {
     return showGeneralDialog(
       context: context,
-      barrierColor: Colors.black12.withOpacity(0.8),
+      // barrierColor: Colors.black12.withOpacity(0.8),
+      barrierColor: Colors.transparent,
       barrierDismissible: true,
       barrierLabel: '',
-      transitionDuration: const Duration(milliseconds: 200),
+      transitionDuration: const Duration(milliseconds: 100),
       pageBuilder: (_, __, ___) {
         return Column(
           children: [
@@ -189,9 +189,10 @@ class FullViewItemState extends State<FullViewItem> {
               radius: 20,
               useScaleAnimation: true,
               iconData: Icons.delete_outline,
-              onPressed: (v) {
-                // TODO: delete
-                MyRep().deleteHistory2([_current.model]);
+              onPressed: (v) async {
+                await MyRep().deleteHistory2([_current.model]);
+                if (!mounted) return;
+                Navigator.of(context).pop();
               }),
           const SizedBox(width: 15),
           RoundButton(
@@ -337,10 +338,9 @@ class FullViewItemState extends State<FullViewItem> {
             Row(children: [
               const SizedBox(width: 25),
               Text(widget.history.first.dateHeader,
-                  style: const TextStyle(fontSize: 25)),
+                  style: const TextStyle(fontSize: 22)),
               const SizedBox(width: 10),
-              Text(
-                  '${widget.history.first.dateSub}   ${_current.index} of ${widget.history.length}',
+              Text('${_current.index + 1} of ${widget.history.length}',
                   style: const TextStyle(fontSize: 18))
             ]),
             const Spacer(),
@@ -361,15 +361,35 @@ class FullViewItemState extends State<FullViewItem> {
 
   Widget _item(HistoryRecord model) {
     return Builder(builder: (context) {
-      return Column(children: [
-        Expanded(
-            child:
-                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Stack(
-              alignment: Alignment.center,
-              children: [Image.file(File(model.path), fit: BoxFit.contain)])
-        ]))
-      ]);
+      return Padding(
+          padding: EdgeInsets.zero, //all(10),
+          child: Column(children: [
+            Expanded(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                  Stack(alignment: Alignment.center, children: [
+                    Container(
+                        decoration: BoxDecoration(
+                          // borderRadius: BorderRadius.circular(20.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  Colors.black.withOpacity(0.3), // Shadow color
+                              blurRadius: 10.0, // Blur radius
+                              spreadRadius: 1.0, // Spread radius
+                              offset: const Offset(0,
+                                  0), // Offset in horizontal and vertical direction
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                            // borderRadius: BorderRadius.circular(20.0),
+                            child: Image.file(File(model.path),
+                                fit: BoxFit.contain)))
+                  ])
+                ]))
+          ]));
     });
   }
 }

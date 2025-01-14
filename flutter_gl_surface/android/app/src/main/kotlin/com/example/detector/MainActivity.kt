@@ -76,6 +76,12 @@ class MainActivity: FlutterActivity() {
                         methodChannel.invokeMethod("onMovement", null)
                     }
                 }
+
+                override fun onFirstFrameNotify() {
+                    runBlocking(Dispatchers.Main) {
+                        methodChannel.invokeMethod("onFirstFrameNotify", null)
+                    }
+                }
             })
         } else {
             Log.e(TAG, "cannot get capture repository")

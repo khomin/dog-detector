@@ -21,6 +21,7 @@ std::mutex lock;
 
 cv::Mat outFrame;
 cv::Mat inFrame;
+uint64 frameCount = 0;
 int viewWidth = 0;
 int viewHeight = 0;
 int sensorOrientation = 0;
@@ -29,6 +30,8 @@ std::string appLocalDir;
 CameraFace cameraFacing = CameraFace::back;
 int minArea = 0;
 int captureIntervalSec = 0;
+bool captureActive = false;
+bool captureOneFrame = false;
 bool showAreaOnCapture = true;
 std::chrono::steady_clock::time_point lastCaptureTime;
 std::chrono::steady_clock::time_point lastMoveReportTime;
@@ -37,6 +40,7 @@ static JavaVM *mJVM;
 jweak onSourceMethodRef = nullptr;
 jmethodID onCaptureMethodId = nullptr;
 jmethodID onMovementMethodId = nullptr;
+jmethodID onFirstFrameNotifyMethodId = nullptr;
 
 std::condition_variable condVar;
 std::mutex condLock;
@@ -122,6 +126,7 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
         minArea = minArea_;
         captureIntervalSec = captureIntervalSec_;
         showAreaOnCapture = showAreaOnCapture_;
+        frameCount = 0;
         jboolean isCopy;
         const char *convertedValue = (env)->GetStringUTFChars(appLocalDir_, &isCopy);
         if(isCopy) {
@@ -196,13 +201,14 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
             // Draw ROI boundary
 //            cv::rectangle(frame, roi, cv::Scalar(255, 0, 0), 2);
 
-            if (movementDetected) {
-                if(shouldCaptureFrame()) {
+            if (captureOneFrame || (movementDetected && captureActive)) {
+                if(captureOneFrame || shouldCaptureFrame()) {
                     captureFrame(frame);
                 }
                 if(shouldReportMovement()) {
                     reportOfMovement();
                 }
+                captureOneFrame = false;
             }
             {
                 std::lock_guard<std::mutex> l(lock);
@@ -270,6 +276,17 @@ Java_com_example_detector_CaptureRep_updateFrameNative(JNIEnv *env, jobject thiz
     glBindTexture(GL_TEXTURE_2D, textureId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame.cols, frame.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame.data);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    if(frameCount == 0) {
+        if(onFirstFrameNotifyMethodId != nullptr) {
+            auto not_jni_thread = (*mJVM).GetEnv((void **) &env, JNI_VERSION_1_6) == JNI_EDETACHED;
+            if (not_jni_thread) mJVM->AttachCurrentThread(&env, nullptr);
+            env->CallVoidMethod(onSourceMethodRef, onFirstFrameNotifyMethodId);
+            if (not_jni_thread) mJVM->DetachCurrentThread();
+        }
+        lastCaptureTime = std::chrono::steady_clock::now();
+    }
+    frameCount++;
 }
 
 extern "C"
@@ -299,8 +316,10 @@ void captureFrame(cv::Mat& frame) {
         if (!std::filesystem::exists(dir)) {
             std::filesystem::create_directories(dir);
         }
-        auto resStatus = cv::imwrite(path, frame);
-        jstring obj_msg_j = env->NewStringUTF(resStatus ? path.c_str() : "");
+        cv::Mat rgbFrame;
+        cv::cvtColor(frame, rgbFrame, cv::COLOR_BGR2RGB);
+        auto res = cv::imwrite(path, rgbFrame);
+        jstring obj_msg_j = env->NewStringUTF(res ? path.c_str() : "");
         env->CallVoidMethod(onSourceMethodRef, onCaptureMethodId, obj_msg_j);
         env->DeleteLocalRef(obj_msg_j);
         if (not_jni_thread) mJVM->DetachCurrentThread();
@@ -326,6 +345,7 @@ Java_com_example_detector_CaptureRep_setListenerNative(JNIEnv *env, jobject thiz
     jclass callbackClass = env->GetObjectClass(onSourceMethodRef);
     onCaptureMethodId = env->GetMethodID(callbackClass, "onCapture", "(Ljava/lang/String;)V");
     onMovementMethodId = env->GetMethodID(callbackClass, "onMovement", "()V");
+    onFirstFrameNotifyMethodId = env->GetMethodID(callbackClass, "onFirstFrameNotify", "()V");
 }
 extern "C"
 JNIEXPORT void JNICALL
@@ -338,4 +358,16 @@ Java_com_example_detector_CaptureRep_updateConfigurationNative(JNIEnv *env, jobj
         captureIntervalSec = captureIntervalSec_;
         showAreaOnCapture = showAreaOnCapture_;
     }
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_detector_CaptureRep_setCaptureActiveNative(JNIEnv *env, jobject thiz, jboolean active) {
+    std::lock_guard<std::mutex> l(lock);
+    captureActive = active;
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_detector_CaptureRep_captureOneFrameNative(JNIEnv *env, jobject thiz) {
+    std::lock_guard<std::mutex> l(lock);
+    captureOneFrame = true;
 }

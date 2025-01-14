@@ -88,6 +88,7 @@ class ViewItem1State extends State<ViewItem1> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     var history = widget.history;
+    // TODO: update card from repo
     return Builder(builder: (context) {
       return SlidableItem(
           controller: _slideCtr,

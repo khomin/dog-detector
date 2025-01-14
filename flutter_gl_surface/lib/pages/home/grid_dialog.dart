@@ -23,27 +23,35 @@ class GridDialog {
       // required TickerProvider animationTicker,
       required HistoryRecord history,
       int initialIndex = 0}) {
-    // TODO: too much black noise
     return showGeneralDialog(
-      context: context,
-      barrierColor: Colors.black12.withOpacity(0.8),
-      barrierDismissible: true,
-      barrierLabel: '',
-      transitionDuration: const Duration(milliseconds: 200),
-      pageBuilder: (_, __, ___) {
-        return Column(
-          children: [
-            Expanded(
-              child: HistoryGridBox(
-                  history: history,
-                  initialIndex: initialIndex,
-                  // animationTicker: animationTicker,
-                  key: key),
-            ),
-          ],
-        );
-      },
-    );
+        context: context,
+        // barrierColor: Colors.black12.withOpacity(0.8),
+        barrierColor: Colors.transparent,
+        // barrierDismissible: true,
+        // barrierLabel: '',
+        // transitionDuration: Duration.zero,
+        transitionDuration: const Duration(milliseconds: 100),
+        // transitionBuilder: (context, animation, secondaryAnimation, child) {
+        //   const begin = Offset(0.0, 1.0); // Start from the bottom
+        //   const end = Offset.zero; // Move to its normal position
+        //   const curve = Curves.easeInOut; // The curve for the animation
+
+        //   var tween =
+        //       Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        //   var offsetAnimation = animation.drive(tween);
+
+        //   return FadeTransition(
+        //     position: offsetAnimation,
+        //     child: child,
+        //   );
+        // },
+        pageBuilder: (_, __, ___) {
+          return HistoryGridBox(
+              history: history,
+              initialIndex: initialIndex,
+              // animationTicker: animationTicker,
+              key: key);
+        });
   }
 }
 
@@ -71,11 +79,12 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
   // final FocusNode _rawKeyLister = FocusNode();
   final _scrollController = ScrollController();
   late final SelectionRep _selectRep;
-  var _model = GridModel();
+  final _model = GridModel();
   // late ListObserverController _observerController;
   // late final PageController _controller;
   late AnimationController _animationController;
   late final Animation<double> _scaleAnimation;
+  late final Animation<double> _scaleAnimationReversed;
   var _selectionActive = false;
   final _dispStream = DisposableStream();
   Timer? _testTimer;
@@ -87,7 +96,7 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
 
     _selectRep = SelectionRep();
 
-    Timer(const Duration(milliseconds: 100), () async {
+    Timer(const Duration(milliseconds: 1000), () async {
       var history = await MyRep().getHistory();
       if (!mounted || history.firstOrNull == null) return;
       var v = history.firstWhereOrNull((element) {
@@ -101,7 +110,12 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
       }
     });
 
+    // Timer(const Duration(milliseconds: 500), () {
+    //   _model.setTransition(true);
+    // });
+
     Future.microtask(() {
+      // _model.setTransition(true);
       _dispStream.add(MyRep().onHistory.listen((history) {
         var v = history.firstWhereOrNull((element) {
           return element.folderName == widget.history.folderName;
@@ -139,6 +153,13 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
     _scaleAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
+    ).animate(CurvedAnimation(
+        parent: _animationController.view,
+        curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
+
+    _scaleAnimationReversed = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
     ).animate(CurvedAnimation(
         parent: _animationController.view,
         curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
@@ -187,6 +208,12 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
         value: _model,
         builder: (context, child) {
           return Builder(builder: (context) {
+            // var transition =
+            //     context.select<GridModel, bool>((v) => v.transition);
+            // return AnimatedOpacity(
+            //     opacity: transition ? 1.0 : 0,
+            //     duration: Duration(milliseconds: 200),
+            // child:
             return Scaffold(
                 appBar: AppBar(
                     automaticallyImplyLeading: false,
@@ -222,7 +249,6 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
                       selectionRep: _selectRep,
                       padding: const EdgeInsets.all(1),
                       onPressed: () {
-                        // TODO: use report for history
                         FullViewDialog().show(
                             context: context,
                             models: history,
@@ -235,6 +261,7 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
 
   Widget _header() {
     return SizedBox(
+        // color: Colors.orange,
         height: kToolbarHeight,
         child: StreamBuilder(
             stream: _selectRep.selectedStream,
@@ -243,47 +270,69 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
               var model = context.watch<GridModel>();
               var label = model.history.firstOrNull?.dateHeader ?? '';
               return Row(children: [
-                Row(children: [
+                Expanded(
+                    child: Row(children: [
                   const SizedBox(width: 25),
-                  SizedBox(
-                      width: 110,
-                      child: cnt == 0
-                          ? Text(label, style: const TextStyle(fontSize: 22))
-                          : Text('$cnt', style: const TextStyle(fontSize: 18))),
-                  const SizedBox(width: 10),
-                  ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: Row(children: [
-                        RoundButton(
-                            color: Constants.colorButtonRed.withOpacity(0.8),
-                            iconColor: Constants.colorCard.withOpacity(0.8),
-                            size: 45,
-                            radius: 20,
-                            useScaleAnimation: true,
-                            iconData: Icons.delete_outline,
-                            onPressed: (v) async {
-                              // TODO: full delete check
-                              var v = _selectRep.getSelected(
-                                  type: SearchType.media,
-                                  resetSelection: false);
-                              await MyRep().deleteHistory2(v);
-                            }),
-                        const SizedBox(width: 15),
-                        RoundButton(
-                            color: Constants.colorSecondary.withOpacity(0.8),
-                            iconColor: Constants.colorCard.withOpacity(0.8),
-                            size: 45,
-                            radius: 20,
-                            iconData: Icons.share,
-                            useScaleAnimation: true,
-                            onPressed: (_) {
-                              var v = _selectRep.getSelected(
-                                  type: SearchType.media, resetSelection: true);
-                              MyRep().share(v);
-                            })
-                      ]))
-                ]),
-                const Spacer(),
+                  Expanded(
+                      child: Stack(alignment: Alignment.centerLeft, children: [
+                    Positioned(
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: cnt == 0
+                                ? ScaleTransition(
+                                    scale: _scaleAnimationReversed,
+                                    child: Text(label,
+                                        maxLines: 1,
+                                        style: const TextStyle(fontSize: 22)))
+                                : Text('$cnt',
+                                    maxLines: 1,
+                                    style: const TextStyle(fontSize: 18)))),
+                    Positioned(
+                        left: 90,
+                        top: 0,
+                        bottom: 0,
+                        child: ScaleTransition(
+                            scale: _scaleAnimation,
+                            child: Row(children: [
+                              RoundButton(
+                                  color:
+                                      Constants.colorButtonRed.withOpacity(0.8),
+                                  iconColor:
+                                      Constants.colorCard.withOpacity(0.8),
+                                  size: 45,
+                                  radius: 20,
+                                  useScaleAnimation: true,
+                                  iconData: Icons.delete_outline,
+                                  onPressed: (v) async {
+                                    var v = _selectRep.getSelected(
+                                        type: SearchType.media,
+                                        resetSelection: false);
+                                    await MyRep().deleteHistory2(v);
+                                  }),
+                              const SizedBox(width: 15),
+                              RoundButton(
+                                  color:
+                                      Constants.colorSecondary.withOpacity(0.8),
+                                  iconColor:
+                                      Constants.colorCard.withOpacity(0.8),
+                                  size: 45,
+                                  radius: 20,
+                                  iconData: Icons.share,
+                                  useScaleAnimation: true,
+                                  onPressed: (_) {
+                                    var v = _selectRep.getSelected(
+                                        type: SearchType.media,
+                                        resetSelection: true);
+                                    MyRep().share(v);
+                                  })
+                            ])))
+                  ]))
+                ])),
+                // const Spacer(),
                 RoundButton(
                     color: Colors.transparent,
                     iconColor: Constants.colorTextAccent.withOpacity(0.8),

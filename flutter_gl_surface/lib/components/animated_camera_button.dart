@@ -271,7 +271,7 @@ class AnimatedCameraButtonState extends State<AnimatedCameraButton>
                                               topLeft: Radius.circular(90),
                                               bottomLeft: Radius.circular(90)),
                                           onPressed: () {
-                                            MyRep().takeImage();
+                                            MyRep().captureOneFrame();
                                           }));
                                 })),
                             Opacity(

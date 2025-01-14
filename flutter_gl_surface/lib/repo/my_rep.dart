@@ -92,6 +92,9 @@ class MyRep {
         case 'onMovement':
           logDebug('BTEST_onMovement');
           break;
+        case 'onFirstFrameNotify':
+          logDebug('BTEST_onFirstFrameNotify');
+          break;
       }
     });
   }
@@ -146,7 +149,6 @@ class MyRep {
       required int captureIntervalSec,
       required bool showAreaOnCapture}) async {
     // TODO: wrong orientation
-    // TODO: wrong pixel format in files
     try {
       var r =
           await _cameraChannel.invokeMethod('start_camera', <String, dynamic>{
@@ -198,7 +200,7 @@ class MyRep {
     return 0;
   }
 
-  void setCaptureActive(bool v) {
+  Future<void> setCaptureActive(bool v) async {
     if (captureActive != v) {
       captureActive = v;
       if (captureActive) {
@@ -214,6 +216,12 @@ class MyRep {
         _captureTm?.cancel();
         _captureStart = null;
         onCaptureTime.add(null);
+      }
+      try {
+        await _cameraChannel.invokeMethod(
+            'set_capture_active', <String, dynamic>{'active': captureActive});
+      } catch (e) {
+        logError('$tag: set capture active ex: $e');
       }
     }
   }
@@ -307,8 +315,13 @@ class MyRep {
     return historyCache;
   }
 
-  void takeImage() {
-    // TODO: image
+  Future<void> captureOneFrame() async {
+    try {
+      await _cameraChannel
+          .invokeMethod('capture_one_frame', <String, dynamic>{});
+    } catch (e) {
+      logError('$tag: capture one frame ex: $e');
+    }
   }
 
   Future<void> deleteHistoryRoot(List<HistoryRecord> list) async {

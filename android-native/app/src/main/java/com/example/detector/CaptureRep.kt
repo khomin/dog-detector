@@ -97,6 +97,10 @@ class CaptureRep(val context: Context, val appLocalDir: String) {
         isRunning = false
     }
 
+    fun setCaptureActive(active: Boolean) {
+        setCaptureActiveNative(active)
+    }
+
     suspend fun updateConfiguration(minArea: Int, captureIntervalSec: Int, showAreaOnCapture: Boolean) {
         mutex.withLock {
             try {
@@ -349,6 +353,8 @@ class CaptureRep(val context: Context, val appLocalDir: String) {
     )
     external fun genTextureNative() : Long
     external fun updateFrameNative()
+    external fun setCaptureActiveNative(active: Boolean)
+    external fun captureOneFrameNative()
     external fun updateViewSizeNative(
         width: Int,
         height: Int,

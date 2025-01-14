@@ -75,6 +75,21 @@ class MyGLSurfacePlatformView(
                     result.success(true)
                 }
             }
+            "set_capture_active" -> {
+                runBlocking(Dispatchers.IO) {
+                    val active = args["active"] as Boolean
+                    val captureRep = (context.applicationContext as App?)?.captureRep
+                    captureRep?.setCaptureActive(active)
+                    result.success(true)
+                }
+            }
+            "capture_one_frame" -> {
+                runBlocking(Dispatchers.IO) {
+                    val captureRep = (context.applicationContext as App?)?.captureRep
+                    captureRep?.captureOneFrameNative()
+                    result.success(true)
+                }
+            }
             "update_configuration" -> {
                 runBlocking(Dispatchers.IO) {
                     val minArea = args["minArea"] as Int

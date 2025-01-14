@@ -76,7 +76,9 @@ class CapturePageState extends State<CapturePage>
     _listener.dispose();
     _dispStream.dispose();
     _model.setRun(run: false, camera: null, mounted: false);
-    MyRep().stopCamera();
+    if (!MyRep().captureActive) {
+      MyRep().stopCamera();
+    }
     WidgetsBinding.instance.removeObserver(this);
   }
 
@@ -109,6 +111,7 @@ class CapturePageState extends State<CapturePage>
         captureIntervalSec: await SettingsRep().getCaptureIntervalSec(),
         minArea: await SettingsRep().getCaptureMinArea(),
         showAreaOnCapture: await SettingsRep().getCaptureShowArea());
+    await _updateRotation();
     SettingsRep().setCameraUsed(camera.id);
     _model.setRun(run: true, camera: camera);
   }
@@ -117,12 +120,15 @@ class CapturePageState extends State<CapturePage>
     var camera = _cameraToFlit();
     if (camera == null) return;
     _model.setRun(run: true, camera: camera);
+    _model.setOrientationWait(true);
     await MyRep().stopCamera();
     await MyRep().startCamera(
         id: camera.id,
         captureIntervalSec: await SettingsRep().getCaptureIntervalSec(),
         minArea: await SettingsRep().getCaptureMinArea(),
         showAreaOnCapture: await SettingsRep().getCaptureShowArea());
+    _model.setOrientationWait(false);
+    await _updateRotation();
     SettingsRep().setCameraUsed(camera.id);
   }
 
@@ -335,6 +341,7 @@ class CapturePageState extends State<CapturePage>
                                     child: //Opacity(
                                         // opacity: model.orientationpWait ? 0 : 1,
                                         // child:
+                                        // TODO: trasparent flip last frame
                                         ClipRRect(
                                             borderRadius:
                                                 BorderRadius.circular(20.0),
@@ -345,20 +352,20 @@ class CapturePageState extends State<CapturePage>
                                                     StandardMessageCodec())))))
                       ]);
                     })),
-                // Positioned.fill(
-                //     child: Stack(alignment: Alignment.center, children: [
-                //   RepaintBoundary(child: Builder(builder: (context) {
-                //     var wait = context
-                //         .select<RecordModel, bool>((v) => v.orientationpWait);
-                //     if (wait) {
-                //       return const SizedBox(
-                //           width: 60,
-                //           height: 60,
-                //           child: CircularProgressIndicator());
-                //     }
-                //     return const SizedBox();
-                //   }))
-                // ])),
+                Positioned.fill(
+                    child: Stack(alignment: Alignment.center, children: [
+                  RepaintBoundary(child: Builder(builder: (context) {
+                    var wait = context
+                        .select<RecordModel, bool>((v) => v.orientationpWait);
+                    if (wait) {
+                      return const SizedBox(
+                          width: 60,
+                          height: 60,
+                          child: CircularProgressIndicator());
+                    }
+                    return const SizedBox();
+                  }))
+                ])),
                 //
                 // buttons
                 Positioned(left: 0, bottom: 0, right: 0, child: _buttons())
@@ -401,7 +408,6 @@ class CapturePageState extends State<CapturePage>
                       child: const Center(child: Text('TODO'))),
                   //
                   // center
-                  // TODO: start-stopAnalize or something
                   AnimatedCameraButton(
                       activeDefault: MyRep().captureActive,
                       onCapture: () {
@@ -412,7 +418,6 @@ class CapturePageState extends State<CapturePage>
                       }),
                   //
                   // right
-                  // TODO: initial value with no animation
                   RepaintBoundary(child: Builder(builder: (context) {
                     var camera =
                         context.select<RecordModel, Camera?>((v) => v.camera);

@@ -173,12 +173,13 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                                       size: 55,
                                                       radius: 20,
                                                       useScaleAnimation: true,
-                                                      iconData:
-                                                          Icons.delete_outline,
+                                                      iconData: Icons
+                                                          .stop_circle_sharp,
                                                       onPressed: (v) {
                                                         MyRep()
                                                             .setCaptureActive(
                                                                 false);
+                                                        MyRep().stopCamera();
                                                         _handleOnSlide();
                                                       }),
                                                   const SizedBox(width: 15),
@@ -425,6 +426,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
       var history =
           context.select<AppModel, List<HistoryRecord>>((v) => v.history);
       if (history.isEmpty) {
+        // TODO: cache last history or splashscreen
         return RotationTransition(
             turns: _iconRotate,
             child: SizedBox(

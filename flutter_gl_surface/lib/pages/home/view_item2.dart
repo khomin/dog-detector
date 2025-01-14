@@ -139,6 +139,17 @@ class ViewItem2State extends State<ViewItem2> with TickerProviderStateMixin {
                           ]))
                     ])
                   ]),
+
+                  // Positioned.fill(
+                  //     child: Center(
+                  //         // TODO: check sort
+                  //         child: Container(
+                  //             // alignment: Alignment.center,
+                  //             color: Colors.black,
+                  //             child: Text(widget.history.date.toString(),
+                  //                 textAlign: TextAlign.center,
+                  //                 style: const TextStyle(
+                  //                     fontSize: 14, color: Colors.white))))),
                   AnimatedBuilder(
                       animation: _controller,
                       builder: (context, child) {
