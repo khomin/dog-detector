@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,19 +30,12 @@ class CapturePage extends StatefulWidget {
   State<CapturePage> createState() => CapturePageState();
 }
 
-class FlipData {
-  bool hideSurface = false;
-  bool showBlur = false;
-  String? img1;
-  // bool orientationWait = false;
-  SurfaceLayout layout = SurfaceLayout(rotation: 0, ratio: 1);
-
-  // void stage1() {
-  //   var camera = _cameraToFlit();
-  //   if (camera == null) return;
-  //   _model.setRun(run: true, camera: camera);
-  // }
-}
+// class FlipData {
+//   bool hideSurface = false;
+//   bool showBlur = false;
+//   String? img1;
+//   SurfaceLayout layout = SurfaceLayout(rotation: 0, ratio: 1);
+// }
 
 class CapturePageState extends State<CapturePage>
     with WidgetsBindingObserver, TickerProviderStateMixin {
@@ -98,19 +92,22 @@ class CapturePageState extends State<CapturePage>
       await Future.delayed(const Duration(milliseconds: 1000));
       // _model.setOrientationWait(false);
 
-      setState(() {
-        flipData.hideSurface = false;
-      });
+      // setState(() {
+      //   flipData.hideSurface = false;
+      // });
+      // _model.setHideSurface(false);
       await Future.delayed(const Duration(milliseconds: 100));
 
-      setState(() {
-        flipData.img1 = null;
-        // flipData.orientationWait = false;
-      });
+      // setState(() {
+      //   flipData.img1 = null;
+      //   // flipData.orientationWait = false;
+      // });
+      // TODO: here
+      _model.setImgBlur(null);
     };
   }
 
-  FlipData flipData = FlipData();
+  // FlipData flipData = FlipData();
 
   @override
   void dispose() {
@@ -173,15 +170,17 @@ class CapturePageState extends State<CapturePage>
 
     var path = await MyRep().captureOneFrame(serviceFrame: true);
 
-    setState(() {
-      flipData.img1 = path;
-    });
+    // setState(() {
+    //   flipData.img1 = path;
+    // });
+    _model.setImgBlur(path);
 
     await Future.delayed(const Duration(milliseconds: 100));
 
-    setState(() {
-      flipData.hideSurface = true;
-    });
+    // setState(() {
+    //   flipData.hideSurface = true;
+    // });
+    // _model.setHideSurface(true);
 
     // flipData.stage1();
     // _model.setOrientationWait(true);
@@ -248,8 +247,8 @@ class CapturePageState extends State<CapturePage>
       // ratio = size.height / size.width;
       // ratio = size.width / size.height;
     }
-    // _model.setSurfaceLayout(SurfaceLayout(rotation: rotation, ratio: ratio));
-    flipData.layout = SurfaceLayout(rotation: rotation, ratio: ratio);
+    _model.setSurfaceLayout(SurfaceLayout(rotation: rotation, ratio: ratio));
+    // flipData.layout = SurfaceLayout(rotation: rotation, ratio: ratio);
     logDebug(
         'BTEST:2 rotation=$rotation, devRotation=$devRotation, sensorRotation=$sensorRotation');
     // }();
@@ -387,7 +386,8 @@ class CapturePageState extends State<CapturePage>
                     top: 0,
                     left: 0,
                     right: 0,
-                    bottom: -(NavigatorRep().size.height + 20 / 3),
+                    bottom: -100,
+                    // bottom: -(NavigatorRep().size.height + 20 / 3),
                     child: Builder(builder: (context) {
                       //   var rotation = context.read<RecordModel>().rotation;
                       // _updateRotation();
@@ -399,19 +399,20 @@ class CapturePageState extends State<CapturePage>
                       // var camera = context.read<RecordModel>().camera;
                       // var model = context.watch<RecordModel>();
                       // var rotation = _model.rotation;
-                      // var layout = context.select<RecordModel, SurfaceLayout>(
-                      //     (v) => v.surfaceLayout);
+                      var layout = context
+                          .select<RecordModel, SurfaceLayout>((v) => v.layout);
                       // logDebug(
                       //     'BTEST: rotation=${layout.rotation}, ratio=${layout.ratio}');
                       return Stack(children: [
                         Column(children: [
                           Flexible(
                               child: Opacity(
-                                  opacity: flipData.hideSurface ? 0.5 : 1.0,
+                                  opacity:
+                                      1, //flipData.hideSurface ? 0.5 : 1.0,
                                   child: RotatedBox(
-                                      quarterTurns: flipData.layout.rotation,
+                                      quarterTurns: layout.rotation,
                                       child: AspectRatio(
-                                          aspectRatio: flipData.layout.ratio,
+                                          aspectRatio: layout.ratio,
                                           child:
                                               // TODO: trasparent flip last frame
                                               ClipRRect(
@@ -424,25 +425,91 @@ class CapturePageState extends State<CapturePage>
                                                       creationParams: null,
                                                       creationParamsCodec:
                                                           StandardMessageCodec()))))))
-                        ]),
-                        RotatedBox(
-                            quarterTurns: flipData.layout.rotation,
-                            child: Builder(builder: (context) {
-                              var img = flipData.img1;
-                              if (img == null) return const SizedBox();
-                              var imgFile = File(img);
-                              return ClipRRect(
-                                  borderRadius: BorderRadius.circular(20.0),
-                                  child: Image.memory(
-                                    imgFile.readAsBytesSync(),
-                                    // cacheWidth:
-                                    //     NavigatorRep().size.width.toInt(),
-                                    // color: Colors.yellow,
-                                    // fit: BoxFit.fitHeight,
-                                    // fit: BoxFit.fill,
-                                  ));
-                            }))
+                        ])
                       ]);
+                    })),
+                Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: -100,
+                    // bottom: -(NavigatorRep().size.height + 20 / 3),
+                    // child: Builder(builder: (context) {
+                    //   var rotation = context.read<RecordModel>().rotation;
+                    // _updateRotation();
+                    // var rotation =
+                    //     context.watch<RecordModel>().rotation;
+                    // var camera = context
+                    //     .select<RecordModel, Camera?>((v) => v.camera);
+                    // var rotation = 0;
+                    // var camera = context.read<RecordModel>().camera;
+                    // var model = context.watch<RecordModel>();
+                    // var rotation = _model.rotation;
+                    // var layout = context
+                    //     .select<RecordModel, SurfaceLayout>((v) => v.layout);
+                    // logDebug(
+                    //     'BTEST: rotation=${layout.rotation}, ratio=${layout.ratio}');
+
+                    // RotatedBox(
+                    //     quarterTurns: layout.rotation,
+                    child: Builder(builder: (context) {
+                      var layout = context
+                          .select<RecordModel, SurfaceLayout>((v) => v.layout);
+                      var imgBlur = context
+                          .select<RecordModel, String?>((v) => v.imgBlur);
+                      // var img = flipData.img1;
+                      if (imgBlur == null) return const SizedBox();
+                      var imgFile = File(imgBlur);
+                      // return RotatedBox(
+                      //     quarterTurns: layout.rotation,
+                      //     child:
+                      return Stack(children: [
+                        Column(children: [
+                          Flexible(
+                              child: Opacity(
+                                  opacity:
+                                      1, //flipData.hideSurface ? 0.5 : 1.0,
+                                  child: RotatedBox(
+                                      quarterTurns: layout.rotation,
+                                      child: AspectRatio(
+                                          aspectRatio: layout.ratio,
+                                          child:
+                                              // TODO: trasparent flip last frame
+                                              ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.0),
+                                                  child: Stack(children: [
+                                                    Positioned.fill(
+                                                        child: ImageFiltered(
+                                                            imageFilter:
+                                                                ImageFilter
+                                                                    .blur(
+                                                                        sigmaX:
+                                                                            13,
+                                                                        sigmaY:
+                                                                            13),
+                                                            child: Image.memory(
+                                                                imgFile
+                                                                    .readAsBytesSync(),
+                                                                // color: Colors
+                                                                //     .yellow,
+                                                                // colorBlendMode:
+                                                                //     BlendMode
+                                                                //         .color,
+                                                                cacheHeight:
+                                                                    100,
+                                                                cacheWidth: 100,
+                                                                //     NavigatorRep().size.width.toInt(),
+                                                                // color: Colors.yellow,
+                                                                // fit: BoxFit.fitHeight,
+                                                                // fit: BoxFit.cover,
+                                                                fit: BoxFit
+                                                                    .fill)))
+                                                  ]))))))
+                        ])
+                      ]);
+                      // });
                     })),
                 Positioned.fill(
                     child: Stack(alignment: Alignment.center, children: [
@@ -547,14 +614,14 @@ class CapturePageState extends State<CapturePage>
                             useScaleAnimation: true,
                             iconData: Icons.flip_camera_android,
                             onPressed: (v) async {
-                              if (_model.flipWait) return;
-                              var camera = _cameraToFlit();
-                              if (camera == null) return;
-                              _model.flipTurns =
-                                  camera.facing == 'Font' ? 0.5 : 0;
-                              _model.setFlipWait(true);
+                              // if (_model.flipWait) return;
+                              // var camera = _cameraToFlit();
+                              // if (camera == null) return;
+                              // _model.flipTurns =
+                              //     camera.facing == 'Font' ? 0.5 : 0;
+                              // _model.setFlipWait(true);
                               await _flip();
-                              _model.setFlipWait(false);
+                              // _model.setFlipWait(false);
                             }));
                   }))
                 ])));

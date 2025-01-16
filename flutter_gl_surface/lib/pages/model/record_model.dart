@@ -11,13 +11,18 @@ class RecordModel with ChangeNotifier {
   RecordModel();
 
   bool run = false;
-  bool flipWait = false;
+  // bool flipWait = false;
   bool orientationpWait = false;
   bool modeMenuVisible = false;
   double flipTurns = 0.0;
 
   Camera? camera;
   // SurfaceLayout surfaceLayout = SurfaceLayout(rotation: 0, ratio: 1);
+
+  // bool hideSurface = false;
+  bool showBlur = false;
+  String? imgBlur;
+  SurfaceLayout layout = SurfaceLayout(rotation: 0, ratio: 1);
 
   void setRun(
       {required bool run, required Camera? camera, bool mounted = true}) {
@@ -28,20 +33,40 @@ class RecordModel with ChangeNotifier {
     }
   }
 
-  void setFlipWait(bool v) {
-    if (flipWait != v) {
-      flipWait = v;
+  // void setHideSurface(bool v) {
+  //   if (hideSurface != v) {
+  //     hideSurface = v;
+  //     notifyListeners();
+  //   }
+  // }
+
+  void setShowBlur(bool v) {
+    if (showBlur != v) {
+      showBlur = v;
       notifyListeners();
     }
   }
 
-  // void setSurfaceLayout(SurfaceLayout v) {
-  //   // if (surfaceLayout.ratio != v.ratio ||
-  //   //     surfaceLayout.rotation != v.rotation) {
-  //   surfaceLayout = v;
-  //   // notifyListeners();
-  //   // }
+  void setImgBlur(String? v) {
+    if (imgBlur != v) {
+      imgBlur = v;
+      notifyListeners();
+    }
+  }
+
+  // void setFlipWait(bool v) {
+  //   if (flipWait != v) {
+  //     flipWait = v;
+  //     notifyListeners();
+  //   }
   // }
+
+  void setSurfaceLayout(SurfaceLayout v) {
+    if (layout.ratio != v.ratio || layout.rotation != v.rotation) {
+      layout = v;
+      // notifyListeners();
+    }
+  }
 
   // void setOrientationWait(bool v) {
   //   if (orientationpWait != v) {
