@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,12 +29,26 @@ class CapturePage extends StatefulWidget {
   State<CapturePage> createState() => CapturePageState();
 }
 
+class FlipData {
+  bool hideSurface = false;
+  bool showBlur = false;
+  String? img1;
+  // bool orientationWait = false;
+  SurfaceLayout layout = SurfaceLayout(rotation: 0, ratio: 1);
+
+  // void stage1() {
+  //   var camera = _cameraToFlit();
+  //   if (camera == null) return;
+  //   _model.setRun(run: true, camera: camera);
+  // }
+}
+
 class CapturePageState extends State<CapturePage>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   final _dispStream = DisposableStream();
   late RecordModel _model;
   late final AppLifecycleListener _listener;
-  Timer? _updateLayoutTm;
+  // Timer? _updateLayoutTm;
   final tag = 'capturePage';
 
   @override
@@ -61,14 +76,41 @@ class CapturePageState extends State<CapturePage>
         }
       });
 
-      _model.setOrientationWait(true);
+      // _model.setOrientationWait(true);
       await MyRep().registerView();
       await MyRep().getCameras();
       await _start();
-      await _updateRotation();
-      _model.setOrientationWait(false);
+      // await _updateRotation();
+      // _model.setOrientationWait(false);
     });
+
+    // MyRep().onCapture = (isService, path) {
+    //   logDebug('BTEST_on_capture_service=$isService: $path');
+    //   setState(() {
+    //     if (isService) {
+    //       flipData.img = path;
+    //     }
+    //   });
+    // };
+    MyRep().onFirstFrame = () async {
+      logDebug('BTEST_onFirstFrame');
+      await _updateRotation();
+      await Future.delayed(const Duration(milliseconds: 1000));
+      // _model.setOrientationWait(false);
+
+      setState(() {
+        flipData.hideSurface = false;
+      });
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      setState(() {
+        flipData.img1 = null;
+        // flipData.orientationWait = false;
+      });
+    };
   }
+
+  FlipData flipData = FlipData();
 
   @override
   void dispose() {
@@ -79,6 +121,7 @@ class CapturePageState extends State<CapturePage>
     if (!MyRep().captureActive) {
       MyRep().stopCamera();
     }
+    // MyRep().onCapture = null;
     WidgetsBinding.instance.removeObserver(this);
   }
 
@@ -116,18 +159,45 @@ class CapturePageState extends State<CapturePage>
     _model.setRun(run: true, camera: camera);
   }
 
+  // request for last frame
+  // got frame, show brur
+  //    setState => img=path, orientationWait=true (hide surface)
+  // stopCamera
+  // startCamera
+  // onFirstFrame -> updateRotation + img=path
+
   Future<void> _flip() async {
     var camera = _cameraToFlit();
     if (camera == null) return;
     _model.setRun(run: true, camera: camera);
-    _model.setOrientationWait(true);
+
+    var path = await MyRep().captureOneFrame(serviceFrame: true);
+
+    setState(() {
+      flipData.img1 = path;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    setState(() {
+      flipData.hideSurface = true;
+    });
+
+    // flipData.stage1();
+    // _model.setOrientationWait(true);
+    // setState(() {
+    //   flipData.orientationWait = true;
+    // });
+
     await MyRep().stopCamera();
     await MyRep().startCamera(
         id: camera.id,
         captureIntervalSec: await SettingsRep().getCaptureIntervalSec(),
         minArea: await SettingsRep().getCaptureMinArea(),
         showAreaOnCapture: await SettingsRep().getCaptureShowArea());
-    _model.setOrientationWait(false);
+
+    // _model.setOrientationWait(false);
+
     await _updateRotation();
     SettingsRep().setCameraUsed(camera.id);
   }
@@ -143,24 +213,24 @@ class CapturePageState extends State<CapturePage>
     return front;
   }
 
-  @override
-  void didChangeMetrics() {
-    super.didChangeMetrics();
-    // Here you can detect orientation change
-    // final orientation = MediaQuery.of(context).orientation;
-    var view = View.of(context).platformDispatcher.views.first;
-    var size = view.physicalSize / view.devicePixelRatio;
-    // print("BTEST_Current size: $size");
-    logDebug('BTEST: didChange');
-    _model.setOrientationWait(true);
-    _updateLayoutTm?.cancel();
-    _updateLayoutTm = Timer(const Duration(milliseconds: 300), () async {
-      await _updateRotation();
-      Timer(const Duration(milliseconds: 100), () {
-        _model.setOrientationWait(false);
-      });
-    });
-  }
+  // @override
+  // void didChangeMetrics() {
+  //   super.didChangeMetrics();
+  //   // Here you can detect orientation change
+  //   // final orientation = MediaQuery.of(context).orientation;
+  //   var view = View.of(context).platformDispatcher.views.first;
+  //   var size = view.physicalSize / view.devicePixelRatio;
+  //   // print("BTEST_Current size: $size");
+  //   logDebug('BTEST: didChange');
+  //   _model.setOrientationWait(true);
+  //   _updateLayoutTm?.cancel();
+  //   _updateLayoutTm = Timer(const Duration(milliseconds: 300), () async {
+  //     await _updateRotation();
+  //     Timer(const Duration(milliseconds: 100), () {
+  //       _model.setOrientationWait(false);
+  //     });
+  //   });
+  // }
 
   Future _updateRotation() async {
     var devRotation = await MyRep().getDeviceSensor();
@@ -178,7 +248,8 @@ class CapturePageState extends State<CapturePage>
       // ratio = size.height / size.width;
       // ratio = size.width / size.height;
     }
-    _model.setSurfaceLayout(SurfaceLayout(rotation: rotation, ratio: ratio));
+    // _model.setSurfaceLayout(SurfaceLayout(rotation: rotation, ratio: ratio));
+    flipData.layout = SurfaceLayout(rotation: rotation, ratio: ratio);
     logDebug(
         'BTEST:2 rotation=$rotation, devRotation=$devRotation, sensorRotation=$sensorRotation');
     // }();
@@ -306,7 +377,7 @@ class CapturePageState extends State<CapturePage>
           return Container(
               // margin: EdgeInsets.all(10),
               decoration: const BoxDecoration(
-                  color: Constants.colorTextAccent,
+                  // color: Constants.colorTextAccent,
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20))),
@@ -328,28 +399,49 @@ class CapturePageState extends State<CapturePage>
                       // var camera = context.read<RecordModel>().camera;
                       // var model = context.watch<RecordModel>();
                       // var rotation = _model.rotation;
-                      var layout = context.select<RecordModel, SurfaceLayout>(
-                          (v) => v.surfaceLayout);
-                      logDebug(
-                          'BTEST: rotation=${layout.rotation}, ratio=${layout.ratio}');
-                      return Column(children: [
-                        Flexible(
-                            child: RotatedBox(
-                                quarterTurns: layout.rotation,
-                                child: AspectRatio(
-                                    aspectRatio: layout.ratio,
-                                    child: //Opacity(
-                                        // opacity: model.orientationpWait ? 0 : 1,
-                                        // child:
-                                        // TODO: trasparent flip last frame
-                                        ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(20.0),
-                                            child: const AndroidView(
-                                                viewType: 'my_gl_surface_view',
-                                                creationParams: null,
-                                                creationParamsCodec:
-                                                    StandardMessageCodec())))))
+                      // var layout = context.select<RecordModel, SurfaceLayout>(
+                      //     (v) => v.surfaceLayout);
+                      // logDebug(
+                      //     'BTEST: rotation=${layout.rotation}, ratio=${layout.ratio}');
+                      return Stack(children: [
+                        Column(children: [
+                          Flexible(
+                              child: Opacity(
+                                  opacity: flipData.hideSurface ? 0.5 : 1.0,
+                                  child: RotatedBox(
+                                      quarterTurns: flipData.layout.rotation,
+                                      child: AspectRatio(
+                                          aspectRatio: flipData.layout.ratio,
+                                          child:
+                                              // TODO: trasparent flip last frame
+                                              ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.0),
+                                                  child: const AndroidView(
+                                                      viewType:
+                                                          'my_gl_surface_view',
+                                                      creationParams: null,
+                                                      creationParamsCodec:
+                                                          StandardMessageCodec()))))))
+                        ]),
+                        RotatedBox(
+                            quarterTurns: flipData.layout.rotation,
+                            child: Builder(builder: (context) {
+                              var img = flipData.img1;
+                              if (img == null) return const SizedBox();
+                              var imgFile = File(img);
+                              return ClipRRect(
+                                  borderRadius: BorderRadius.circular(20.0),
+                                  child: Image.memory(
+                                    imgFile.readAsBytesSync(),
+                                    // cacheWidth:
+                                    //     NavigatorRep().size.width.toInt(),
+                                    // color: Colors.yellow,
+                                    // fit: BoxFit.fitHeight,
+                                    // fit: BoxFit.fill,
+                                  ));
+                            }))
                       ]);
                     })),
                 Positioned.fill(
@@ -368,7 +460,30 @@ class CapturePageState extends State<CapturePage>
                 ])),
                 //
                 // buttons
-                Positioned(left: 0, bottom: 0, right: 0, child: _buttons())
+                Positioned(left: 0, bottom: 0, right: 0, child: _buttons()),
+
+                // Positioned(
+                //     // left: 0,
+                //     // bottom: 200,
+                //     // right: 0,
+                //     top: 0,
+                //     left: 0,
+                //     right: 0,
+                //     bottom: 0,
+                //     // bottom: -(NavigatorRep().size.height + 20 / 3),
+                //     child: Builder(builder: (context) {
+                //       // if (flipData.showBlur) {
+                //       var img = flipData.img1;
+                //       if (img == null) return const SizedBox();
+                //       var imgFile = File(img);
+                //       return Image.memory(
+                //         imgFile.readAsBytesSync(),
+                //         // color: Colors.yellow,
+                //         fit: BoxFit.fitHeight,
+                //       );
+                //       // }
+                //       // return const SizedBox();
+                //     }))
                 // camera
                 // Positioned(
                 //     left: 0,

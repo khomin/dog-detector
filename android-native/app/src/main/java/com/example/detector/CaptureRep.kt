@@ -354,7 +354,7 @@ class CaptureRep(val context: Context, val appLocalDir: String) {
     external fun genTextureNative() : Long
     external fun updateFrameNative()
     external fun setCaptureActiveNative(active: Boolean)
-    external fun captureOneFrameNative()
+    external fun captureOneFrameNative(service: Boolean)
     external fun updateViewSizeNative(
         width: Int,
         height: Int,

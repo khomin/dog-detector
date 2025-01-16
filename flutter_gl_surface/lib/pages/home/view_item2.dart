@@ -139,7 +139,6 @@ class ViewItem2State extends State<ViewItem2> with TickerProviderStateMixin {
                           ]))
                     ])
                   ]),
-
                   // Positioned.fill(
                   //     child: Center(
                   //         // TODO: check sort

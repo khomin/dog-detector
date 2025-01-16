@@ -63,10 +63,13 @@ class MyRep {
   final onCaptureTime = BehaviorSubject<CaptureTime?>();
   final onHistory = BehaviorSubject<List<HistoryRecord>>();
   var historyCache = <HistoryRecord>[];
+  // Function(bool isServiceFrame, String path)? onCapture;
+  Function()? onFirstFrame;
   // private
   var _frameSize = const Size(0, 0);
   Timer? _captureTm;
   DateTime? _captureStart;
+  Completer<String>? _complCaptOneFrame;
   static const _cameraChannel = MethodChannel('camera/cmd');
   static const _mainChannel = MethodChannel('main/cmd');
 
@@ -88,12 +91,18 @@ class MyRep {
         case 'onCapture':
           var path = call.arguments['path'] as String;
           logDebug('BTEST_onCapture: $path');
+          // onCapture?.call(path.contains('/service/'), path);
+          if (path.contains('/service/')) {
+            _complCaptOneFrame?.complete(path);
+            _complCaptOneFrame = null;
+          }
           break;
         case 'onMovement':
           logDebug('BTEST_onMovement');
           break;
         case 'onFirstFrameNotify':
           logDebug('BTEST_onFirstFrameNotify');
+          onFirstFrame?.call();
           break;
       }
     });
@@ -148,7 +157,6 @@ class MyRep {
       required int minArea,
       required int captureIntervalSec,
       required bool showAreaOnCapture}) async {
-    // TODO: wrong orientation
     try {
       var r =
           await _cameraChannel.invokeMethod('start_camera', <String, dynamic>{
@@ -315,13 +323,17 @@ class MyRep {
     return historyCache;
   }
 
-  Future<void> captureOneFrame() async {
+  Future<String> captureOneFrame({bool serviceFrame = false}) async {
+    var completer = Completer<String>();
     try {
-      await _cameraChannel
-          .invokeMethod('capture_one_frame', <String, dynamic>{});
+      await _cameraChannel.invokeMethod('capture_one_frame',
+          <String, dynamic>{'service_frame': serviceFrame});
     } catch (e) {
       logError('$tag: capture one frame ex: $e');
     }
+    _complCaptOneFrame?.complete('');
+    _complCaptOneFrame = completer;
+    return completer.future;
   }
 
   Future<void> deleteHistoryRoot(List<HistoryRecord> list) async {

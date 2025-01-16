@@ -17,7 +17,7 @@ class RecordModel with ChangeNotifier {
   double flipTurns = 0.0;
 
   Camera? camera;
-  SurfaceLayout surfaceLayout = SurfaceLayout(rotation: 0, ratio: 1);
+  // SurfaceLayout surfaceLayout = SurfaceLayout(rotation: 0, ratio: 1);
 
   void setRun(
       {required bool run, required Camera? camera, bool mounted = true}) {
@@ -35,20 +35,20 @@ class RecordModel with ChangeNotifier {
     }
   }
 
-  void setSurfaceLayout(SurfaceLayout v) {
-    if (surfaceLayout.ratio != v.ratio ||
-        surfaceLayout.rotation != v.rotation) {
-      surfaceLayout = v;
-      notifyListeners();
-    }
-  }
+  // void setSurfaceLayout(SurfaceLayout v) {
+  //   // if (surfaceLayout.ratio != v.ratio ||
+  //   //     surfaceLayout.rotation != v.rotation) {
+  //   surfaceLayout = v;
+  //   // notifyListeners();
+  //   // }
+  // }
 
-  void setOrientationWait(bool v) {
-    if (orientationpWait != v) {
-      orientationpWait = v;
-      notifyListeners();
-    }
-  }
+  // void setOrientationWait(bool v) {
+  //   if (orientationpWait != v) {
+  //     orientationpWait = v;
+  //     notifyListeners();
+  //   }
+  // }
 
   void setModeMenuVisible(bool v) {
     if (modeMenuVisible != v) {

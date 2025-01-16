@@ -32,6 +32,7 @@ int minArea = 0;
 int captureIntervalSec = 0;
 bool captureActive = false;
 bool captureOneFrame = false;
+bool captureOneFrameService = false;
 bool showAreaOnCapture = true;
 std::chrono::steady_clock::time_point lastCaptureTime;
 std::chrono::steady_clock::time_point lastMoveReportTime;
@@ -46,7 +47,7 @@ std::condition_variable condVar;
 std::mutex condLock;
 std::atomic<bool> isRun = false;
 
-void captureFrame(cv::Mat& frame);
+void captureFrame(cv::Mat& frame, bool service);
 void reportOfMovement();
 
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
@@ -201,14 +202,38 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
             // Draw ROI boundary
 //            cv::rectangle(frame, roi, cv::Scalar(255, 0, 0), 2);
 
-            if (captureOneFrame || (movementDetected && captureActive)) {
-                if(captureOneFrame || shouldCaptureFrame()) {
-                    captureFrame(frame);
+            auto capture = false;
+            auto captureService = false;
+            auto report = false;
+            {
+                std::lock_guard<std::mutex> l(lock);
+                if (captureOneFrame || captureOneFrameService || (movementDetected && captureActive)) {
+                    if(captureOneFrame || captureOneFrameService || shouldCaptureFrame()) {
+                        if (captureOneFrame) {
+                            capture = true;
+                        } else if (captureOneFrameService) {
+                            captureService = true;
+                        }
+                    }
+                    if(captureOneFrameService) {
+                        captureOneFrameService = false;
+                    } else if(captureOneFrame) {
+                        captureOneFrame = false;
+                    }
                 }
-                if(shouldReportMovement()) {
+            }
+            if(movementDetected && shouldReportMovement()) {
+                report = true;
+            }
+            {
+                if(capture) {
+                    captureFrame(frame, false);
+                } if(captureService) {
+                    captureFrame(frame, true);
+                }
+                if(report) {
                     reportOfMovement();
                 }
-                captureOneFrame = false;
             }
             {
                 std::lock_guard<std::mutex> l(lock);
@@ -301,27 +326,43 @@ Java_com_example_detector_CaptureRep_updateViewSizeNative(JNIEnv *env, jobject t
     cameraFacing = (CameraFace) facing;
 }
 
-void captureFrame(cv::Mat& frame) {
+void captureFrame(cv::Mat& frame, bool service) {
     JNIEnv *env;
     if(onCaptureMethodId != nullptr) {
         auto not_jni_thread = (*mJVM).GetEnv((void **) &env, JNI_VERSION_1_6) == JNI_EDETACHED;
         if (not_jni_thread) mJVM->AttachCurrentThread(&env, nullptr);
-        auto dateStr = getCurrentDateString();
-        auto fileName = getCurrentTimeString() + ".jpeg";
-        auto path = appLocalDir + "/gallery/" + dateStr + "/" + fileName;
-
-        // Get the parent directory of the file path
-        std::filesystem::path dir = std::filesystem::path(path).parent_path();
-        // Create the directory if it does not exist
-        if (!std::filesystem::exists(dir)) {
-            std::filesystem::create_directories(dir);
+        if(!service) {
+            auto dateStr = getCurrentDateString();
+            auto fileName = getCurrentTimeString() + ".jpeg";
+            auto path = appLocalDir + "/gallery/" + dateStr + "/" + fileName;
+            // Get the parent directory of the file path
+            std::filesystem::path dir = std::filesystem::path(path).parent_path();
+            // Create the directory if it does not exist
+            if (!std::filesystem::exists(dir)) {
+                std::filesystem::create_directories(dir);
+            }
+            cv::Mat rgbFrame;
+            cv::cvtColor(frame, rgbFrame, cv::COLOR_BGR2RGB);
+            auto res = cv::imwrite(path, rgbFrame);
+            jstring obj_msg_j = env->NewStringUTF(res ? path.c_str() : "");
+            env->CallVoidMethod(onSourceMethodRef, onCaptureMethodId, obj_msg_j);
+            env->DeleteLocalRef(obj_msg_j);
+        } else {
+            auto path = appLocalDir + "/service/service.jpeg";
+            // Get the parent directory of the file path
+            std::filesystem::path dir = std::filesystem::path(path).parent_path();
+            // Create the directory if it does not exist
+            if (!std::filesystem::exists(dir)) {
+                std::filesystem::create_directories(dir);
+            }
+            cv::Mat rgbFrame;
+            cv::cvtColor(frame, rgbFrame, cv::COLOR_BGR2RGB);
+            auto res = cv::imwrite(path, rgbFrame);
+            jstring obj_msg_j = env->NewStringUTF(res ? path.c_str() : "");
+            env->CallVoidMethod(onSourceMethodRef, onCaptureMethodId, obj_msg_j);
+            env->DeleteLocalRef(obj_msg_j);
         }
-        cv::Mat rgbFrame;
-        cv::cvtColor(frame, rgbFrame, cv::COLOR_BGR2RGB);
-        auto res = cv::imwrite(path, rgbFrame);
-        jstring obj_msg_j = env->NewStringUTF(res ? path.c_str() : "");
-        env->CallVoidMethod(onSourceMethodRef, onCaptureMethodId, obj_msg_j);
-        env->DeleteLocalRef(obj_msg_j);
+
         if (not_jni_thread) mJVM->DetachCurrentThread();
     }
     lastCaptureTime = std::chrono::steady_clock::now();
@@ -367,7 +408,11 @@ Java_com_example_detector_CaptureRep_setCaptureActiveNative(JNIEnv *env, jobject
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_detector_CaptureRep_captureOneFrameNative(JNIEnv *env, jobject thiz) {
+Java_com_example_detector_CaptureRep_captureOneFrameNative(JNIEnv *env, jobject thiz, jboolean service) {
     std::lock_guard<std::mutex> l(lock);
-    captureOneFrame = true;
+    if(service) {
+        captureOneFrameService = true;
+    } else {
+        captureOneFrame = true;
+    }
 }

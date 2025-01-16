@@ -86,7 +86,7 @@ class MyGLSurfacePlatformView(
             "capture_one_frame" -> {
                 runBlocking(Dispatchers.IO) {
                     val captureRep = (context.applicationContext as App?)?.captureRep
-                    captureRep?.captureOneFrameNative()
+                    captureRep?.captureOneFrameNative(args["service_frame"] as Boolean)
                     result.success(true)
                 }
             }
