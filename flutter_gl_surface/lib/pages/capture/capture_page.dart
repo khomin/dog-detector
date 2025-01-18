@@ -147,6 +147,36 @@ class CapturePageState extends State<CapturePage>
     return front;
   }
 
+  void _updateLastFrame() async {
+    if (_captured == null) {
+      setState(() {
+        _captured = Container(color: _colors.first);
+        _onRightToLeft = true;
+        _hasLastCapture = true;
+      });
+    } else {
+      setState(() {
+        _onLeftToGone = true;
+        _hasLastCapture = true;
+      });
+      Timer(const Duration(milliseconds: 100), () {
+        setState(() {
+          _onLeftToGone = false;
+          _captured = null;
+          _onRightToLeft = false;
+        });
+        Timer(const Duration(milliseconds: 100), () {
+          setState(() {
+            _captured = Container(color: _colors.first);
+            _onRightToLeft = true;
+          });
+          _colors.removeAt(0);
+        });
+      });
+    }
+    _colors.removeAt(0);
+  }
+
   // @override
   // void didChangeMetrics() {
   //   super.didChangeMetrics();
@@ -315,7 +345,54 @@ class CapturePageState extends State<CapturePage>
                 ])),
                 //
                 // buttons
-                Positioned(left: 0, bottom: 0, right: 0, child: _buttons())
+                Positioned(left: 0, bottom: 0, right: 0, child: _buttons()),
+                //
+                // test
+                Positioned(
+                    child: Row(
+                  children: [
+                    RoundButton(
+                        iconData: Icons.one_x_mobiledata_outlined,
+                        color: Colors.red,
+                        iconColor: Colors.orange,
+                        onPressed: (p0) {
+                          if (_captured == null) {
+                            setState(() {
+                              _captured = Container(color: _colors.first);
+                              _onRightToLeft = true;
+                            });
+                          } else {}
+                          _colors.removeAt(0);
+                        }),
+                    RoundButton(
+                        iconData: Icons.two_k,
+                        color: Colors.red,
+                        iconColor: Colors.orange,
+                        onPressed: (p0) {
+                          setState(() {
+                            _onLeftToGone = true;
+                          });
+                        }),
+                    RoundButton(
+                        iconData: Icons.restore,
+                        color: Colors.red,
+                        iconColor: Colors.orange,
+                        onPressed: (p0) {
+                          setState(() {
+                            _onLeftToGone = false;
+                            _captured = null;
+                            _onRightToLeft = false;
+                          });
+                        }),
+                    RoundButton(
+                        iconData: Icons.start,
+                        color: Colors.red,
+                        iconColor: Colors.orange,
+                        onPressed: (p0) {
+                          _updateLastFrame();
+                        })
+                  ],
+                ))
               ]));
         });
   }
@@ -331,13 +408,7 @@ class CapturePageState extends State<CapturePage>
                 children: [
                   //
                   // TODO: last captured frame
-                  Container(
-                      width: 55,
-                      height: 55,
-                      decoration: const BoxDecoration(
-                          color: Constants.colorButton,
-                          borderRadius: BorderRadius.all(Radius.circular(30))),
-                      child: const Center(child: Text('TODO'))),
+                  _lastCaptured(),
                   //
                   // center
                   AnimatedCameraButton(
@@ -420,6 +491,69 @@ class CapturePageState extends State<CapturePage>
         ])
       ]);
       // });
+    });
+  }
+
+  Widget? _captured;
+  bool _hasLastCapture = false;
+
+  final _colors = <Color>[
+    Colors.red,
+    Colors.brown,
+    Colors.amber,
+    Colors.blue,
+    Colors.blueGrey,
+    Colors.orange,
+    Colors.pink,
+    Colors.purpleAccent,
+    Colors.red,
+    Colors.brown,
+    Colors.amber,
+    Colors.blue,
+    Colors.blueGrey,
+    Colors.orange,
+    Colors.pink,
+    Colors.purpleAccent,
+    Colors.red,
+    Colors.brown,
+    Colors.amber,
+    Colors.blue,
+    Colors.blueGrey,
+    Colors.orange,
+    Colors.pink,
+    Colors.purpleAccent
+  ];
+
+  bool _onRightToLeft = false;
+  bool _onLeftToGone = false;
+
+  Widget _lastCaptured() {
+    return Builder(builder: (context) {
+      var item = _captured;
+      return AnimatedOpacity(
+          opacity: _hasLastCapture ? 1 : 0,
+          duration: const Duration(milliseconds: 100),
+          child: Container(
+              width: 55,
+              height: 55,
+              decoration: const BoxDecoration(
+                  color: Constants.colorButton,
+                  borderRadius: BorderRadius.all(Radius.circular(30))),
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(30.0),
+                  child: Stack(alignment: Alignment.center, children: [
+                    AnimatedPositioned(
+                        duration: const Duration(milliseconds: 100),
+                        left: _onLeftToGone ? -55 : (_onRightToLeft ? 0 : 55),
+                        bottom: 0,
+                        top: 0,
+                        child: SizedBox(
+                            width: 55,
+                            height: 55,
+                            child: item ?? const SizedBox())),
+                    const Center(
+                        child: Text('2', style: TextStyle(color: Colors.white)))
+                  ]))));
     });
   }
 }
