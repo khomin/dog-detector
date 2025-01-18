@@ -5,6 +5,7 @@ import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/components/hover_click.dart';
 import 'package:flutter_demo/components/round_box.dart';
 import 'package:flutter_demo/pages/home/grid_dialog.dart';
+import 'package:flutter_demo/pages/home/history_view_dialog.dart';
 import 'package:flutter_demo/pages/home/view_item1.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
@@ -109,6 +110,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
   }
 
   void _handleOnSlide() {
+    if (MyRep().onCaptureTime.valueOrNull == null) return;
     if (_ctrSlideTop.isForwardOrCompleted) {
       _ctrSlideTop.reverse().orCancel;
     } else {
@@ -121,6 +123,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
     // var v = kToolbarHeight;
     return Scaffold(
         backgroundColor: Constants.colorBar,
+        // backgroundColor: Colors.pink,
         body: Stack(alignment: Alignment.center, children: [
           Positioned(
               top: (kToolbarHeight * 2) - 30,
@@ -142,6 +145,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     builder: (context, child) {
                       return SliverAppBar(
                           backgroundColor: Constants.colorBar,
+                          // backgroundColor: Colors.purple,
                           toolbarHeight: _width.value,
                           // toolbarHeight: _test ? kToolbarHeight * 2 : kToolbarHeight,
                           // expandedHeight: kToolbarHeight,
@@ -151,19 +155,20 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                 SliverToBoxAdapter(child: _header()),
                 //
                 // -
-                // DecoratedSliver(
-                //   decoration: const BoxDecoration(
-                //     color: Constants.colorBgUnderCard,
-                //   ),
-                //   // sliver: _gallery()
-                //   sliver: SliverFillRemaining(child: _gallery()),
-                // )
+                DecoratedSliver(
+                    decoration: const BoxDecoration(
+                      color: Constants.colorBgUnderCard,
+                    ),
+                    //   // sliver: _gallery()
+                    //   sliver:
+                    // SliverFillRemaining(child: _gallery()),
+                    sliver: SliverToBoxAdapter(child: _gallery()))
                 // SliverFillRemaining(
                 //     // fillOverscroll: false,
                 //     // fillOverscroll: true,
                 //     // hasScrollBody: false,
                 //     // child: _gallery()
-                SliverToBoxAdapter(child: _gallery())
+                // SliverToBoxAdapter(child: _gallery())
               ])
         ]));
   }
@@ -174,6 +179,18 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
         height: 60,
         // color: Colors.pink,
         child: Stack(children: [
+          Positioned(
+              top: 20,
+              left: 0,
+              right: 0,
+              child: Container(
+                  height: 40,
+                  width: 100,
+                  decoration: const BoxDecoration(
+                      color: Constants.colorBgUnderCard,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20))))),
           Positioned(
               top: 0,
               left: 0,
@@ -298,12 +315,10 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                           iconData: Icons.create_new_folder_rounded,
                           color: Constants.colorPrimary,
                           iconColor: Constants.colorBar,
-                          // iconColor: Constants.colorBgUnderCard,
                           size: (NavigatorRep().size.width / 5) + 15,
                           iconSize: NavigatorRep().size.width / 5,
                           useScaleAnimation: true,
                           onPressed: (p0) {
-                            // _handleOnSlide();
                             if (_ctrShakeIcon.isForwardOrCompleted) {
                               _ctrShakeIcon.reverse().orCancel;
                             } else {
@@ -343,7 +358,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
       return SizedBox(
           height: ((270 + 28) * history.length).toDouble(),
           // decoration: const BoxDecoration(color: Constants.colorBgUnderCard),
-          width: 300,
+          // width: 300,
           child: CustomScrollView(
               physics: const NeverScrollableScrollPhysics(),
               slivers: [
@@ -395,9 +410,9 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                 useScaleAnimation: true,
                                 iconData: Icons.stop_circle_sharp,
                                 onPressed: (v) {
+                                  _handleOnSlide();
                                   MyRep().setCaptureActive(false);
                                   MyRep().stopCamera();
-                                  _handleOnSlide();
                                 }),
                             const SizedBox(width: 15),
                             RoundButton(
@@ -419,6 +434,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
               // right: 0,
               child: Container(
                   color: Constants.colorBar,
+                  // color: Colors.blueAccent,
                   height: kToolbarHeight,
                   child: Row(children: [
                     Container(
