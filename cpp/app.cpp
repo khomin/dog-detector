@@ -149,10 +149,11 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
             cv::Mat frame;
             {
                 std::unique_lock<std::mutex> lk(condLock);
-                condVar.wait(lk, [&]() { return !inFrame.empty(); });
+                condVar.wait(lk, [&]() { return !inFrame.empty() || !isRun; });
                 frame = std::move(inFrame);
-//                frame = inFrame.clone();
-//                inFrame.release();
+            }
+            if(frame.empty() || !isRun) {
+                continue;
             }
             // Convert to grayscale
             cv::Mat gray;
@@ -248,7 +249,11 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_detector_CaptureRep_stopNative(JNIEnv *env, jobject thiz) {
-    isRun = false;
+    {
+        std::lock_guard<std::mutex> l(lock);
+        isRun = false;
+        outFrame = cv::Mat();
+    }
     condVar.notify_one();
 }
 
@@ -293,7 +298,17 @@ Java_com_example_detector_CaptureRep_updateFrameNative(JNIEnv *env, jobject thiz
     cv::Mat frame;
     {
         std::lock_guard<std::mutex> l(lock);
-        if (outFrame.empty()) {
+        if (!isRun) {
+            if(!outFrame.empty()) {
+                outFrame.setTo(cv::Scalar(0, 0, 255));
+                glBindTexture(GL_TEXTURE_2D, textureId);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, outFrame.cols, outFrame.rows, 0, GL_RGBA,
+                             GL_UNSIGNED_BYTE, outFrame.data);
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+            return;
+        }
+        if(outFrame.empty()) {
             return;
         }
         frame = outFrame;

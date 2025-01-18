@@ -30,13 +30,6 @@ class CapturePage extends StatefulWidget {
   State<CapturePage> createState() => CapturePageState();
 }
 
-// class FlipData {
-//   bool hideSurface = false;
-//   bool showBlur = false;
-//   String? img1;
-//   SurfaceLayout layout = SurfaceLayout(rotation: 0, ratio: 1);
-// }
-
 class CapturePageState extends State<CapturePage>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   final _dispStream = DisposableStream();
@@ -70,6 +63,7 @@ class CapturePageState extends State<CapturePage>
         }
       });
 
+      _model.devRotation = await MyRep().getDeviceSensor();
       // _model.setOrientationWait(true);
       await MyRep().registerView();
       await MyRep().getCameras();
@@ -87,27 +81,17 @@ class CapturePageState extends State<CapturePage>
     //   });
     // };
     MyRep().onFirstFrame = () async {
+      // if (_model.imgBlur != null) {
       logDebug('BTEST_onFirstFrame');
-      await _updateRotation();
-      await Future.delayed(const Duration(milliseconds: 1000));
+      // await _updateRotation();
+      // await Future.delayed(const Duration(milliseconds: 1000));
       // _model.setOrientationWait(false);
-
-      // setState(() {
-      //   flipData.hideSurface = false;
-      // });
       // _model.setHideSurface(false);
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 500));
 
-      // setState(() {
-      //   flipData.img1 = null;
-      //   // flipData.orientationWait = false;
-      // });
-      // TODO: here
       _model.setImgBlur(null);
     };
   }
-
-  // FlipData flipData = FlipData();
 
   @override
   void dispose() {
@@ -118,7 +102,6 @@ class CapturePageState extends State<CapturePage>
     if (!MyRep().captureActive) {
       MyRep().stopCamera();
     }
-    // MyRep().onCapture = null;
     WidgetsBinding.instance.removeObserver(this);
   }
 
@@ -151,9 +134,9 @@ class CapturePageState extends State<CapturePage>
         captureIntervalSec: await SettingsRep().getCaptureIntervalSec(),
         minArea: await SettingsRep().getCaptureMinArea(),
         showAreaOnCapture: await SettingsRep().getCaptureShowArea());
-    await _updateRotation();
-    SettingsRep().setCameraUsed(camera.id);
     _model.setRun(run: true, camera: camera);
+    _model.updateRotation();
+    SettingsRep().setCameraUsed(camera.id);
   }
 
   // request for last frame
@@ -173,6 +156,7 @@ class CapturePageState extends State<CapturePage>
     // setState(() {
     //   flipData.img1 = path;
     // });
+    _model.setBlurLayout(_model.layout);
     _model.setImgBlur(path);
 
     await Future.delayed(const Duration(milliseconds: 100));
@@ -197,7 +181,7 @@ class CapturePageState extends State<CapturePage>
 
     // _model.setOrientationWait(false);
 
-    await _updateRotation();
+    _model.updateRotation();
     SettingsRep().setCameraUsed(camera.id);
   }
 
@@ -230,61 +214,6 @@ class CapturePageState extends State<CapturePage>
   //     });
   //   });
   // }
-
-  Future _updateRotation() async {
-    var devRotation = await MyRep().getDeviceSensor();
-    var sensorRotation = _model.camera?.sensor ?? 0;
-    var rotation = _adjustRotation(
-        sensorRotation, devRotation, _model.camera?.facing == 'Front');
-    var size = _model.camera?.size;
-    var ratio = 1.0;
-    if (size != null) {
-      if (size.width > size.height) {
-        ratio = size.width / size.height;
-      } else {
-        ratio = size.height / size.width;
-      }
-      // ratio = size.height / size.width;
-      // ratio = size.width / size.height;
-    }
-    _model.setSurfaceLayout(SurfaceLayout(rotation: rotation, ratio: ratio));
-    // flipData.layout = SurfaceLayout(rotation: rotation, ratio: ratio);
-    logDebug(
-        'BTEST:2 rotation=$rotation, devRotation=$devRotation, sensorRotation=$sensorRotation');
-    // }();
-    // logDebug(
-    //     'BTEST, rotation=${context.watch<RecordModel>().rotation} ratio=$ratio, width=${size?.width},height=${size?.height},orientation=$orientation');
-  }
-
-  int _adjustRotation(int sensorRotation, int deviceRotation, bool front) {
-    // 1
-    // // Calculate the rotation values in terms of quarter turns.
-    // int sensorQuarterTurn = (sensorRotation ~/ 90) % 4; // 0 to 3
-    // int deviceQuarterTurn = (deviceRotation ~/ 90) % 4; // 0 to 3
-
-    // // Combine the two to get the final rotation.
-    // // Since both values represent a rotation, we could just add them.
-    // int adjustedTurn = (sensorQuarterTurn + deviceQuarterTurn) % 4;
-
-    // return adjustedTurn; // Return a value between 0 and 3
-
-    //// 2
-    // Combine sensor and device rotation
-    if (front) {
-      int combinedRotation = (sensorRotation + deviceRotation) % 360;
-      return combinedRotation ~/ 90;
-    } else {
-      int combinedRotation = (sensorRotation - deviceRotation + 360) % 360;
-      return combinedRotation ~/ 90;
-    }
-
-    // // 3
-    // // Combine sensor and device rotations
-    // int combinedRotation = (sensorRotation + deviceRotation) % 360;
-
-    // // Convert degrees to quarterTurns
-    // return combinedRotation ~/ 90;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -356,10 +285,8 @@ class CapturePageState extends State<CapturePage>
                             iconColor:
                                 Constants.colorTextAccent.withOpacity(0.8),
                             size: 70,
-                            // margin: EdgeInsets.only(bottom: 10),
                             vertTransform: true,
                             iconData: Icons.arrow_back_ios_new,
-                            // iconData: Icons.arrow_back_ios,
                             onPressed: (p0) {
                               var model = context.read<AppModel>();
                               model.setCollapse(!model.collapse);
@@ -374,143 +301,53 @@ class CapturePageState extends State<CapturePage>
         value: _model,
         builder: (context, child) {
           return Container(
-              // margin: EdgeInsets.all(10),
               decoration: const BoxDecoration(
-                  // color: Constants.colorTextAccent,
+                  color: Colors.black,
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20))),
               height: double.infinity,
               child: Stack(alignment: Alignment.center, children: [
+                //
+                // surface
                 Positioned(
                     top: 0,
                     left: 0,
                     right: 0,
-                    bottom: -100,
-                    // bottom: -(NavigatorRep().size.height + 20 / 3),
+                    bottom: -(NavigatorRep().size.height + 20 / 3),
                     child: Builder(builder: (context) {
-                      //   var rotation = context.read<RecordModel>().rotation;
-                      // _updateRotation();
-                      // var rotation =
-                      //     context.watch<RecordModel>().rotation;
-                      // var camera = context
-                      //     .select<RecordModel, Camera?>((v) => v.camera);
-                      // var rotation = 0;
-                      // var camera = context.read<RecordModel>().camera;
-                      // var model = context.watch<RecordModel>();
-                      // var rotation = _model.rotation;
                       var layout = context
                           .select<RecordModel, SurfaceLayout>((v) => v.layout);
-                      // logDebug(
-                      //     'BTEST: rotation=${layout.rotation}, ratio=${layout.ratio}');
+                      logDebug(
+                          'BTEST: rotation-surface=${layout.rotation}, ratio=${layout.ratio}');
                       return Stack(children: [
                         Column(children: [
                           Flexible(
-                              child: Opacity(
-                                  opacity:
-                                      1, //flipData.hideSurface ? 0.5 : 1.0,
-                                  child: RotatedBox(
-                                      quarterTurns: layout.rotation,
-                                      child: AspectRatio(
-                                          aspectRatio: layout.ratio,
-                                          child:
-                                              // TODO: trasparent flip last frame
-                                              ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0),
-                                                  child: const AndroidView(
-                                                      viewType:
-                                                          'my_gl_surface_view',
-                                                      creationParams: null,
-                                                      creationParamsCodec:
-                                                          StandardMessageCodec()))))))
+                              child: RotatedBox(
+                                  quarterTurns: layout.rotation,
+                                  child: AspectRatio(
+                                      aspectRatio: layout.ratio,
+                                      child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(20.0),
+                                          child: const AndroidView(
+                                              viewType: 'my_gl_surface_view',
+                                              creationParams: null,
+                                              creationParamsCodec:
+                                                  StandardMessageCodec())))))
                         ])
                       ]);
                     })),
+                //
+                // blur
                 Positioned(
                     top: 0,
                     left: 0,
                     right: 0,
-                    bottom: -100,
-                    // bottom: -(NavigatorRep().size.height + 20 / 3),
-                    // child: Builder(builder: (context) {
-                    //   var rotation = context.read<RecordModel>().rotation;
-                    // _updateRotation();
-                    // var rotation =
-                    //     context.watch<RecordModel>().rotation;
-                    // var camera = context
-                    //     .select<RecordModel, Camera?>((v) => v.camera);
-                    // var rotation = 0;
-                    // var camera = context.read<RecordModel>().camera;
-                    // var model = context.watch<RecordModel>();
-                    // var rotation = _model.rotation;
-                    // var layout = context
-                    //     .select<RecordModel, SurfaceLayout>((v) => v.layout);
-                    // logDebug(
-                    //     'BTEST: rotation=${layout.rotation}, ratio=${layout.ratio}');
-
-                    // RotatedBox(
-                    //     quarterTurns: layout.rotation,
-                    child: Builder(builder: (context) {
-                      var layout = context
-                          .select<RecordModel, SurfaceLayout>((v) => v.layout);
-                      var imgBlur = context
-                          .select<RecordModel, String?>((v) => v.imgBlur);
-                      // var img = flipData.img1;
-                      if (imgBlur == null) return const SizedBox();
-                      var imgFile = File(imgBlur);
-                      // return RotatedBox(
-                      //     quarterTurns: layout.rotation,
-                      //     child:
-                      return Stack(children: [
-                        Column(children: [
-                          Flexible(
-                              child: Opacity(
-                                  opacity:
-                                      1, //flipData.hideSurface ? 0.5 : 1.0,
-                                  child: RotatedBox(
-                                      quarterTurns: layout.rotation,
-                                      child: AspectRatio(
-                                          aspectRatio: layout.ratio,
-                                          child:
-                                              // TODO: trasparent flip last frame
-                                              ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0),
-                                                  child: Stack(children: [
-                                                    Positioned.fill(
-                                                        child: ImageFiltered(
-                                                            imageFilter:
-                                                                ImageFilter
-                                                                    .blur(
-                                                                        sigmaX:
-                                                                            13,
-                                                                        sigmaY:
-                                                                            13),
-                                                            child: Image.memory(
-                                                                imgFile
-                                                                    .readAsBytesSync(),
-                                                                // color: Colors
-                                                                //     .yellow,
-                                                                // colorBlendMode:
-                                                                //     BlendMode
-                                                                //         .color,
-                                                                cacheHeight:
-                                                                    100,
-                                                                cacheWidth: 100,
-                                                                //     NavigatorRep().size.width.toInt(),
-                                                                // color: Colors.yellow,
-                                                                // fit: BoxFit.fitHeight,
-                                                                // fit: BoxFit.cover,
-                                                                fit: BoxFit
-                                                                    .fill)))
-                                                  ]))))))
-                        ])
-                      ]);
-                      // });
-                    })),
+                    bottom: -(NavigatorRep().size.height + 20 / 3),
+                    child: _blurTransition()),
+                //
+                // progress
                 Positioned.fill(
                     child: Stack(alignment: Alignment.center, children: [
                   RepaintBoundary(child: Builder(builder: (context) {
@@ -527,45 +364,7 @@ class CapturePageState extends State<CapturePage>
                 ])),
                 //
                 // buttons
-                Positioned(left: 0, bottom: 0, right: 0, child: _buttons()),
-
-                // Positioned(
-                //     // left: 0,
-                //     // bottom: 200,
-                //     // right: 0,
-                //     top: 0,
-                //     left: 0,
-                //     right: 0,
-                //     bottom: 0,
-                //     // bottom: -(NavigatorRep().size.height + 20 / 3),
-                //     child: Builder(builder: (context) {
-                //       // if (flipData.showBlur) {
-                //       var img = flipData.img1;
-                //       if (img == null) return const SizedBox();
-                //       var imgFile = File(img);
-                //       return Image.memory(
-                //         imgFile.readAsBytesSync(),
-                //         // color: Colors.yellow,
-                //         fit: BoxFit.fitHeight,
-                //       );
-                //       // }
-                //       // return const SizedBox();
-                //     }))
-                // camera
-                // Positioned(
-                //     left: 0,
-                //     right: 0,
-                //     top: 20,
-                //     child: Builder(builder: (context) {
-                //       var model = context.watch<RecordModel>();
-                //       return Container(
-                //           color: Colors.black26,
-                //           child: Center(
-                //               child: Text(
-                //                   'Camera: ${model.camera?.facing}:${model.camera?.id}\nrotation=${model.surfaceLayout.rotation}\nratio=${model.surfaceLayout.ratio}\nsensor=${model.camera?.sensor}\nsize=${model.camera?.size}',
-                //                   style: const TextStyle(
-                //                       color: Colors.white, fontSize: 15))));
-                //     })),
+                Positioned(left: 0, bottom: 0, right: 0, child: _buttons())
               ]));
         });
   }
@@ -625,5 +424,51 @@ class CapturePageState extends State<CapturePage>
                             }));
                   }))
                 ])));
+  }
+
+  Widget _blurTransition() {
+    return Builder(builder: (context) {
+      // return const SizedBox();
+      var layout =
+          context.select<RecordModel, SurfaceLayout>((v) => v.oldLayout);
+      var imgBlur = context.select<RecordModel, String?>((v) => v.imgBlur);
+      // var img = flipData.img1;
+      if (imgBlur == null) return const SizedBox();
+      var imgFile = File(imgBlur);
+      // return RotatedBox(
+      //     quarterTurns: layout.rotation,
+      //     child:
+      logDebug(
+          'BTEST: rotation-blur=${layout.rotation}, ratio=${layout.ratio}');
+      return Stack(children: [
+        Column(children: [
+          Flexible(
+              child: RotatedBox(
+                  quarterTurns: layout.rotation,
+                  child: AspectRatio(
+                      aspectRatio: layout.ratio,
+                      child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20.0),
+                          child: Stack(children: [
+                            Positioned.fill(
+                                child: ImageFiltered(
+                                    imageFilter: ImageFilter.blur(
+                                        sigmaX: 13, sigmaY: 13),
+                                    child: Image.memory(
+                                        imgFile.readAsBytesSync(),
+                                        // color: Colors.yellow,
+                                        // colorBlendMode: BlendMode.color,
+                                        cacheHeight: 100,
+                                        cacheWidth: 100,
+                                        //     NavigatorRep().size.width.toInt(),
+                                        // color: Colors.yellow,
+                                        // fit: BoxFit.fitHeight,
+                                        // fit: BoxFit.cover,
+                                        fit: BoxFit.fill)))
+                          ])))))
+        ])
+      ]);
+      // });
+    });
   }
 }

@@ -35,6 +35,7 @@ class MainActivity: FlutterActivity() {
         val surfaceFactory = MyGLSurfaceViewFactory(flutterEngine.dartExecutor.binaryMessenger, null)
         val registry: PlatformViewRegistry = flutterEngine.platformViewsController.registry
         registry.registerViewFactory("my_gl_surface_view", surfaceFactory)
+
         methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "main/cmd")
 
         methodChannel.setMethodCallHandler { call, result ->
@@ -45,12 +46,23 @@ class MainActivity: FlutterActivity() {
                             result.success(true)
                         }
                         "get_device_sensor" -> {
-                            activity.windowManager?.getDefaultDisplay()?.rotation?.let {
-                                when (it) {
-                                    Surface.ROTATION_0 -> result.success(0)
-                                    Surface.ROTATION_90 -> result.success(90)
-                                    Surface.ROTATION_180 -> result.success(180)
-                                    Surface.ROTATION_270 -> result.success(270)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                context.display?.rotation?.let {
+                                    when (it) {
+                                        Surface.ROTATION_0 -> result.success(0)
+                                        Surface.ROTATION_90 -> result.success(90)
+                                        Surface.ROTATION_180 -> result.success(180)
+                                        Surface.ROTATION_270 -> result.success(270)
+                                    }
+                                }
+                            } else {
+                                activity.windowManager?.getDefaultDisplay()?.rotation?.let {
+                                    when (it) {
+                                        Surface.ROTATION_0 -> result.success(0)
+                                        Surface.ROTATION_90 -> result.success(90)
+                                        Surface.ROTATION_180 -> result.success(180)
+                                        Surface.ROTATION_270 -> result.success(270)
+                                    }
                                 }
                             }
                         }

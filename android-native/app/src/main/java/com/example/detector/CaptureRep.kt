@@ -152,15 +152,31 @@ class CaptureRep(val context: Context, val appLocalDir: String) {
         mutex.withLock {
             try {
                 camera?.close()
-                session?.stopRepeating()
-                session?.abortCaptures()
-                session?.close()
-                imageReader?.close()
-                session = null
-                imageReader = null
             } catch (ex: Exception) {
                 ex.printStackTrace()
             }
+            try {
+                session?.stopRepeating()
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+            try {
+                session?.abortCaptures()
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+            try {
+                session?.close()
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+            try {
+                imageReader?.close()
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+            session = null
+            imageReader = null
             stopNative()
         }
     }
@@ -380,6 +396,7 @@ class CaptureRep(val context: Context, val appLocalDir: String) {
             )
         })
         surfaceView.visibility = View.VISIBLE
+        //surfaceView.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
         surfaceView.setEGLContextClientVersion(2)
         surfaceView.setRenderer(render)
     }

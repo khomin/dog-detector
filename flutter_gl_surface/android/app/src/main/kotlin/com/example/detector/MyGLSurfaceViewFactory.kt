@@ -2,7 +2,6 @@ package com.example.detector
 
 import android.content.Context
 import android.opengl.GLSurfaceView
-import android.util.Log
 import android.view.View
 import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
@@ -18,14 +17,13 @@ class MyGLSurfaceViewFactory(
 ) : PlatformViewFactory(createArgsCodec) {
 
     override fun create(context: Context, id: Int, args: Any?): PlatformView {
-        return MyGLSurfacePlatformView(context, messenger, id)
+        return MyGLSurfacePlatformView(context, messenger)
     }
 }
 
 class MyGLSurfacePlatformView(
     val context: Context,
-    messenger: BinaryMessenger,
-    id: Int
+    messenger: BinaryMessenger
 ) : PlatformView, MethodChannel.MethodCallHandler {
     private val glSurfaceView: GLSurfaceView = GLSurfaceView(context)
     private val methodChannel: MethodChannel = MethodChannel(messenger, "camera/cmd")
@@ -37,10 +35,6 @@ class MyGLSurfacePlatformView(
 
     override fun getView(): View {
         return glSurfaceView
-    }
-
-    override fun onFlutterViewAttached(flutterView: View) {
-        super.onFlutterViewAttached(flutterView)
     }
 
     override fun dispose() {
