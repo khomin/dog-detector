@@ -13,7 +13,7 @@ class RecordModel with ChangeNotifier {
 
   bool run = false;
   int devRotation = 0;
-  // bool flipWait = false;
+  bool flipWait = false;
   bool orientationpWait = false;
   bool modeMenuVisible = false;
   double flipTurns = 0.0;
@@ -57,12 +57,12 @@ class RecordModel with ChangeNotifier {
     }
   }
 
-  // void setFlipWait(bool v) {
-  //   if (flipWait != v) {
-  //     flipWait = v;
-  //     notifyListeners();
-  //   }
-  // }
+  void setFlipWait(bool v) {
+    if (flipWait != v) {
+      flipWait = v;
+      notifyListeners();
+    }
+  }
 
   void setSurfaceLayout(SurfaceLayout v) {
     layout = v;

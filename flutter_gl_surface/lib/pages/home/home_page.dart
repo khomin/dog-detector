@@ -146,161 +146,18 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                           // toolbarHeight: _test ? kToolbarHeight * 2 : kToolbarHeight,
                           // expandedHeight: kToolbarHeight,
                           // collapsedHeight: kToolbarHeight,
-                          flexibleSpace: Stack(
-                              // alignment: Alignment.center,
-                              children: [
-                                Positioned(
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    child: Opacity(
-                                        opacity: _opacity.value,
-                                        // opacity: 1,
-                                        child: SizedBox(
-                                            height: _width.value / 1.5,
-                                            // color: Colors.purple.withOpacity(0.3),
-                                            child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  RoundButton(
-                                                      color: Constants
-                                                          .colorButtonRed
-                                                          .withOpacity(0.8),
-                                                      iconColor: Constants
-                                                          .colorCard
-                                                          .withOpacity(0.8),
-                                                      size: 55,
-                                                      radius: 20,
-                                                      useScaleAnimation: true,
-                                                      iconData: Icons
-                                                          .stop_circle_sharp,
-                                                      onPressed: (v) {
-                                                        MyRep()
-                                                            .setCaptureActive(
-                                                                false);
-                                                        MyRep().stopCamera();
-                                                        _handleOnSlide();
-                                                      }),
-                                                  const SizedBox(width: 15),
-                                                  RoundButton(
-                                                      color: Constants
-                                                          .colorSecondary
-                                                          .withOpacity(0.8),
-                                                      iconColor: Constants
-                                                          .colorCard
-                                                          .withOpacity(0.8),
-                                                      size: 55,
-                                                      radius: 20,
-                                                      useScaleAnimation: true,
-                                                      iconData: Icons.close,
-                                                      onPressed: (v) {
-                                                        _handleOnSlide();
-                                                      })
-                                                ])))),
-                                Positioned(
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    // right: 0,
-                                    child: Container(
-                                        color: Constants.colorBar,
-                                        height: kToolbarHeight,
-                                        child: Row(children: [
-                                          Container(
-                                              width: 100,
-                                              // color: Colors.yellow,
-                                              margin: const EdgeInsets.only(
-                                                  left: 25),
-                                              child: const Text('Home',
-                                                  style: TextStyle(
-                                                    // fontFamily: 'Sulphur',
-                                                    fontSize: 25,
-                                                    // color: Colors.black38,
-                                                    // fontWeight: FontWeight.bold
-                                                  ))),
-                                          //
-                                          // duration
-                                          HoverClick(
-                                              onPressedL: (p0) async {
-                                                _handleOnSlide();
-                                              },
-                                              child: SizedBox(
-                                                  width: 130,
-                                                  height: 50,
-                                                  // color: Colors.orange,
-                                                  // margin: const EdgeInsets.only(
-                                                  //     left: 20),
-                                                  child: RepaintBoundary(
-                                                      child: Stack(
-                                                          alignment:
-                                                              Alignment.center,
-                                                          children: [
-                                                        StreamBuilder(
-                                                            stream: MyRep()
-                                                                .onCaptureTime,
-                                                            initialData: MyRep()
-                                                                .onCaptureTime
-                                                                .valueOrNull,
-                                                            builder: (context,
-                                                                snapshot) {
-                                                              var duration =
-                                                                  snapshot.data;
-                                                              return AnimatedContainer(
-                                                                  duration:
-                                                                      Duration
-                                                                          .zero,
-                                                                  width: duration ==
-                                                                          null
-                                                                      ? 10
-                                                                      : 130,
-                                                                  height:
-                                                                      duration ==
-                                                                              null
-                                                                          ? 10
-                                                                          : 30,
-                                                                  child: RoundBox(
-                                                                      text: duration
-                                                                              ?.duration
-                                                                              .format() ??
-                                                                          '',
-                                                                      color: const Color
-                                                                              .fromARGB(
-                                                                              255,
-                                                                              211,
-                                                                              19,
-                                                                              5)
-                                                                          .withOpacity(
-                                                                              0.8),
-                                                                      borderRadius:
-                                                                          40));
-                                                            }),
-                                                        // Positioned(
-                                                        //     bottom: 0, child: Text('1'))
-                                                      ])))),
-                                          const Spacer(),
-                                          // RoundButton(
-                                          //     color: Colors.transparent,
-                                          //     iconColor: Constants.colorTextAccent
-                                          //         .withOpacity(0.8),
-                                          //     size: 70,
-                                          //     iconData: Icons.close_sharp,
-                                          //     onPressed: (p0) async {
-                                          //       var model =
-                                          //           context.read<AppModel>();
-                                          //       model.setCollapse(!model.collapse);
-                                          //     })
-                                        ])))
-                              ]));
+                          flexibleSpace: _sliverAppBar());
                     }),
                 SliverToBoxAdapter(child: _header()),
                 //
                 // -
                 // DecoratedSliver(
-                //     decoration: const BoxDecoration(
-                //       color: Constants.colorBgUnderCard,
-                //     ),
-                //     sliver: _gallery())
+                //   decoration: const BoxDecoration(
+                //     color: Constants.colorBgUnderCard,
+                //   ),
+                //   // sliver: _gallery()
+                //   sliver: SliverFillRemaining(child: _gallery()),
+                // )
                 // SliverFillRemaining(
                 //     // fillOverscroll: false,
                 //     // fillOverscroll: true,
@@ -510,5 +367,122 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     })
               ]));
     });
+  }
+
+  Widget _sliverAppBar() {
+    return Stack(
+        // alignment: Alignment.center,
+        children: [
+          Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Opacity(
+                  opacity: _opacity.value,
+                  // opacity: 1,
+                  child: SizedBox(
+                      height: _width.value / 1.5,
+                      // color: Colors.purple.withOpacity(0.3),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            RoundButton(
+                                color:
+                                    Constants.colorButtonRed.withOpacity(0.8),
+                                iconColor: Constants.colorCard.withOpacity(0.8),
+                                size: 55,
+                                radius: 20,
+                                useScaleAnimation: true,
+                                iconData: Icons.stop_circle_sharp,
+                                onPressed: (v) {
+                                  MyRep().setCaptureActive(false);
+                                  MyRep().stopCamera();
+                                  _handleOnSlide();
+                                }),
+                            const SizedBox(width: 15),
+                            RoundButton(
+                                color:
+                                    Constants.colorSecondary.withOpacity(0.8),
+                                iconColor: Constants.colorCard.withOpacity(0.8),
+                                size: 55,
+                                radius: 20,
+                                useScaleAnimation: true,
+                                iconData: Icons.close,
+                                onPressed: (v) {
+                                  _handleOnSlide();
+                                })
+                          ])))),
+          Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              // right: 0,
+              child: Container(
+                  color: Constants.colorBar,
+                  height: kToolbarHeight,
+                  child: Row(children: [
+                    Container(
+                        width: 100,
+                        // color: Colors.yellow,
+                        margin: const EdgeInsets.only(left: 25),
+                        child: const Text('Home',
+                            style: TextStyle(
+                              // fontFamily: 'Sulphur',
+                              fontSize: 25,
+                              // color: Colors.black38,
+                              // fontWeight: FontWeight.bold
+                            ))),
+                    //
+                    // duration
+                    HoverClick(
+                        onPressedL: (p0) async {
+                          _handleOnSlide();
+                        },
+                        child: SizedBox(
+                            width: 130,
+                            height: 50,
+                            // color: Colors.orange,
+                            // margin: const EdgeInsets.only(
+                            //     left: 20),
+                            child: RepaintBoundary(
+                                child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                  StreamBuilder(
+                                      stream: MyRep().onCaptureTime,
+                                      initialData:
+                                          MyRep().onCaptureTime.valueOrNull,
+                                      builder: (context, snapshot) {
+                                        var duration = snapshot.data;
+                                        return AnimatedContainer(
+                                            duration: Duration.zero,
+                                            width: duration == null ? 10 : 130,
+                                            height: duration == null ? 10 : 30,
+                                            child: RoundBox(
+                                                text: duration?.duration
+                                                        .format() ??
+                                                    '',
+                                                color: const Color.fromARGB(
+                                                        255, 211, 19, 5)
+                                                    .withOpacity(0.8),
+                                                borderRadius: 40));
+                                      }),
+                                  // Positioned(
+                                  //     bottom: 0, child: Text('1'))
+                                ])))),
+                    const Spacer(),
+                    // RoundButton(
+                    //     color: Colors.transparent,
+                    //     iconColor: Constants.colorTextAccent
+                    //         .withOpacity(0.8),
+                    //     size: 70,
+                    //     iconData: Icons.close_sharp,
+                    //     onPressed: (p0) async {
+                    //       var model =
+                    //           context.read<AppModel>();
+                    //       model.setCollapse(!model.collapse);
+                    //     })
+                  ])))
+        ]);
   }
 }

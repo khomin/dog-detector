@@ -43,6 +43,9 @@ class CapturePageState extends State<CapturePage>
     super.initState();
 
     Future.microtask(() async {
+      // init first
+      await MyRep().initRender();
+
       _listener = AppLifecycleListener(onStateChange: (value) {
         // logDebug('BTEST_STATE=$value');
         switch (value) {
@@ -50,15 +53,11 @@ class CapturePageState extends State<CapturePage>
           case AppLifecycleState.hidden:
           case AppLifecycleState.detached:
           case AppLifecycleState.paused:
-            // if (_model.run) {
             _model.setRun(run: false, camera: null);
             MyRep().stopCamera();
-            // }
             break;
           case AppLifecycleState.resumed:
-            // if (_model.run) {
-            _start();
-            // }
+            _start(flip: false);
             break;
         }
       });
@@ -67,29 +66,20 @@ class CapturePageState extends State<CapturePage>
       // _model.setOrientationWait(true);
       await MyRep().registerView();
       await MyRep().getCameras();
-      await _start();
+      await _start(flip: false);
       // await _updateRotation();
       // _model.setOrientationWait(false);
     });
 
-    // MyRep().onCapture = (isService, path) {
-    //   logDebug('BTEST_on_capture_service=$isService: $path');
-    //   setState(() {
-    //     if (isService) {
-    //       flipData.img = path;
-    //     }
-    //   });
-    // };
     MyRep().onFirstFrame = () async {
-      // if (_model.imgBlur != null) {
       logDebug('BTEST_onFirstFrame');
       // await _updateRotation();
       // await Future.delayed(const Duration(milliseconds: 1000));
       // _model.setOrientationWait(false);
       // _model.setHideSurface(false);
-      await Future.delayed(const Duration(milliseconds: 500));
-
+      await Future.delayed(const Duration(milliseconds: 100));
       _model.setImgBlur(null);
+      _model.setFlipWait(false);
     };
   }
 
@@ -102,75 +92,38 @@ class CapturePageState extends State<CapturePage>
     if (!MyRep().captureActive) {
       MyRep().stopCamera();
     }
+    MyRep().onFirstFrame = null;
     WidgetsBinding.instance.removeObserver(this);
   }
 
-  Future _start() async {
-    var cameras = MyRep().cameraMap;
-    var front = cameras['front'];
-    var back = cameras['back'];
+  Future<void> _start({required bool flip}) async {
     Camera? camera;
-    // init first
-    await MyRep().initRender();
-    // start with last used or default camera
-    var cameraId = await SettingsRep().getCameraUsed();
-    if (front?.id == cameraId) {
-      camera = front;
-    } else if (back?.id == cameraId) {
-      camera = back;
+    if (flip) {
+      camera = _cameraToFlit();
+      var path = await MyRep().captureOneFrame(serviceFrame: true);
+      _model.setBlurLayout(_model.layout);
+      _model.setImgBlur(path);
+      await Future.delayed(const Duration(milliseconds: 100));
     } else {
-      if (Constants.defaultCamera == front?.facing) {
+      var cameras = MyRep().cameraMap;
+      var front = cameras['front'];
+      var back = cameras['back'];
+      // start with last used or default camera
+      var cameraId = await SettingsRep().getCameraUsed();
+      if (front?.id == cameraId) {
         camera = front;
-      } else if (back != null) {
+      } else if (back?.id == cameraId) {
         camera = back;
+      } else {
+        if (Constants.defaultCamera == front?.facing) {
+          camera = front;
+        } else if (back != null) {
+          camera = back;
+        }
       }
     }
-    if (camera == null) {
-      logError('$tag: cannot initialize camera');
-      return;
-    }
-    await MyRep().startCamera(
-        id: camera.id,
-        captureIntervalSec: await SettingsRep().getCaptureIntervalSec(),
-        minArea: await SettingsRep().getCaptureMinArea(),
-        showAreaOnCapture: await SettingsRep().getCaptureShowArea());
-    _model.setRun(run: true, camera: camera);
-    _model.updateRotation();
-    SettingsRep().setCameraUsed(camera.id);
-  }
-
-  // request for last frame
-  // got frame, show brur
-  //    setState => img=path, orientationWait=true (hide surface)
-  // stopCamera
-  // startCamera
-  // onFirstFrame -> updateRotation + img=path
-
-  Future<void> _flip() async {
-    var camera = _cameraToFlit();
     if (camera == null) return;
     _model.setRun(run: true, camera: camera);
-
-    var path = await MyRep().captureOneFrame(serviceFrame: true);
-
-    // setState(() {
-    //   flipData.img1 = path;
-    // });
-    _model.setBlurLayout(_model.layout);
-    _model.setImgBlur(path);
-
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    // setState(() {
-    //   flipData.hideSurface = true;
-    // });
-    // _model.setHideSurface(true);
-
-    // flipData.stage1();
-    // _model.setOrientationWait(true);
-    // setState(() {
-    //   flipData.orientationWait = true;
-    // });
 
     await MyRep().stopCamera();
     await MyRep().startCamera(
@@ -178,8 +131,6 @@ class CapturePageState extends State<CapturePage>
         captureIntervalSec: await SettingsRep().getCaptureIntervalSec(),
         minArea: await SettingsRep().getCaptureMinArea(),
         showAreaOnCapture: await SettingsRep().getCaptureShowArea());
-
-    // _model.setOrientationWait(false);
 
     _model.updateRotation();
     SettingsRep().setCameraUsed(camera.id);
@@ -413,14 +364,9 @@ class CapturePageState extends State<CapturePage>
                             useScaleAnimation: true,
                             iconData: Icons.flip_camera_android,
                             onPressed: (v) async {
-                              // if (_model.flipWait) return;
-                              // var camera = _cameraToFlit();
-                              // if (camera == null) return;
-                              // _model.flipTurns =
-                              //     camera.facing == 'Font' ? 0.5 : 0;
-                              // _model.setFlipWait(true);
-                              await _flip();
-                              // _model.setFlipWait(false);
+                              if (_model.flipWait) return;
+                              _model.setFlipWait(true);
+                              _start(flip: true);
                             }));
                   }))
                 ])));
@@ -433,8 +379,8 @@ class CapturePageState extends State<CapturePage>
           context.select<RecordModel, SurfaceLayout>((v) => v.oldLayout);
       var imgBlur = context.select<RecordModel, String?>((v) => v.imgBlur);
       // var img = flipData.img1;
-      if (imgBlur == null) return const SizedBox();
-      var imgFile = File(imgBlur);
+      // if (imgBlur == null) return const SizedBox();
+      // var imgFile = File(imgBlur);
       // return RotatedBox(
       //     quarterTurns: layout.rotation,
       //     child:
@@ -451,20 +397,25 @@ class CapturePageState extends State<CapturePage>
                           borderRadius: BorderRadius.circular(20.0),
                           child: Stack(children: [
                             Positioned.fill(
-                                child: ImageFiltered(
-                                    imageFilter: ImageFilter.blur(
-                                        sigmaX: 13, sigmaY: 13),
-                                    child: Image.memory(
-                                        imgFile.readAsBytesSync(),
-                                        // color: Colors.yellow,
-                                        // colorBlendMode: BlendMode.color,
-                                        cacheHeight: 100,
-                                        cacheWidth: 100,
-                                        //     NavigatorRep().size.width.toInt(),
-                                        // color: Colors.yellow,
-                                        // fit: BoxFit.fitHeight,
-                                        // fit: BoxFit.cover,
-                                        fit: BoxFit.fill)))
+                                child: AnimatedOpacity(
+                                    duration: const Duration(milliseconds: 50),
+                                    opacity: imgBlur == null ? 0 : 1,
+                                    child: ImageFiltered(
+                                        imageFilter: ImageFilter.blur(
+                                            sigmaX: 13, sigmaY: 13),
+                                        child: imgBlur == null
+                                            ? const SizedBox()
+                                            : Image.memory(
+                                                File(imgBlur).readAsBytesSync(),
+                                                // color: Colors.yellow,
+                                                // colorBlendMode: BlendMode.color,
+                                                cacheHeight: 100,
+                                                cacheWidth: 100,
+                                                //     NavigatorRep().size.width.toInt(),
+                                                // color: Colors.yellow,
+                                                // fit: BoxFit.fitHeight,
+                                                // fit: BoxFit.cover,
+                                                fit: BoxFit.fill))))
                           ])))))
         ])
       ]);
