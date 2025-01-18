@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_demo/components/splash.dart';
 import 'package:flutter_demo/pages/model/camera_model.dart';
 import 'package:flutter_demo/pages/settings/settings_page.dart';
 import 'package:flutter_demo/components/camera_settings_page.dart';
@@ -34,15 +35,12 @@ class AppState extends State<App> {
   void initState() {
     super.initState();
     _appModel = AppModel();
-
     () async {
       await FileUtils.init();
       Loggy.initLoggy(logPrinter: LogPrinter());
       _appModel.setReady(true);
+      _appModel.setHistory(await MyRep().getHistory());
       Jiffy.setLocale('uk');
-      // Timer(const Duration(milliseconds: 100), () async {
-      //   await MyRep().getCameras();
-      // });
     }();
   }
 
@@ -58,7 +56,7 @@ class AppState extends State<App> {
         ],
         builder: (context, child) {
           if (!context.select<AppModel, bool>((v) => v.ready)) {
-            return const SizedBox();
+            return const Splash();
           }
           return LayoutBuilder(builder: (context, constraints) {
             Common().calcLayout(context);

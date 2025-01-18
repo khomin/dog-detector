@@ -77,7 +77,7 @@ std::string getCurrentDateString() {
     // Convert time_point to time_t
     std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
     // Convert time_t to tm struct
-    std::tm now_tm;
+    std::tm now_tm{};
 #ifdef _WIN32
     localtime_s(&now_tm, &now_time_t);  // For Windows
 #else
@@ -97,7 +97,7 @@ std::string getCurrentTimeString() {
     std::tm now_tm = *std::localtime(&now_time_t);
     // Use std::ostringstream to format the string
     std::ostringstream oss;
-    oss << std::put_time(&now_tm, "%Y-%m-%d %H-%M-") << std::setw(3) << std::setfill('0') << (now.time_since_epoch().count() % 1000);
+    oss << std::put_time(&now_tm, "%Y-%m-%d %H-%M-%S");
     return oss.str();
 }
 
@@ -210,10 +210,10 @@ Java_com_example_detector_CaptureRep_startNative(JNIEnv *env, jobject thiz, jint
                 std::lock_guard<std::mutex> l(lock);
                 if (captureOneFrame || captureOneFrameService || (movementDetected && captureActive)) {
                     if(captureOneFrame || captureOneFrameService || shouldCaptureFrame()) {
-                        if (captureOneFrame) {
-                            capture = true;
-                        } else if (captureOneFrameService) {
+                        if (captureOneFrameService) {
                             captureService = true;
+                        } else {
+                            capture = true;
                         }
                     }
                     if(captureOneFrameService) {
@@ -349,6 +349,7 @@ void captureFrame(cv::Mat& frame, bool service) {
         if(!service) {
             auto dateStr = getCurrentDateString();
             auto fileName = getCurrentTimeString() + ".jpeg";
+
             auto path = appLocalDir + "/gallery/" + dateStr + "/" + fileName;
             // Get the parent directory of the file path
             std::filesystem::path dir = std::filesystem::path(path).parent_path();

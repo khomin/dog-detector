@@ -139,9 +139,10 @@ class ViewItem2State extends State<ViewItem2> with TickerProviderStateMixin {
                           ]))
                     ])
                   ]),
+                  //
+                  // show date
                   // Positioned.fill(
                   //     child: Center(
-                  //         // TODO: check sort
                   //         child: Container(
                   //             // alignment: Alignment.center,
                   //             color: Colors.black,

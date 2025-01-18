@@ -110,12 +110,7 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
       }
     });
 
-    // Timer(const Duration(milliseconds: 500), () {
-    //   _model.setTransition(true);
-    // });
-
     Future.microtask(() {
-      // _model.setTransition(true);
       _dispStream.add(MyRep().onHistory.listen((history) {
         var v = history.firstWhereOrNull((element) {
           return element.folderName == widget.history.folderName;
