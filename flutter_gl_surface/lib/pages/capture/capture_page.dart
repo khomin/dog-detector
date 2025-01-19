@@ -35,7 +35,36 @@ class CapturePageState extends State<CapturePage>
   final _dispStream = DisposableStream();
   late RecordModel _model;
   late final AppLifecycleListener _listener;
-  // Timer? _updateLayoutTm;
+  Widget? _captured;
+  bool _hasLastCapture = false;
+  final _colors = <Color>[
+    Colors.red,
+    Colors.brown,
+    Colors.amber,
+    Colors.blue,
+    Colors.blueGrey,
+    Colors.orange,
+    Colors.pink,
+    Colors.purpleAccent,
+    Colors.red,
+    Colors.brown,
+    Colors.amber,
+    Colors.blue,
+    Colors.blueGrey,
+    Colors.orange,
+    Colors.pink,
+    Colors.purpleAccent,
+    Colors.red,
+    Colors.brown,
+    Colors.amber,
+    Colors.blue,
+    Colors.blueGrey,
+    Colors.orange,
+    Colors.pink,
+    Colors.purpleAccent
+  ];
+  bool _onRightToLeft = false;
+  bool _onLeftToGone = false;
   final tag = 'capturePage';
 
   @override
@@ -71,6 +100,9 @@ class CapturePageState extends State<CapturePage>
       // _model.setOrientationWait(false);
     });
 
+    MyRep().onCapture = (path) {
+      _updateLastFrame(path: path);
+    };
     MyRep().onFirstFrame = () async {
       logDebug('BTEST_onFirstFrame');
       // await _updateRotation();
@@ -92,6 +124,7 @@ class CapturePageState extends State<CapturePage>
     if (!MyRep().captureActive) {
       MyRep().stopCamera();
     }
+    MyRep().onCapture = null;
     MyRep().onFirstFrame = null;
     WidgetsBinding.instance.removeObserver(this);
   }
@@ -147,10 +180,23 @@ class CapturePageState extends State<CapturePage>
     return front;
   }
 
-  void _updateLastFrame() async {
+  void _updateLastFrame({required String path}) async {
     if (_captured == null) {
       setState(() {
-        _captured = Container(color: _colors.first);
+        if (path.isNotEmpty) {
+          _captured = ClipRRect(
+              borderRadius: BorderRadius.circular(30.0),
+              child: Stack(alignment: Alignment.center, children: [
+                Image.memory(File(path).readAsBytesSync(),
+                    cacheHeight: 100, cacheWidth: 100, fit: BoxFit.fill)
+              ]));
+        } else {
+          _captured = ClipRRect(
+              borderRadius: BorderRadius.circular(30.0),
+              child: Stack(
+                  alignment: Alignment.center,
+                  children: [Container(color: _colors.first)]));
+        }
         _onRightToLeft = true;
         _hasLastCapture = true;
       });
@@ -159,15 +205,28 @@ class CapturePageState extends State<CapturePage>
         _onLeftToGone = true;
         _hasLastCapture = true;
       });
-      Timer(const Duration(milliseconds: 100), () {
+      Timer(Constants.lastFrameDuration, () {
         setState(() {
           _onLeftToGone = false;
           _captured = null;
           _onRightToLeft = false;
         });
-        Timer(const Duration(milliseconds: 100), () {
+        Timer(Constants.lastFrameDuration, () {
           setState(() {
-            _captured = Container(color: _colors.first);
+            if (path.isNotEmpty) {
+              _captured = ClipRRect(
+                  borderRadius: BorderRadius.circular(30.0),
+                  child: Stack(alignment: Alignment.center, children: [
+                    Image.memory(File(path).readAsBytesSync(),
+                        cacheHeight: 100, cacheWidth: 100, fit: BoxFit.fill)
+                  ]));
+            } else {
+              _captured = ClipRRect(
+                  borderRadius: BorderRadius.circular(30.0),
+                  child: Stack(
+                      alignment: Alignment.center,
+                      children: [Container(color: _colors.first)]));
+            }
             _onRightToLeft = true;
           });
           _colors.removeAt(0);
@@ -348,51 +407,51 @@ class CapturePageState extends State<CapturePage>
                 Positioned(left: 0, bottom: 0, right: 0, child: _buttons()),
                 //
                 // test
-                Positioned(
-                    child: Row(
-                  children: [
-                    RoundButton(
-                        iconData: Icons.one_x_mobiledata_outlined,
-                        color: Colors.red,
-                        iconColor: Colors.orange,
-                        onPressed: (p0) {
-                          if (_captured == null) {
-                            setState(() {
-                              _captured = Container(color: _colors.first);
-                              _onRightToLeft = true;
-                            });
-                          } else {}
-                          _colors.removeAt(0);
-                        }),
-                    RoundButton(
-                        iconData: Icons.two_k,
-                        color: Colors.red,
-                        iconColor: Colors.orange,
-                        onPressed: (p0) {
-                          setState(() {
-                            _onLeftToGone = true;
-                          });
-                        }),
-                    RoundButton(
-                        iconData: Icons.restore,
-                        color: Colors.red,
-                        iconColor: Colors.orange,
-                        onPressed: (p0) {
-                          setState(() {
-                            _onLeftToGone = false;
-                            _captured = null;
-                            _onRightToLeft = false;
-                          });
-                        }),
-                    RoundButton(
-                        iconData: Icons.start,
-                        color: Colors.red,
-                        iconColor: Colors.orange,
-                        onPressed: (p0) {
-                          _updateLastFrame();
-                        })
-                  ],
-                ))
+                // Positioned(
+                //     child: Row(
+                //   children: [
+                //     RoundButton(
+                //         iconData: Icons.one_x_mobiledata_outlined,
+                //         color: Colors.red,
+                //         iconColor: Colors.orange,
+                //         onPressed: (p0) {
+                //           if (_captured == null) {
+                //             setState(() {
+                //               _captured = Container(color: _colors.first);
+                //               _onRightToLeft = true;
+                //             });
+                //           } else {}
+                //           _colors.removeAt(0);
+                //         }),
+                //     RoundButton(
+                //         iconData: Icons.two_k,
+                //         color: Colors.red,
+                //         iconColor: Colors.orange,
+                //         onPressed: (p0) {
+                //           setState(() {
+                //             _onLeftToGone = true;
+                //           });
+                //         }),
+                //     RoundButton(
+                //         iconData: Icons.restore,
+                //         color: Colors.red,
+                //         iconColor: Colors.orange,
+                //         onPressed: (p0) {
+                //           setState(() {
+                //             _onLeftToGone = false;
+                //             _captured = null;
+                //             _onRightToLeft = false;
+                //           });
+                //         }),
+                //     RoundButton(
+                //         iconData: Icons.start,
+                //         color: Colors.red,
+                //         iconColor: Colors.orange,
+                //         onPressed: (p0) {
+                //           _updateLastFrame(path: '');
+                //         })
+                // ]
+                // ))
               ]));
         });
   }
@@ -407,17 +466,17 @@ class CapturePageState extends State<CapturePage>
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   //
-                  // TODO: last captured frame
+                  // last captured frame
                   _lastCaptured(),
                   //
                   // center
                   AnimatedCameraButton(
                       activeDefault: MyRep().captureActive,
-                      onCapture: () {
-                        MyRep().setCaptureActive(true);
+                      onCapture: () async {
+                        await MyRep().setCaptureActive(true);
                       },
-                      onStop: () {
-                        MyRep().setCaptureActive(false);
+                      onStop: () async {
+                        await MyRep().setCaptureActive(false);
                       }),
                   //
                   // right
@@ -490,49 +549,15 @@ class CapturePageState extends State<CapturePage>
                           ])))))
         ])
       ]);
-      // });
     });
   }
-
-  Widget? _captured;
-  bool _hasLastCapture = false;
-
-  final _colors = <Color>[
-    Colors.red,
-    Colors.brown,
-    Colors.amber,
-    Colors.blue,
-    Colors.blueGrey,
-    Colors.orange,
-    Colors.pink,
-    Colors.purpleAccent,
-    Colors.red,
-    Colors.brown,
-    Colors.amber,
-    Colors.blue,
-    Colors.blueGrey,
-    Colors.orange,
-    Colors.pink,
-    Colors.purpleAccent,
-    Colors.red,
-    Colors.brown,
-    Colors.amber,
-    Colors.blue,
-    Colors.blueGrey,
-    Colors.orange,
-    Colors.pink,
-    Colors.purpleAccent
-  ];
-
-  bool _onRightToLeft = false;
-  bool _onLeftToGone = false;
 
   Widget _lastCaptured() {
     return Builder(builder: (context) {
       var item = _captured;
       return AnimatedOpacity(
           opacity: _hasLastCapture ? 1 : 0,
-          duration: const Duration(milliseconds: 100),
+          duration: Constants.lastFrameDuration,
           child: Container(
               width: 55,
               height: 55,
@@ -543,7 +568,7 @@ class CapturePageState extends State<CapturePage>
                   borderRadius: BorderRadius.circular(30.0),
                   child: Stack(alignment: Alignment.center, children: [
                     AnimatedPositioned(
-                        duration: const Duration(milliseconds: 100),
+                        duration: Constants.lastFrameDuration,
                         left: _onLeftToGone ? -55 : (_onRightToLeft ? 0 : 55),
                         bottom: 0,
                         top: 0,
@@ -551,8 +576,8 @@ class CapturePageState extends State<CapturePage>
                             width: 55,
                             height: 55,
                             child: item ?? const SizedBox())),
-                    const Center(
-                        child: Text('2', style: TextStyle(color: Colors.white)))
+                    // const Center(
+                    //     child: Text('2', style: TextStyle(color: Colors.white)))
                   ]))));
     });
   }

@@ -66,6 +66,75 @@ class MainActivity: FlutterActivity() {
                                 }
                             }
                         }
+                        "start_camera" -> {
+                            runBlocking(Dispatchers.IO) {
+                                val id = args["id"] as String
+                                val minArea = args["minArea"] as Int
+                                val captureIntervalSec = args["captureIntervalSec"] as Int
+                                val showAreaOnCapture = args["showAreaOnCapture"] as Boolean
+                                val captureRep = (context.applicationContext as App?)?.captureRep
+                                val size = captureRep?.start(id, minArea, captureIntervalSec, showAreaOnCapture)
+                                result.success(mapOf(
+                                    "size_width" to size?.width,
+                                    "size_height" to size?.height))
+                            }
+                        }
+                        "stop_camera" -> {
+                            runBlocking(Dispatchers.IO) {
+                                val captureRep = (context.applicationContext as App?)?.captureRep
+                                captureRep?.stop()
+                                result.success(true)
+                            }
+                        }
+                        "set_capture_active" -> {
+                            runBlocking(Dispatchers.IO) {
+                                val active = args["active"] as Boolean
+                                val captureRep = (context.applicationContext as App?)?.captureRep
+                                captureRep?.setCaptureActive(active)
+                                result.success(true)
+                            }
+                        }
+                        "capture_one_frame" -> {
+                            runBlocking(Dispatchers.IO) {
+                                val captureRep = (context.applicationContext as App?)?.captureRep
+                                captureRep?.captureOneFrameNative(args["service_frame"] as Boolean)
+                                result.success(true)
+                            }
+                        }
+                        "update_configuration" -> {
+                            runBlocking(Dispatchers.IO) {
+                                val minArea = args["minArea"] as Int
+                                val captureIntervalSec = args["captureIntervalSec"] as Int
+                                val showAreaOnCapture = args["showAreaOnCapture"] as Boolean
+                                val captureRep = (context.applicationContext as App?)?.captureRep
+                                captureRep?.updateConfiguration(minArea, captureIntervalSec, showAreaOnCapture)
+                                result.success(true)
+                            }
+                        }
+                        "get_cameras" -> {
+                            runBlocking(Dispatchers.IO) {
+                                val captureRep = (context.applicationContext as App?)?.captureRep
+                                if (captureRep == null) {
+                                    result.error("", "cannot open", "")
+                                    return@runBlocking
+                                }
+                                val cameras = captureRep.getCameras(context)
+                                val map = mutableMapOf<String, Any>()
+                                for (cameraIndex in cameras.indices) {
+                                    val cameraDesc = cameras[cameraIndex]
+                                    if (cameraDesc != null) {
+                                        val map2 = mutableMapOf<String, Any>()
+                                        val camera = cameraDesc.size.lastOrNull()
+                                        map2["width"] = camera?.width ?: 0
+                                        map2["height"] = camera?.height ?: 0
+                                        map2["facing"] = cameraDesc.facing.name
+                                        map2["sensor"] = cameraDesc.sensorOrientation
+                                        map["$cameraIndex"] = map2
+                                    }
+                                }
+                                result.success(map)
+                            }
+                        }
                         else -> {
                             result.success(true)
                         }

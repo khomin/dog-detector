@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_demo/components/animated_camera_button.dart';
-import 'package:flutter_demo/pages/home/grid_dialog.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:flutter_demo/utils/file_utils.dart';
 import 'package:jiffy/jiffy.dart';
@@ -63,15 +61,15 @@ class MyRep {
   final onCaptureTime = BehaviorSubject<CaptureTime?>();
   final onHistory = BehaviorSubject<List<HistoryRecord>>();
   var historyCache = <HistoryRecord>[];
-  // Function(bool isServiceFrame, String path)? onCapture;
+  Function(String path)? onCapture;
   Function()? onFirstFrame;
   // private
   var _frameSize = const Size(0, 0);
   Timer? _captureTm;
   DateTime? _captureStart;
   Completer<String>? _complCaptOneFrame;
-  static const _cameraChannel = MethodChannel('camera/cmd');
   static const _mainChannel = MethodChannel('main/cmd');
+  static const _surfaceChannel = MethodChannel('camera/cmd');
 
   static MyRep? _instance;
   MyRep._internal();
@@ -91,11 +89,13 @@ class MyRep {
         case 'onCapture':
           var path = call.arguments['path'] as String;
           logDebug('BTEST_onCapture: $path');
-          // onCapture?.call(path.contains('/service/'), path);
           if (path.contains('/service/')) {
             _complCaptOneFrame?.complete(path);
             _complCaptOneFrame = null;
+          } else {
+            onCapture?.call(path);
           }
+          getHistory();
           break;
         case 'onMovement':
           logDebug('BTEST_onMovement');
@@ -119,7 +119,7 @@ class MyRep {
   Future<Map<String, Camera>> getCameras() async {
     try {
       var r =
-          await _cameraChannel.invokeMethod('get_cameras', <String, dynamic>{});
+          await _mainChannel.invokeMethod('get_cameras', <String, dynamic>{});
       r.forEach((key, value) {
         var camera = Camera(
             id: key,
@@ -135,9 +135,6 @@ class MyRep {
       });
       onCameraChanged.add(null);
       return cameraMap;
-      // await _cameraChannel
-      //     .invokeMethod('init_render', <String, dynamic>{'1': '1'});
-      // // await _cameraChannel.invokeMethod('get_cameras', <String, dynamic>{});
     } catch (e) {
       logError('$tag: error: $e');
     }
@@ -146,7 +143,7 @@ class MyRep {
 
   Future<void> initRender() async {
     try {
-      await _cameraChannel.invokeMethod('init_render', <String, dynamic>{});
+      await _surfaceChannel.invokeMethod('init_render', <String, dynamic>{});
     } on PlatformException catch (e) {
       logError('$tag: error: ${e.message}');
     }
@@ -158,8 +155,7 @@ class MyRep {
       required int captureIntervalSec,
       required bool showAreaOnCapture}) async {
     try {
-      var r =
-          await _cameraChannel.invokeMethod('start_camera', <String, dynamic>{
+      var r = await _mainChannel.invokeMethod('start_camera', <String, dynamic>{
         'id': id,
         'minArea': minArea,
         'captureIntervalSec': captureIntervalSec,
@@ -175,7 +171,7 @@ class MyRep {
 
   Future stopCamera() async {
     try {
-      await _cameraChannel.invokeMethod('stop_camera', <String, dynamic>{});
+      await _mainChannel.invokeMethod('stop_camera', <String, dynamic>{});
     } on PlatformException catch (e) {
       logError('$tag: error: ${e.message}');
     }
@@ -186,8 +182,7 @@ class MyRep {
       required int captureIntervalSec,
       required bool showAreaOnCapture}) async {
     try {
-      await _cameraChannel
-          .invokeMethod('update_configuration', <String, dynamic>{
+      await _mainChannel.invokeMethod('update_configuration', <String, dynamic>{
         'minArea': minArea,
         'captureIntervalSec': captureIntervalSec,
         'showAreaOnCapture': showAreaOnCapture
@@ -226,7 +221,7 @@ class MyRep {
         onCaptureTime.add(null);
       }
       try {
-        await _cameraChannel.invokeMethod(
+        await _mainChannel.invokeMethod(
             'set_capture_active', <String, dynamic>{'active': captureActive});
       } catch (e) {
         logError('$tag: set capture active ex: $e');
@@ -326,7 +321,7 @@ class MyRep {
   Future<String> captureOneFrame({bool serviceFrame = false}) async {
     var completer = Completer<String>();
     try {
-      await _cameraChannel.invokeMethod('capture_one_frame',
+      await _mainChannel.invokeMethod('capture_one_frame',
           <String, dynamic>{'service_frame': serviceFrame});
     } catch (e) {
       logError('$tag: capture one frame ex: $e');

@@ -355,8 +355,10 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
       }
       return SizedBox(
           height: ((270 + 28) * history.length).toDouble(),
-          // decoration: const BoxDecoration(color: Constants.colorBgUnderCard),
-          // width: 300,
+          // TODO: close slide when scroll
+          // TODO: close top animation when scroll
+          // TODO: only one item can be open with slide
+          // TODO: search
           child: CustomScrollView(
               physics: const NeverScrollableScrollPhysics(),
               slivers: [
@@ -366,6 +368,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       var model = history[index];
                       return ViewItem1(
                           history: model,
+                          key: ValueKey('history-${model.items.lastOrNull}'),
                           onPressed: () {
                             GridDialog()
                                 .show(
@@ -407,9 +410,9 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                 radius: 20,
                                 useScaleAnimation: true,
                                 iconData: Icons.stop_circle_sharp,
-                                onPressed: (v) {
+                                onPressed: (v) async {
                                   _handleOnSlide();
-                                  MyRep().setCaptureActive(false);
+                                  await MyRep().setCaptureActive(false);
                                   MyRep().stopCamera();
                                 }),
                             const SizedBox(width: 15),

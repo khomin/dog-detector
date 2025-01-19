@@ -24,6 +24,7 @@ class AlertPageState extends State<AlertPage> {
     return Scaffold(
         backgroundColor: Constants.colorBar,
         // backgroundColor: Colors.transparent,
+        // TODO: alert page
         body: CustomScrollView(
             physics: const NeverScrollableScrollPhysics(),
             slivers: [

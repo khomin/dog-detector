@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/components/click_detector.dart';
-import 'package:flutter_demo/components/hover_click.dart';
 import 'package:flutter_demo/components/slidable_item.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
@@ -88,8 +87,8 @@ class ViewItem1State extends State<ViewItem1> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     var history = widget.history;
-    // TODO: update card from repo
     return Builder(builder: (context) {
+      var itemPath = history.items.lastOrNull?.path;
       return SlidableItem(
           controller: _slideCtr,
           onSlided: () {},
@@ -226,48 +225,15 @@ class ViewItem1State extends State<ViewItem1> with TickerProviderStateMixin {
                               padding: const EdgeInsets.only(
                                   left: 20, right: 20, top: 10, bottom: 10),
                               child: Stack(children: [
-                                ClipRRect(
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    child: Image.file(File(history.path),
-                                        width: double.infinity,
-                                        height: 180,
-                                        fit: BoxFit.cover)),
-                                // Positioned(
-                                //     right: 5,
-                                //     bottom: 0,
-                                //     // top: 0,
-                                //     child: Container(
-                                //         // margin: EdgeInsets.only(top: 20, bottom: 20),
-                                //         decoration: BoxDecoration(
-                                //             // color: Colors.yellow,
-                                //             // color: Constants.colorBackgroundUnderCard
-                                //             //     .withOpacity(0.2),
-                                //             borderRadius: BorderRadius.all(
-                                //                 Radius.circular(10))),
-                                //         child: Row(children: [
-                                //           // Icon(Icons.image, color: Colors.white),
-                                //           Image.file(File(history.first.path),
-                                //               width: 80, height: 80),
-                                //           Image.file(File(history.first.path),
-                                //               width: 80, height: 80),
-                                //           Image.file(File(history.first.path),
-                                //               width: 80, height: 80),
-                                //         ])))
-                                // Positioned(
-                                //     right: 0,
-                                //     bottom: 0,
-                                //     child: Image.file(File(history.first.path),
-                                //         width: 80, height: 80)),
-                                // Positioned(
-                                //     right: 0,
-                                //     bottom: 40,
-                                //     child: Image.file(File(history.first.path),
-                                //         width: 80, height: 80)),
-                                // Positioned(
-                                //     right: 0,
-                                //     bottom: 80,
-                                //     child: Image.file(File(history.first.path),
-                                //         width: 80, height: 80))
+                                if (itemPath != null)
+                                  ClipRRect(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      child: Image.file(File(itemPath),
+                                          width: double.infinity,
+                                          height: 180,
+                                          fit: BoxFit.cover)),
+                                // test data
+                                // Text(widget.history.date.toString())
                               ]))
                         ])
                       ])))));

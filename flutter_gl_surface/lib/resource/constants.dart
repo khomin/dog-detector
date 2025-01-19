@@ -24,6 +24,7 @@ class Constants {
 
   static const duration = Duration(milliseconds: 200);
   static const durationPanel = Duration(milliseconds: 100);
+  static const lastFrameDuration = Duration(milliseconds: 150);
 
   static int minAreaDefault = 2000;
   static int minCaptIntvalDefault = 1;
