@@ -54,18 +54,17 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                           backgroundColor: Constants.colorBgUnderCard,
                           body: Stack(children: [
                             StreamBuilder(
-                                stream:
-                                    NavigatorRep().routeBlocSecondary.onGoto,
+                                stream: NavigatorRep().routeBloc.onGoto,
                                 builder: (context, snapshot) {
                                   var page = snapshot.data?.type;
                                   switch (page) {
-                                    case PageTypeSecondary.home:
+                                    case PageType.home:
                                       return const HomePagePage();
-                                    case PageTypeSecondary.capture:
+                                    case PageType.capture:
                                       return const CapturePage();
-                                    case PageTypeSecondary.alert:
+                                    case PageType.alert:
                                       return const AlertPage();
-                                    case PageTypeSecondary.settings:
+                                    case PageType.settings:
                                       return const SettingsPage();
                                     default:
                                       return const HomePagePage();
@@ -102,8 +101,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                     )
                                   ]),
                               child: StreamBuilder(
-                                  stream:
-                                      NavigatorRep().routeBlocSecondary.onGoto,
+                                  stream: NavigatorRep().routeBloc.onGoto,
                                   builder: (context, snapshot) {
                                     var page = snapshot.data?.type;
                                     return BottomNavigationBar(
@@ -140,11 +138,8 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                                 .read<AppModel>()
                                                 .setCollapse(false);
                                           }
-                                          NavigatorRep()
-                                              .routeBlocSecondary
-                                              .goto(PanelSecondary(
-                                                  type: PageTypeSecondary
-                                                      .values[value]));
+                                          NavigatorRep().routeBloc.goto(Panel(
+                                              type: PageType.values[value]));
                                         });
                                   })))
                     ]))
