@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/components/hover_click.dart';
+import 'package:flutter_demo/components/page_transition.dart';
 import 'package:flutter_demo/components/round_box.dart';
 import 'package:flutter_demo/pages/home/grid_dialog.dart';
+import 'package:flutter_demo/pages/home/search_page.dart';
 import 'package:flutter_demo/pages/home/view_item1.dart';
 import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
@@ -14,14 +17,15 @@ import 'package:flutter_demo/resource/disposable_stream.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:provider/provider.dart';
 
-class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+class HomePagePage extends StatefulWidget {
+  const HomePagePage({super.key});
 
   @override
-  State<MainPage> createState() => MainPageState();
+  State<HomePagePage> createState() => HomePagePageState();
 }
 
-class MainPageState extends State<MainPage> with TickerProviderStateMixin {
+class HomePagePageState extends State<HomePagePage>
+    with TickerProviderStateMixin {
   final _scrollCtr = ScrollController();
   final _focus = FocusNode();
   // var _test = false;
@@ -146,6 +150,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                           backgroundColor: Constants.colorBar,
                           // backgroundColor: Colors.purple,
                           toolbarHeight: _width.value,
+                          automaticallyImplyLeading: false,
                           // toolbarHeight: _test ? kToolbarHeight * 2 : kToolbarHeight,
                           // expandedHeight: kToolbarHeight,
                           // collapsedHeight: kToolbarHeight,
@@ -216,80 +221,104 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                           size: 28,
                         )),
                     Flexible(
-                        child: SizedBox(
-                            height: 50,
-                            width: double.infinity,
-                            child: Row(children: [
-                              Flexible(
-                                  child: TextField(
-                                      controller: TextEditingController(),
-                                      focusNode: _focus,
-                                      maxLines: 1,
-                                      decoration: InputDecoration.collapsed(
-                                          hintText: 'Search, tag',
-                                          hintStyle: TextStyle(
-                                              color: Constants.colorTextSecond
-                                                  .withOpacity(0.4),
+                        child: HoverClick(
+                            onPressedL: (p0) {
+                              Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    settings: const RouteSettings(),
+                                    builder: (context) {
+                                      return const SearchPage();
+                                    },
+                                  ));
+                            },
+                            child: SizedBox(
+                                height: 50,
+                                width: double.infinity,
+                                child: Row(children: [
+                                  const Expanded(
+                                      child: Text('Search',
+                                          style: TextStyle(
+                                              color: Constants.colorTextSecond,
                                               fontSize: 16,
                                               fontFamily: 'Sulphur',
-                                              fontWeight: FontWeight.bold)),
-                                      style: TextStyle(
-                                          color: Constants.colorTextSecond
-                                              .withOpacity(0.8),
-                                          fontSize: 16,
-                                          fontFamily: 'Sulphur',
-                                          fontWeight: FontWeight.bold),
-                                      cursorColor: Constants.colorTextSecond)),
-                              RoundButton(
-                                  iconData: Icons.calendar_month,
-                                  color: Colors.transparent,
-                                  iconSize: 28,
-                                  iconColor: Constants.colorTextAccent
-                                      .withOpacity(0.5),
-                                  onPressed: (_) async {
-                                    showModalBottomSheet(
-                                        context: context,
-                                        barrierColor: Colors.black26,
-                                        builder: (BuildContext context) {
-                                          return Container(
-                                              decoration: BoxDecoration(
-                                                  color: Constants.colorCard,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black
-                                                          .withOpacity(0.2),
-                                                      blurRadius: 10,
-                                                      offset:
-                                                          const Offset(0, 0),
-                                                    )
-                                                  ],
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                          Radius.circular(20))),
-                                              child: Center(
-                                                  child: Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                    CalendarDatePicker2(
-                                                        config:
-                                                            CalendarDatePicker2Config(
-                                                          calendarType:
-                                                              CalendarDatePicker2Type
-                                                                  .multi,
-                                                        ),
-                                                        value: [DateTime.now()],
-                                                        onValueChanged:
-                                                            (dates) {
-                                                          // _dates = dates
-                                                        })
-                                                  ])));
-                                        });
-                                  })
-                            ])))
+                                              fontWeight: FontWeight.bold))),
+                                  // Flexible(
+                                  //     child: TextField(
+                                  //         controller: TextEditingController(),
+                                  //         focusNode: _focus,
+                                  //         maxLines: 1,
+                                  //         decoration: InputDecoration.collapsed(
+                                  //             hintText: 'Search',
+                                  //             hintStyle: TextStyle(
+                                  //                 color: Constants.colorTextSecond
+                                  //                     .withOpacity(0.4),
+                                  //                 fontSize: 16,
+                                  //                 fontFamily: 'Sulphur',
+                                  //                 fontWeight: FontWeight.bold)),
+                                  //         style: TextStyle(
+                                  //             color: Constants.colorTextSecond
+                                  //                 .withOpacity(0.8),
+                                  //             fontSize: 16,
+                                  //             fontFamily: 'Sulphur',
+                                  //             fontWeight: FontWeight.bold),
+                                  //         cursorColor: Constants.colorTextSecond)),
+                                  RoundButton(
+                                      iconData: Icons.calendar_month,
+                                      color: Colors.transparent,
+                                      iconSize: 20,
+                                      size: 50,
+                                      iconColor: Constants.colorTextAccent
+                                          .withOpacity(0.5),
+                                      onPressed: (_) async {
+                                        showModalBottomSheet(
+                                            context: context,
+                                            barrierColor: Colors.black26,
+                                            builder: (BuildContext context) {
+                                              return Container(
+                                                  decoration: BoxDecoration(
+                                                      color:
+                                                          Constants.colorCard,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.black
+                                                              .withOpacity(0.2),
+                                                          blurRadius: 10,
+                                                          offset: const Offset(
+                                                              0, 0),
+                                                        )
+                                                      ],
+                                                      borderRadius:
+                                                          const BorderRadius
+                                                              .all(
+                                                              Radius.circular(
+                                                                  20))),
+                                                  child: Center(
+                                                      child: Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                        CalendarDatePicker2(
+                                                            config:
+                                                                CalendarDatePicker2Config(
+                                                              calendarType:
+                                                                  CalendarDatePicker2Type
+                                                                      .multi,
+                                                            ),
+                                                            value: [
+                                                              DateTime.now()
+                                                            ],
+                                                            onValueChanged:
+                                                                (dates) {
+                                                              // _dates = dates
+                                                            })
+                                                      ])));
+                                            });
+                                      })
+                                ]))))
                   ])))
         ]));
   }

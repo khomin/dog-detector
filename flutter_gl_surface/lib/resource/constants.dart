@@ -10,7 +10,7 @@ class Constants {
   static const colorCard = Colors.white;
   static const colorBgUnderCard = Color(0xfff1f2f4);
   static const colorTextAccent = Colors.black;
-  static const colorTextSecond = Color(0x70515155);
+  static const colorTextSecond = Color(0xA0515155);
 
   static const colorPrimary = Color.fromARGB(255, 139, 135, 219);
   static const colorSecondary = Color.fromARGB(255, 170, 167, 225);

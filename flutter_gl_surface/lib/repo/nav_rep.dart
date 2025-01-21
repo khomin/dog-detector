@@ -4,16 +4,32 @@ import 'package:flutter_demo/components/navigation_observer.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:rxdart/rxdart.dart';
 
-enum PageType { main, capture, alert, settings }
+enum PageTypePrimary { logo, main }
 
-class Panel {
-  Panel(
+enum PageTypeSecondary { home, capture, alert, settings, search }
+
+class PanelPrimary {
+  PanelPrimary(
       {required this.type,
       this.arg,
       this.fullPop = false,
       this.replace = false,
       this.onePop = false});
-  final PageType type;
+  final PageTypePrimary type;
+  final dynamic arg;
+  final bool fullPop;
+  final bool replace;
+  final bool onePop;
+}
+
+class PanelSecondary {
+  PanelSecondary(
+      {required this.type,
+      this.arg,
+      this.fullPop = false,
+      this.replace = false,
+      this.onePop = false});
+  final PageTypeSecondary type;
   final dynamic arg;
   final bool fullPop;
   final bool replace;
@@ -21,9 +37,9 @@ class Panel {
 }
 
 class NavigatorRep {
+  final routeBlocPrimary = PanelRouterBlocPrimary();
+  final routeBlocSecondary = PanelRouterBlocSecondary();
   final onLayoutChanged = BehaviorSubject<ScreenType>();
-
-  final routeBloc = PanelRouterBloc();
   var size = const Size(0, 0);
 
   Future<bool> Function()? onCheckPopAllowed;
@@ -40,11 +56,13 @@ class NavigatorRep {
   void dispose() {}
 }
 
-class PanelRouterBloc {
-  final onGoto = PublishSubject<Panel?>();
-  final onCurrent = BehaviorSubject<Panel?>();
+class PanelRouterBlocPrimary {
+  final onGoto = PublishSubject<PanelPrimary?>();
+  final onCurrent = BehaviorSubject<PanelPrimary?>();
+  final navKey = GlobalKey<NavigatorState>();
+  late NavigatorObserverCustom observer;
 
-  void goto(Panel panel) {
+  void goto(PanelPrimary panel) {
     if (_checkPaneTheSameAsCurrent(panel, onCurrent.valueOrNull)) {
       return;
     }
@@ -62,59 +80,79 @@ class PanelRouterBloc {
     onGoto.close();
   }
 
-  bool _checkPaneTheSameAsCurrent(Panel panel, Panel? current) {
-    if (current?.type == panel.type) {
-      // var room1 = panel.arg?['room'] as ChatRoom?;
-      // var room2 = current?.arg?['room'] as ChatRoom?;
-      // if (room1 == room2) {
-      //   return true;
-      // }
-    }
+  bool _checkPaneTheSameAsCurrent(PanelPrimary panel, PanelPrimary? current) {
     return false;
-  }
-}
-
-class NavigationService {
-  NavigationService({required this.routeBloc, required this.observer});
-  final PanelRouterBloc routeBloc;
-  late NavigatorObserverCustom observer;
-  Function()? onPopCleanUp;
-  final navKey = GlobalKey<NavigatorState>();
-
-  void handleOnGo(Panel? panel) async {
-    if (panel == null) {
-      navKey.currentState?.popUntil((route) => route.isFirst);
-      return;
-    }
-    if (panel.replace) {
-      navKey.currentState
-          ?.pushReplacementNamed(panel.type.name, arguments: panel.arg);
-    } else {
-      navKey.currentState?.pushNamed(panel.type.name, arguments: panel.arg);
-    }
   }
 
   void onChanged(String name, dynamic arg) {
     var route = routeNameToType(name);
-    routeBloc.onCurrent
-        .add(route == PageType.main ? null : Panel(type: route, arg: arg));
+    onCurrent.add(PanelPrimary(type: route, arg: arg));
     NavigatorRep().onCheckPopAllowed = null;
   }
 
   void onDidPop() {
     if (navKey.currentState?.canPop() == false) {
-      routeBloc.onCurrent.add(null);
+      onCurrent.add(null);
     }
-    onPopCleanUp?.call();
-    onPopCleanUp = null;
   }
 
-  PageType routeNameToType(String? name) {
-    for (var it in PageType.values) {
+  PageTypePrimary routeNameToType(String? name) {
+    for (var it in PageTypePrimary.values) {
       if (it.name == name) {
         return it;
       }
     }
-    return PageType.main;
+    return PageTypePrimary.main;
+  }
+}
+
+class PanelRouterBlocSecondary {
+  final onGoto = PublishSubject<PanelSecondary?>();
+  final onCurrent = BehaviorSubject<PanelSecondary?>();
+  final navKey = GlobalKey<NavigatorState>();
+  late NavigatorObserverCustom observer;
+
+  void goto(PanelSecondary panel) {
+    if (_checkPaneTheSameAsCurrent(panel, onCurrent.valueOrNull)) {
+      return;
+    }
+    if (panel.fullPop) {
+      fullPop();
+    }
+    onGoto.add(panel);
+  }
+
+  void fullPop() {
+    onGoto.add(null);
+  }
+
+  void dispose() {
+    onGoto.close();
+  }
+
+  bool _checkPaneTheSameAsCurrent(
+      PanelSecondary panel, PanelSecondary? current) {
+    return false;
+  }
+
+  void onChanged(String name, dynamic arg) {
+    var route = routeNameToType(name);
+    onCurrent.add(PanelSecondary(type: route, arg: arg));
+    NavigatorRep().onCheckPopAllowed = null;
+  }
+
+  void onDidPop() {
+    if (navKey.currentState?.canPop() == false) {
+      onCurrent.add(null);
+    }
+  }
+
+  PageTypeSecondary routeNameToType(String? name) {
+    for (var it in PageTypeSecondary.values) {
+      if (it.name == name) {
+        return it;
+      }
+    }
+    return PageTypeSecondary.home;
   }
 }
