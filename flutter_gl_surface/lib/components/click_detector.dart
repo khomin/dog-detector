@@ -27,7 +27,7 @@ class ClickDetectorState extends State<ClickDetector>
     return GestureDetector(
         onTapDown: (_) {
           _clickTm?.cancel();
-          _clickTm = Timer(const Duration(milliseconds: 100), () async {
+          _clickTm = Timer(const Duration(milliseconds: 200), () async {
             logDebug('BTEST_onTapDown-timer fired');
             _clickTm = null;
             widget.onLongClick();

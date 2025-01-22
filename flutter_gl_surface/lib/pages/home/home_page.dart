@@ -232,93 +232,100 @@ class HomePagePageState extends State<HomePagePage>
                                     },
                                   ));
                             },
-                            child: SizedBox(
-                                height: 50,
-                                width: double.infinity,
-                                child: Row(children: [
-                                  const Expanded(
-                                      child: Text('Search',
-                                          style: TextStyle(
-                                              color: Constants.colorTextSecond,
-                                              fontSize: 16,
-                                              fontFamily: 'Sulphur',
-                                              fontWeight: FontWeight.bold))),
-                                  // Flexible(
-                                  //     child: TextField(
-                                  //         controller: TextEditingController(),
-                                  //         focusNode: _focus,
-                                  //         maxLines: 1,
-                                  //         decoration: InputDecoration.collapsed(
-                                  //             hintText: 'Search',
-                                  //             hintStyle: TextStyle(
-                                  //                 color: Constants.colorTextSecond
-                                  //                     .withOpacity(0.4),
-                                  //                 fontSize: 16,
-                                  //                 fontFamily: 'Sulphur',
-                                  //                 fontWeight: FontWeight.bold)),
-                                  //         style: TextStyle(
-                                  //             color: Constants.colorTextSecond
-                                  //                 .withOpacity(0.8),
-                                  //             fontSize: 16,
-                                  //             fontFamily: 'Sulphur',
-                                  //             fontWeight: FontWeight.bold),
-                                  //         cursorColor: Constants.colorTextSecond)),
-                                  RoundButton(
-                                      iconData: Icons.calendar_month,
-                                      color: Colors.transparent,
-                                      iconSize: 20,
-                                      size: 50,
-                                      iconColor: Constants.colorTextAccent
-                                          .withOpacity(0.5),
-                                      onPressed: (_) async {
-                                        showModalBottomSheet(
-                                            context: context,
-                                            barrierColor: Colors.black26,
-                                            builder: (BuildContext context) {
-                                              return Container(
-                                                  decoration: BoxDecoration(
-                                                      color:
-                                                          Constants.colorCard,
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: Colors.black
-                                                              .withOpacity(0.2),
-                                                          blurRadius: 10,
-                                                          offset: const Offset(
-                                                              0, 0),
-                                                        )
-                                                      ],
-                                                      borderRadius:
-                                                          const BorderRadius
-                                                              .all(
-                                                              Radius.circular(
-                                                                  20))),
-                                                  child: Center(
-                                                      child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: [
-                                                        CalendarDatePicker2(
-                                                            config:
-                                                                CalendarDatePicker2Config(
-                                                              calendarType:
-                                                                  CalendarDatePicker2Type
-                                                                      .multi,
-                                                            ),
-                                                            value: [
-                                                              DateTime.now()
-                                                            ],
-                                                            onValueChanged:
-                                                                (dates) {
-                                                              // _dates = dates
-                                                            })
-                                                      ])));
-                                            });
-                                      })
-                                ]))))
+                            child: Stack(children: [
+                              const SizedBox(
+                                  height: 50,
+                                  width: double.infinity,
+                                  child: Row(children: [
+                                    Expanded(
+                                        child: Text('Search',
+                                            style: TextStyle(
+                                                color:
+                                                    Constants.colorTextSecond,
+                                                fontSize: 15,
+                                                // fontFamily: 'Sulphur',
+                                                // fontWeight: FontWeight.bold
+                                                fontWeight: FontWeight.w400))),
+                                    // RoundButton(
+                                    //     iconData: Icons.calendar_month,
+                                    //     color: Colors.transparent,
+                                    //     iconSize: 20,
+                                    //     size: 50,
+                                    //     iconColor: Constants.colorTextAccent
+                                    //         .withOpacity(0.5),
+                                    //     onPressed: (_) async {
+                                    //       showModalBottomSheet(
+                                    //           context: context,
+                                    //           barrierColor: Colors.black26,
+                                    //           builder: (BuildContext context) {
+                                    //             return Container(
+                                    //                 decoration: BoxDecoration(
+                                    //                     color:
+                                    //                         Constants.colorCard,
+                                    //                     boxShadow: [
+                                    //                       BoxShadow(
+                                    //                         color: Colors.black
+                                    //                             .withOpacity(0.2),
+                                    //                         blurRadius: 10,
+                                    //                         offset: const Offset(
+                                    //                             0, 0),
+                                    //                       )
+                                    //                     ],
+                                    //                     borderRadius:
+                                    //                         const BorderRadius
+                                    //                             .all(
+                                    //                             Radius.circular(
+                                    //                                 20))),
+                                    //                 child: Center(
+                                    //                     child: Column(
+                                    //                         mainAxisAlignment:
+                                    //                             MainAxisAlignment
+                                    //                                 .center,
+                                    //                         mainAxisSize:
+                                    //                             MainAxisSize.min,
+                                    //                         children: [
+                                    //                       CalendarDatePicker2(
+                                    //                           config:
+                                    //                               CalendarDatePicker2Config(
+                                    //                             calendarType:
+                                    //                                 CalendarDatePicker2Type
+                                    //                                     .multi,
+                                    //                           ),
+                                    //                           value: [
+                                    //                             DateTime.now()
+                                    //                           ],
+                                    //                           onValueChanged:
+                                    //                               (dates) {
+                                    //                             // _dates = dates
+                                    //                           })
+                                    //                     ])));
+                                    //           });
+                                    //     })
+                                  ])),
+                              Positioned(
+                                  right: 15,
+                                  bottom: 0,
+                                  top: 0,
+                                  child: StreamBuilder(
+                                      stream: MyRep().onHistory,
+                                      builder: (context, snapshot) {
+                                        var data = snapshot.data ?? [];
+                                        var countDay =
+                                            snapshot.data?.length ?? 0;
+                                        var countAll = 0;
+                                        for (var it in data) {
+                                          countAll += it.items.length;
+                                        }
+                                        return Center(
+                                            child: Text('$countDay/$countAll',
+                                                style: const TextStyle(
+                                                    color: Constants
+                                                        .colorTextSecond,
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                        FontWeight.w400)));
+                                      }))
+                            ])))
                   ])))
         ]));
   }

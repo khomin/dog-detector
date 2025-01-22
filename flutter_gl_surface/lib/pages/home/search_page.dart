@@ -1,307 +1,201 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/components/circle_button.dart';
+import 'package:flutter_demo/components/hover_click.dart';
+import 'package:flutter_demo/pages/home/grid_dialog.dart';
+import 'package:flutter_demo/pages/home/view_item1.dart';
+import 'package:flutter_demo/pages/model/search_model.dart';
+import 'package:flutter_demo/repo/my_rep.dart';
+import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/resource/disposable_stream.dart';
+import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
-
   @override
   State<SearchPage> createState() => SearchPageState();
 }
 
 class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
+  final _model = SearchModel();
   final _scrollCtr = ScrollController();
   final _focus = FocusNode();
-  // var _test = false;
-  // late final Animation<double> _width;
-  // late final Animation<double> _opacity;
-  // late AnimationController _ctrSlideTop;
-  // late AnimationController _ctrShakeIcon;
-  // late final Animation<double> _iconRotate;
   final _dispStream = DisposableStream();
+  final _textCtr = TextEditingController();
 
   @override
   void initState() {
     super.initState();
 
-    // _ctrSlideTop = AnimationController(
-    //   duration: const Duration(milliseconds: 200),
-    //   vsync: this,
-    // );
-
-    // _width = Tween<double>(
-    //   begin: kToolbarHeight,
-    //   end: kToolbarHeight * 3,
-    // ).animate(CurvedAnimation(
-    //     parent: _ctrSlideTop.view,
-    //     curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
-
-    // _opacity = Tween<double>(
-    //   begin: 0.0,
-    //   end: 1.0,
-    // ).animate(CurvedAnimation(
-    //     parent: _ctrSlideTop.view,
-    //     curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
-
-    // _ctrShakeIcon = AnimationController(
-    //   duration: const Duration(milliseconds: 500),
-    //   vsync: this,
-    // );
-
-    // _iconRotate = TweenSequence<double>([
-    //   TweenSequenceItem<double>(
-    //       tween: Tween<double>(begin: 0, end: 0.005), weight: 1),
-    //   TweenSequenceItem<double>(
-    //       tween: Tween<double>(begin: 0.005, end: 0), weight: 1),
-    //   TweenSequenceItem<double>(
-    //       tween: Tween<double>(begin: 0, end: -0.005), weight: 1),
-    //   TweenSequenceItem<double>(
-    //       tween: Tween<double>(begin: -0.005, end: 0), weight: 1),
-    // ]).animate(CurvedAnimation(
-    //   parent: _ctrShakeIcon.view,
-    //   curve: Curves
-    //       .linear, // Use a linear curve for a consistent back-and-forth movement
-    // ));
-
     _scrollCtr.addListener(() {
       _focus.unfocus();
     });
-
-    // _dispStream.add(MyRep().onHistory.listen((history) {
-    //   if (!mounted) return;
-    //   context.read<AppModel>().setHistory(history);
-    // }));
-
-    // Timer(const Duration(milliseconds: 100), () async {
-    //   var history = await MyRep().getHistory();
-    //   if (!mounted) return;
-    //   context.read<AppModel>().setHistory(history);
-    //   if (context.read<AppModel>().history.isEmpty) {
-    //     Timer(const Duration(milliseconds: 200), () {
-    //       if (!mounted) return;
-    //       if (_ctrShakeIcon.isForwardOrCompleted) {
-    //         _ctrShakeIcon.reverse().orCancel;
-    //       } else {
-    //         _ctrShakeIcon.forward().orCancel;
-    //       }
-    //     });
-    //   }
-    // });
+    _textCtr.addListener(() {
+      _model.setSearch(_textCtr.value.text);
+    });
   }
 
   @override
   void dispose() {
     _scrollCtr.dispose();
     _dispStream.dispose();
+    _textCtr.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        color: Constants.colorBar,
-        // color: Colors.white,
-        child: SafeArea(
-            child: Scaffold(
-                backgroundColor: Constants.colorBar,
-                // backgroundColor: Colors.white,
-                appBar: AppBar(
-                    centerTitle: false,
-                    // leading: IconButton(
-                    //     icon: const Icon(Icons.arrow_back_ios),
-                    //     padding: const EdgeInsets.all(14),
-                    //     iconSize: 20, // Your custom icon here
-                    //     onPressed: () {
-                    //       Navigator.pop(
-                    //           context); // Go back to the previous page
-                    //     }),
-                    // leadingWidth: 55,
-                    leading: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios),
-                        padding: const EdgeInsets.all(14),
-                        iconSize: 20, // Your custom icon here
-                        onPressed: () {
-                          Navigator.pop(
-                              context); // Go back to the previous page
-                        }),
-                    titleSpacing: 0,
-                    title: _header()),
-                body: const Column(
-                  children: [],
-                ))));
+    return ChangeNotifierProvider.value(
+        value: _model,
+        builder: (context, child) {
+          return Container(
+              color: Constants.colorBar,
+              child: SafeArea(
+                  child: Scaffold(
+                      backgroundColor: Constants.colorBgUnderCard,
+                      appBar: AppBar(
+                          centerTitle: false,
+                          shadowColor: Colors.black,
+                          elevation: 0.1,
+                          backgroundColor: Constants.colorBgUnderCard,
+                          leading: RoundButton(
+                              color: Colors.transparent,
+                              iconColor: Colors.black,
+                              size: 50,
+                              iconSize: 22,
+                              padding: const EdgeInsets.only(left: 10),
+                              iconData: Icons.arrow_back_ios,
+                              onPressed: (v) async {
+                                Navigator.pop(context);
+                              }),
+                          titleSpacing: 0,
+                          title: _header()),
+                      body: _gallery())));
+        });
   }
-  // Stack(alignment: Alignment.center, children: [
-  //   Positioned(
-  //       top: (kToolbarHeight * 2) - 30,
-  //       bottom: 0,
-  //       left: 0,
-  //       right: 0,
-  //       child: Container(
-  //           decoration: const BoxDecoration(
-  //               color: Constants.colorBgUnderCard,
-  //               borderRadius: BorderRadius.only(
-  //                   topLeft: Radius.circular(20),
-  //                   topRight: Radius.circular(20))))),
-  //   CustomScrollView(
-  //       physics: const ClampingScrollPhysics(),
-  //       controller: _scrollCtr,
-  //       slivers: [
-  //         // AnimatedBuilder(
-  //         //     animation: _ctrSlideTop,
-  //         //     builder: (context, child) {
-  //         //       return SliverAppBar(
-  //         //           backgroundColor: Constants.colorBar,
-  //         //           // backgroundColor: Colors.purple,
-  //         //           toolbarHeight: _width.value,
-  //         //           // toolbarHeight: _test ? kToolbarHeight * 2 : kToolbarHeight,
-  //         //           // expandedHeight: kToolbarHeight,
-  //         //           // collapsedHeight: kToolbarHeight,
-  //         //           flexibleSpace: _sliverAppBar());
-  //         //     }),
-  //         SliverToBoxAdapter(child: _header()),
-  //         //
-  //         // -
-  //         // DecoratedSliver(
-  //         //     decoration: const BoxDecoration(
-  //         //       color: Constants.colorBgUnderCard,
-  //         //     ),
-  //         //     //   // sliver: _gallery()
-  //         //     //   sliver:
-  //         //     // SliverFillRemaining(child: _gallery()),
-  //         //     sliver: SliverToBoxAdapter(child: _gallery()))
-  //         // SliverFillRemaining(
-  //         //     // fillOverscroll: false,
-  //         //     // fillOverscroll: true,
-  //         //     // hasScrollBody: false,
-  //         //     // child: _gallery()
-  //         // SliverToBoxAdapter(child: _gallery())
-  //       ])
-  // ]))));
-  // }
 
   Widget _header() {
-    return Row(children: [
-      Flexible(
-          child: TextField(
-              controller: TextEditingController(),
-              focusNode: _focus,
-              maxLines: 1,
-              decoration: InputDecoration.collapsed(
-                  hintText: 'Search',
-                  hintStyle: TextStyle(
-                      color: Constants.colorTextSecond.withOpacity(0.6),
-                      fontSize: 16,
-                      fontFamily: 'Sulphur',
-                      fontWeight: FontWeight.bold)),
-              style: TextStyle(
-                  color: Constants.colorTextSecond.withOpacity(0.8),
-                  fontSize: 16,
-                  fontFamily: 'Sulphur',
-                  fontWeight: FontWeight.bold),
-              cursorColor: Constants.colorTextSecond)),
-      RoundButton(
-          iconData: Icons.clear_sharp,
-          // color: Constants.colorButtonBg,
-          color: Colors.transparent,
-          iconSize: 22,
-          margin: const EdgeInsets.only(right: 15),
-          size: 40,
-          iconColor: Constants.colorTextAccent.withOpacity(0.5),
-          onPressed: (_) async {})
-    ]);
+    return HoverClick(
+        onPressedL: (_) {
+          _focus.requestFocus();
+        },
+        child: Container(
+            // color: Colors.amber,
+            height: kToolbarHeight,
+            child: Row(children: [
+              Flexible(
+                  child: TextField(
+                      controller: _textCtr,
+                      focusNode: _focus,
+                      maxLines: 1,
+                      decoration: const InputDecoration.collapsed(
+                          hintText: 'Search ex: 01.01.2025',
+                          hintStyle: TextStyle(
+                              color: Constants.colorTextSecond,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400)),
+                      style: const TextStyle(
+                          color: Constants.colorTextAccent,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400),
+                      cursorColor: Constants.colorTextSecond)),
+              Builder(builder: (context) {
+                var search = context.watch<SearchModel>().search;
+                var empty = search == null || search.isEmpty;
+                if (empty) {
+                  return const SizedBox();
+                }
+                return RoundButton(
+                    iconData: Icons.clear_sharp,
+                    color: Colors.transparent,
+                    iconSize: 22,
+                    margin: const EdgeInsets.only(right: 15),
+                    size: 40,
+                    iconColor: Constants.colorTextAccent.withOpacity(0.5),
+                    onPressed: (_) {
+                      _textCtr.clear();
+                    });
+              })
+            ])));
   }
 
-  // Widget _gallery() {
-  //   return Builder(builder: (context) {
-  //     var history =
-  //         context.select<AppModel, List<HistoryRecord>>((v) => v.history);
-  //     if (history.isEmpty) {
-  //       return RotationTransition(
-  //           turns: _iconRotate,
-  //           child: SizedBox(
-  //               // height: double.infinity, //((270 + 28) * history.length).toDouble(),
-  //               // decoration: const BoxDecoration(color: Constants.colorBgUnderCard),
-  //               height: NavigatorRep().size.height / 1.5,
-  //               child: Column(
-  //                   mainAxisAlignment: MainAxisAlignment.center,
-  //                   crossAxisAlignment: CrossAxisAlignment.center,
-  //                   children: [
-  //                     RoundButton(
-  //                         iconData: Icons.create_new_folder_rounded,
-  //                         color: Constants.colorPrimary,
-  //                         iconColor: Constants.colorBar,
-  //                         size: (NavigatorRep().size.width / 5) + 15,
-  //                         iconSize: NavigatorRep().size.width / 5,
-  //                         useScaleAnimation: true,
-  //                         onPressed: (p0) {
-  //                           if (_ctrShakeIcon.isForwardOrCompleted) {
-  //                             _ctrShakeIcon.reverse().orCancel;
-  //                           } else {
-  //                             _ctrShakeIcon.forward().orCancel;
-  //                           }
-  //                         }),
-  //                     const SizedBox(height: 20),
-  //                     const Text('There are no entries yet',
-  //                         style: TextStyle(
-  //                             color: Constants.colorTextAccent, fontSize: 18)),
-  //                     // const SizedBox(height: 5),
-  //                     Row(
-  //                         mainAxisAlignment: MainAxisAlignment.center,
-  //                         children: [
-  //                           const Text('Click',
-  //                               style: TextStyle(
-  //                                   color: Constants.colorTextAccent,
-  //                                   fontSize: 18)),
-  //                           Padding(
-  //                               padding:
-  //                                   const EdgeInsets.only(left: 8, right: 8),
-  //                               child: Icon(Icons.create_new_folder_rounded,
-  //                                   color: Constants.colorTextSecond
-  //                                       .withOpacity(0.5))),
-  //                           // Padding(
-  //                           //     padding: EdgeInsets.only(left: 2, right: 8),
-  //                           //     child: Text('Capture',
-  //                           //         style: TextStyle(
-  //                           //             color: Colors.black45, fontSize: 18))),
-  //                           const Text('to start',
-  //                               style: TextStyle(
-  //                                   color: Constants.colorTextAccent,
-  //                                   fontSize: 18))
-  //                         ])
-  //                   ])));
-  //     }
-  //     return SizedBox(
-  //         height: ((270 + 28) * history.length).toDouble(),
-  //         // TODO: close slide when scroll
-  //         // TODO: close top animation when scroll
-  //         // TODO: only one item can be open with slide
-  //         // TODO: search
-  //         child: CustomScrollView(
-  //             physics: const NeverScrollableScrollPhysics(),
-  //             slivers: [
-  //               SliverList.builder(
-  //                   itemCount: history.length,
-  //                   itemBuilder: (context, index) {
-  //                     var model = history[index];
-  //                     return ViewItem1(
-  //                         history: model,
-  //                         key: ValueKey('history-${model.items.lastOrNull}'),
-  //                         onPressed: () {
-  //                           GridDialog()
-  //                               .show(
-  //                                   context: context,
-  //                                   history: model,
-  //                                   initialIndex: index)
-  //                               .then((value) {});
-  //                         },
-  //                         onDelete: () async {
-  //                           await MyRep().deleteHistoryRoot([model]);
-  //                         });
-  //                   })
-  //             ]));
-  //   });
-  // }
+  Widget _gallery() {
+    return Builder(builder: (context) {
+      var search = context.watch<SearchModel>().search;
+      var history =
+          context.select<SearchModel, List<HistoryRecord>>((v) => v.result);
+      if (history.isEmpty) {
+        return HoverClick(
+            onPressedL: (_) {
+              _focus.unfocus();
+            },
+            child: Container(
+                // color: Colors.yellow,
+                height: NavigatorRep().size.height / 1.2,
+                width: double.infinity,
+                child: search != null && search.isNotEmpty
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                            Icon(
+                              Icons.screen_search_desktop_rounded,
+                              size: NavigatorRep().size.width / 5,
+                              color: Constants.colorPrimary,
+                              // shadows: [
+                              // Shadow(
+                              //     color: Constants.colorPrimary.withOpacity(0.4),
+                              //     blurRadius: 50,
+                              //     offset: const Offset(0, 1))
+                              // ],
+                            ),
+                            const SizedBox(height: 20),
+                            Text('No results',
+                                style: TextStyle(
+                                  color: Constants.colorTextAccent
+                                      .withOpacity(0.7),
+                                  fontSize: 18,
+                                  // shadows: <Shadow>[
+                                  //   Shadow(
+                                  //       color: Constants.colorPrimary.withOpacity(0.4),
+                                  //       blurRadius: 40,
+                                  //       offset: const Offset(0, 1)
+                                  //       // offset: Offset(10.0, 10.0),
+                                  //       // blurRadius: 5.0,
+                                  //       // color: Colors.black,
+                                  //       )
+                                  // ])
+                                ))
+                          ])
+                    : const SizedBox()));
+      }
+      return SizedBox(
+          height: ((270 + 28) * history.length).toDouble(),
+          child: CustomScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              slivers: [
+                SliverList.builder(
+                    itemCount: history.length,
+                    itemBuilder: (context, index) {
+                      var model = history[index];
+                      return ViewItem1(
+                          history: model,
+                          key: ValueKey('history-${model.items.lastOrNull}'),
+                          onPressed: () {
+                            GridDialog()
+                                .show(
+                                    context: context,
+                                    history: model,
+                                    initialIndex: index)
+                                .then((value) {});
+                          },
+                          onDelete: () async {
+                            await MyRep().deleteHistoryRoot([model]);
+                          });
+                    })
+              ]));
+    });
+  }
 
   // Widget _sliverAppBar() {
   //   return Stack(
