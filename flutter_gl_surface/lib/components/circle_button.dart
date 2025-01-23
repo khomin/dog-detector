@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_demo/resource/constants.dart';
 
 class RoundButton extends StatefulWidget {
   const RoundButton(
@@ -12,6 +13,7 @@ class RoundButton extends StatefulWidget {
       this.iconSize,
       this.vertTransform = false,
       this.radius = 30,
+      this.useShadow = false,
       this.size,
       super.key});
   final IconData iconData;
@@ -24,6 +26,7 @@ class RoundButton extends StatefulWidget {
   final double? iconSize;
   final bool vertTransform;
   final double radius;
+  final bool useShadow;
   final Function(Offset)? onPressed;
 
   @override
@@ -67,6 +70,13 @@ class RoundButtonState extends State<RoundButton>
         height: widget.size,
         width: widget.size,
         margin: widget.margin,
+        decoration: BoxDecoration(boxShadow: [
+          if (widget.useShadow)
+            BoxShadow(
+                color: Constants.colorPrimary.withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 1))
+        ]),
         child: Center(
             child: Stack(alignment: Alignment.center, children: [
           Positioned.fill(
@@ -96,9 +106,11 @@ class RoundButtonState extends State<RoundButton>
                               angle: -90 *
                                   3.1415927 /
                                   180, // Rotate -90 degrees in radians
-                              child: Icon(widget.iconData,
-                                  color: widget.iconColor,
-                                  size: widget.iconSize ?? 30))
+                              child: Icon(
+                                widget.iconData,
+                                color: widget.iconColor,
+                                size: widget.iconSize ?? 30,
+                              ))
                           : Icon(widget.iconData,
                               color: widget.iconColor,
                               size: widget.iconSize ?? 30))))

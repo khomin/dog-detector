@@ -79,7 +79,7 @@ class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
         onPressedL: (_) {
           _focus.requestFocus();
         },
-        child: Container(
+        child: SizedBox(
             // color: Colors.amber,
             height: kToolbarHeight,
             child: Row(children: [
@@ -129,7 +129,7 @@ class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             onPressedL: (_) {
               _focus.unfocus();
             },
-            child: Container(
+            child: SizedBox(
                 // color: Colors.yellow,
                 height: NavigatorRep().size.height / 1.2,
                 width: double.infinity,
@@ -142,37 +142,38 @@ class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                               Icons.screen_search_desktop_rounded,
                               size: NavigatorRep().size.width / 5,
                               color: Constants.colorPrimary,
-                              // shadows: [
-                              // Shadow(
-                              //     color: Constants.colorPrimary.withOpacity(0.4),
-                              //     blurRadius: 50,
-                              //     offset: const Offset(0, 1))
-                              // ],
+                              shadows: [
+                                Shadow(
+                                    color:
+                                        Constants.colorPrimary.withOpacity(0.3),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 1))
+                              ],
                             ),
                             const SizedBox(height: 20),
                             Text('No results',
                                 style: TextStyle(
-                                  color: Constants.colorTextAccent
-                                      .withOpacity(0.7),
-                                  fontSize: 18,
-                                  // shadows: <Shadow>[
-                                  //   Shadow(
-                                  //       color: Constants.colorPrimary.withOpacity(0.4),
-                                  //       blurRadius: 40,
-                                  //       offset: const Offset(0, 1)
-                                  //       // offset: Offset(10.0, 10.0),
-                                  //       // blurRadius: 5.0,
-                                  //       // color: Colors.black,
-                                  //       )
-                                  // ])
-                                ))
+                                    color: Constants.colorTextAccent
+                                        .withOpacity(0.7),
+                                    fontSize: 18,
+                                    shadows: const <Shadow>[
+                                      // Shadow(
+                                      //     color: Constants.colorPrimary
+                                      //         .withOpacity(0.6),
+                                      //     blurRadius: 25,
+                                      //     offset: const Offset(0, 1)
+                                      //     // offset: Offset(10.0, 10.0),
+                                      //     // blurRadius: 5.0,
+                                      //     // color: Colors.black,
+                                      //     )
+                                    ]))
                           ])
                     : const SizedBox()));
       }
       return SizedBox(
           height: ((270 + 28) * history.length).toDouble(),
           child: CustomScrollView(
-              physics: const NeverScrollableScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               slivers: [
                 SliverList.builder(
                     itemCount: history.length,
@@ -180,6 +181,7 @@ class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                       var model = history[index];
                       return ViewItem1(
                           history: model,
+                          useSwipe: false,
                           key: ValueKey('history-${model.items.lastOrNull}'),
                           onPressed: () {
                             GridDialog()
@@ -196,122 +198,4 @@ class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
               ]));
     });
   }
-
-  // Widget _sliverAppBar() {
-  //   return Stack(
-  //       // alignment: Alignment.center,
-  //       children: [
-  //         Positioned(
-  //             bottom: 0,
-  //             left: 0,
-  //             right: 0,
-  //             child: Opacity(
-  //                 opacity: _opacity.value,
-  //                 // opacity: 1,
-  //                 child: SizedBox(
-  //                     height: _width.value / 1.5,
-  //                     // color: Colors.purple.withOpacity(0.3),
-  //                     child: Row(
-  //                         mainAxisAlignment: MainAxisAlignment.center,
-  //                         children: [
-  //                           RoundButton(
-  //                               color:
-  //                                   Constants.colorButtonRed.withOpacity(0.8),
-  //                               iconColor: Constants.colorCard.withOpacity(0.8),
-  //                               size: 55,
-  //                               radius: 20,
-  //                               useScaleAnimation: true,
-  //                               iconData: Icons.stop_circle_sharp,
-  //                               onPressed: (v) async {
-  //                                 _handleOnSlide();
-  //                                 await MyRep().setCaptureActive(false);
-  //                                 MyRep().stopCamera();
-  //                               }),
-  //                           const SizedBox(width: 15),
-  //                           RoundButton(
-  //                               color:
-  //                                   Constants.colorSecondary.withOpacity(0.8),
-  //                               iconColor: Constants.colorCard.withOpacity(0.8),
-  //                               size: 55,
-  //                               radius: 20,
-  //                               useScaleAnimation: true,
-  //                               iconData: Icons.close,
-  //                               onPressed: (v) {
-  //                                 _handleOnSlide();
-  //                               })
-  //                         ])))),
-  //         Positioned(
-  //             top: 0,
-  //             left: 0,
-  //             right: 0,
-  //             // right: 0,
-  //             child: Container(
-  //                 color: Constants.colorBar,
-  //                 // color: Colors.blueAccent,
-  //                 height: kToolbarHeight,
-  //                 child: Row(children: [
-  //                   Container(
-  //                       width: 100,
-  //                       // color: Colors.yellow,
-  //                       margin: const EdgeInsets.only(left: 25),
-  //                       child: const Text('Home',
-  //                           style: TextStyle(
-  //                             // fontFamily: 'Sulphur',
-  //                             fontSize: 25,
-  //                             // color: Colors.black38,
-  //                             // fontWeight: FontWeight.bold
-  //                           ))),
-  //                   //
-  //                   // duration
-  //                   HoverClick(
-  //                       onPressedL: (p0) async {
-  //                         _handleOnSlide();
-  //                       },
-  //                       child: SizedBox(
-  //                           width: 130,
-  //                           height: 50,
-  //                           // color: Colors.orange,
-  //                           // margin: const EdgeInsets.only(
-  //                           //     left: 20),
-  //                           child: RepaintBoundary(
-  //                               child: Stack(
-  //                                   alignment: Alignment.center,
-  //                                   children: [
-  //                                 StreamBuilder(
-  //                                     stream: MyRep().onCaptureTime,
-  //                                     initialData:
-  //                                         MyRep().onCaptureTime.valueOrNull,
-  //                                     builder: (context, snapshot) {
-  //                                       var duration = snapshot.data;
-  //                                       return AnimatedContainer(
-  //                                           duration: Duration.zero,
-  //                                           width: duration == null ? 10 : 130,
-  //                                           height: duration == null ? 10 : 30,
-  //                                           child: RoundBox(
-  //                                               text: duration?.duration
-  //                                                       .format() ??
-  //                                                   '',
-  //                                               color: const Color.fromARGB(
-  //                                                       255, 211, 19, 5)
-  //                                                   .withOpacity(0.8),
-  //                                               borderRadius: 40));
-  //                                     }),
-  //                                 // Positioned(
-  //                                 //     bottom: 0, child: Text('1'))
-  //                               ])))),
-  //                   const Spacer(),
-  //                   // RoundButton(
-  //                   //     color: Colors.transparent,
-  //                   //     iconColor: Constants.colorTextAccent
-  //                   //         .withOpacity(0.8),
-  //                   //     size: 70,
-  //                   //     iconData: Icons.close_sharp,
-  //                   //     onPressed: (p0) async {
-  //                   //       var model =
-  //                   //           context.read<AppModel>();
-  //                   //       model.setCollapse(!model.collapse);
-  //                   //     })
-  //                 ])))
-  //       ]);
-  // }
 }

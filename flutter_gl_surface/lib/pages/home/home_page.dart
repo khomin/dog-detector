@@ -16,6 +16,7 @@ import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/resource/disposable_stream.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:provider/provider.dart';
+import 'package:rxdart/rxdart.dart';
 
 class HomePagePage extends StatefulWidget {
   const HomePagePage({super.key});
@@ -34,6 +35,8 @@ class HomePagePageState extends State<HomePagePage>
   late AnimationController _ctrSlideTop;
   late AnimationController _ctrShakeIcon;
   late final Animation<double> _iconRotate;
+  Timer? _scrollThrottleTm;
+  final _onCloseSlide = BehaviorSubject<bool>.seeded(false);
   final _dispStream = DisposableStream();
 
   @override
@@ -80,7 +83,14 @@ class HomePagePageState extends State<HomePagePage>
     ));
 
     _scrollCtr.addListener(() {
-      _focus.unfocus();
+      _scrollThrottleTm?.cancel();
+      _scrollThrottleTm = Timer(const Duration(milliseconds: 50), () {
+        _focus.unfocus();
+        _onCloseSlide.add(true);
+        if (_ctrSlideTop.isForwardOrCompleted) {
+          _ctrSlideTop.reverse().orCancel;
+        }
+      });
     });
 
     _dispStream.add(MyRep().onHistory.listen((history) {
@@ -109,6 +119,8 @@ class HomePagePageState extends State<HomePagePage>
   void dispose() {
     _scrollCtr.dispose();
     _dispStream.dispose();
+    _onCloseSlide.close();
+    _scrollThrottleTm?.cancel();
     super.dispose();
   }
 
@@ -123,7 +135,6 @@ class HomePagePageState extends State<HomePagePage>
 
   @override
   Widget build(BuildContext context) {
-    // var v = kToolbarHeight;
     return Scaffold(
         backgroundColor: Constants.colorBar,
         // backgroundColor: Colors.pink,
@@ -308,6 +319,8 @@ class HomePagePageState extends State<HomePagePage>
                                   top: 0,
                                   child: StreamBuilder(
                                       stream: MyRep().onHistory,
+                                      initialData:
+                                          MyRep().onHistory.valueOrNull,
                                       builder: (context, snapshot) {
                                         var data = snapshot.data ?? [];
                                         var countDay =
@@ -335,6 +348,7 @@ class HomePagePageState extends State<HomePagePage>
       var history =
           context.select<AppModel, List<HistoryRecord>>((v) => v.history);
       if (history.isEmpty) {
+        // if (true) {
         return RotationTransition(
             turns: _iconRotate,
             child: SizedBox(
@@ -352,6 +366,7 @@ class HomePagePageState extends State<HomePagePage>
                           size: (NavigatorRep().size.width / 5) + 15,
                           iconSize: NavigatorRep().size.width / 5,
                           useScaleAnimation: true,
+                          useShadow: true,
                           onPressed: (p0) {
                             if (_ctrShakeIcon.isForwardOrCompleted) {
                               _ctrShakeIcon.reverse().orCancel;
@@ -391,10 +406,6 @@ class HomePagePageState extends State<HomePagePage>
       }
       return SizedBox(
           height: ((270 + 28) * history.length).toDouble(),
-          // TODO: close slide when scroll
-          // TODO: close top animation when scroll
-          // TODO: only one item can be open with slide
-          // TODO: search
           child: CustomScrollView(
               physics: const NeverScrollableScrollPhysics(),
               slivers: [
@@ -404,6 +415,7 @@ class HomePagePageState extends State<HomePagePage>
                       var model = history[index];
                       return ViewItem1(
                           history: model,
+                          onCloseSlide: _onCloseSlide,
                           key: ValueKey('history-${model.items.lastOrNull}'),
                           onPressed: () {
                             GridDialog()

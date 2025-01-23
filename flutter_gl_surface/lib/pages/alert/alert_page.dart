@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/components/circle_button.dart';
-import 'package:flutter_demo/pages/model/app_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
+import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
-import 'package:provider/provider.dart';
 
 class AlertPage extends StatefulWidget {
   const AlertPage({this.arg, super.key});
@@ -23,35 +21,92 @@ class AlertPageState extends State<AlertPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Constants.colorBar,
-        // backgroundColor: Colors.transparent,
-        // TODO: alert page
-        body: CustomScrollView(
-            physics: const NeverScrollableScrollPhysics(),
-            slivers: [
-              SliverToBoxAdapter(
-                  child: SizedBox(
-                      height: kToolbarHeight,
-                      child: Row(children: [
-                        const Padding(
-                            padding: EdgeInsets.only(left: 25),
-                            child:
-                                Text('Alert', style: TextStyle(fontSize: 25))),
-                        const Spacer(),
-                        RoundButton(
-                            color: Colors.transparent,
-                            iconColor:
-                                Constants.colorTextAccent.withOpacity(0.8),
-                            size: 70,
-                            // margin: EdgeInsets.only(bottom: 10),
-                            vertTransform: true,
-                            iconData: Icons.arrow_back_ios_new,
-                            // iconData: Icons.arrow_back_ios,
-                            onPressed: (p0) {
-                              var model = context.read<AppModel>();
-                              model.setCollapse(!model.collapse);
-                            })
-                      ]))),
-              // SliverFillRemaining(child: _camera())
-            ]));
+        body: Stack(alignment: Alignment.center, children: [
+          Positioned(
+              top: (kToolbarHeight * 2) - 30,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                  decoration: const BoxDecoration(
+                      color: Constants.colorBgUnderCard,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20))))),
+          CustomScrollView(physics: const ClampingScrollPhysics(), slivers: [
+            SliverAppBar(
+                backgroundColor: Constants.colorBar,
+                automaticallyImplyLeading: false,
+                flexibleSpace: _sliverAppBar()),
+            SliverToBoxAdapter(child: _header()),
+            DecoratedSliver(
+                decoration: const BoxDecoration(
+                  color: Constants.colorBgUnderCard,
+                ),
+                sliver: SliverToBoxAdapter(child: _list()))
+          ])
+        ]));
+  }
+
+  Widget _sliverAppBar() {
+    return Stack(children: [
+      Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          // right: 0,
+          child: Container(
+              color: Constants.colorBar,
+              // color: Colors.blueAccent,
+              height: kToolbarHeight,
+              child: Row(children: [
+                Container(
+                    width: 100,
+                    margin: const EdgeInsets.only(left: 25),
+                    child: const Text('Alert',
+                        style: TextStyle(
+                          fontSize: 25,
+                        ))),
+                const Spacer()
+              ])))
+    ]);
+  }
+
+  Widget _header() {
+    return SizedBox(
+        width: 300,
+        height: 60,
+        child: Stack(children: [
+          Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                  height: 40,
+                  width: 100,
+                  decoration: const BoxDecoration(
+                      color: Constants.colorBgUnderCard,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20)))))
+        ]));
+  }
+
+  Widget _list() {
+    return Builder(builder: (context) {
+      return SizedBox(
+          height: NavigatorRep().size.height / 1.5,
+          child: Column(children: [
+            ListView(
+                padding: EdgeInsets.only(left: 20, right: 20),
+                shrinkWrap: true,
+                children: [
+                  // TODO: alert sound
+                  Row(children: [Text('Sound')]),
+                  // TODO: alert send tcp/udp packet
+                  Row(children: [Text('Send TCP/UDP packet')])
+                ])
+          ]));
+    });
   }
 }
