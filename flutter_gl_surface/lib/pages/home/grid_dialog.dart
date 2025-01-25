@@ -5,7 +5,7 @@ import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/pages/home/view_item1.dart';
 import 'package:flutter_demo/pages/home/view_item2.dart';
 import 'package:flutter_demo/pages/home/history_view_dialog.dart';
-import 'package:flutter_demo/pages/model/grid_model.dart';
+import 'package:flutter_demo/pages/home/grid_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/selection_repo.dart';
 import 'package:flutter_demo/resource/constants.dart';

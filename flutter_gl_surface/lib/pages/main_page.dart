@@ -4,7 +4,7 @@ import 'package:flutter_demo/components/hover_click.dart';
 import 'package:flutter_demo/pages/alert/alert_page.dart';
 import 'package:flutter_demo/pages/capture/capture_page.dart';
 import 'package:flutter_demo/pages/home/home_page.dart';
-import 'package:flutter_demo/pages/model/app_model.dart';
+import 'package:flutter_demo/pages/app_model.dart';
 import 'package:flutter_demo/pages/settings/settings_page.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';

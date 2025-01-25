@@ -416,3 +416,10 @@ class Sound {
   final String name;
   final String uri;
 }
+
+class Packet {
+  Packet({required this.uri, required this.tcp, required this.udp});
+  final String uri;
+  final bool tcp;
+  final bool udp;
+}

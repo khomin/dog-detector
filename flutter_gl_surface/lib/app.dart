@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_demo/components/splash.dart';
 import 'package:flutter_demo/pages/main_page.dart';
-import 'package:flutter_demo/pages/model/camera_model.dart';
-import 'package:flutter_demo/pages/model/app_model.dart';
-import 'package:flutter_demo/pages/model/record_model.dart';
+import 'package:flutter_demo/pages/capture/camera_model.dart';
+import 'package:flutter_demo/pages/app_model.dart';
+import 'package:flutter_demo/pages/home/record_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/utils/file_utils.dart';
 import 'package:flutter_demo/utils/log_printer.dart';

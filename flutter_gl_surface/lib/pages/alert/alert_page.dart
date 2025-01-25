@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/components/hover_click.dart';
+import 'package:flutter_demo/pages/alert/alert_addr_page.dart';
 import 'package:flutter_demo/pages/alert/alert_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
@@ -53,6 +55,17 @@ class AlertPageState extends State<AlertPage> {
         }
       } else {
         logError('$tag: no sounds');
+      }
+      // whether use packet sending
+      // await SettingsRep().get
+      Packet? packetUri = await SettingsRep().getPacketUriUsed();
+      if (packetUri != null) {
+        _model.setPacketToAddr(v: packetUri.uri, saveConfig: false);
+        _model.setUsePacket(value: true, saveConfig: false);
+        _model.setPacketValue(
+            v: packetUri.tcp ? 'TCP' : 'UDP', saveConfig: false);
+      } else {
+        _model.setUsePacket(value: false, saveConfig: false);
       }
     });
   }
@@ -255,37 +268,34 @@ class AlertPageState extends State<AlertPage> {
                           Expanded(
                               flex: 2,
                               child: Row(children: [
-                                soundList.isNotEmpty
-                                    ? Expanded(
-                                        child: DropdownButton<Sound>(
-                                            padding:
-                                                const EdgeInsets.only(right: 6),
-                                            value: context
-                                                .watch<AlertModel>()
-                                                .sound,
-                                            isExpanded: true,
-                                            onChanged: (Sound? value) {
-                                              context
-                                                  .read<AlertModel>()
-                                                  .setSound(value);
-                                            },
-                                            items: soundList
-                                                .map<DropdownMenuItem<Sound>>(
-                                                    (Sound value) {
-                                              return DropdownMenuItem<Sound>(
-                                                  value: value,
-                                                  child: Text(value.name,
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: _fontSize2,
-                                                          color: Constants
-                                                              .colorPrimary)));
-                                            }).toList()))
-                                    : const SizedBox()
+                                Expanded(
+                                    child: DropdownButton<Sound>(
+                                        padding:
+                                            const EdgeInsets.only(right: 6),
+                                        value:
+                                            context.watch<AlertModel>().sound,
+                                        isExpanded: true,
+                                        onChanged: (Sound? value) {
+                                          context
+                                              .read<AlertModel>()
+                                              .setSound(value);
+                                        },
+                                        items: soundList
+                                            .map<DropdownMenuItem<Sound>>(
+                                                (Sound value) {
+                                          return DropdownMenuItem<Sound>(
+                                              value: value,
+                                              child: Text(value.name,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: _fontSize2,
+                                                      color: Constants
+                                                          .colorPrimary)));
+                                        }).toList()))
                               ]))
                         ]))))
           ]);
@@ -326,7 +336,9 @@ class AlertPageState extends State<AlertPage> {
               Switch(
                   value: usePacket,
                   onChanged: (bool value) {
-                    context.read<AlertModel>().setUsePacket(value);
+                    context
+                        .read<AlertModel>()
+                        .setUsePacket(value: value, saveConfig: true);
                   })
             ])),
         //
@@ -367,9 +379,8 @@ class AlertPageState extends State<AlertPage> {
                                   value: packet,
                                   onChanged: (String? value) {
                                     if (value == null) return;
-                                    context
-                                        .read<AlertModel>()
-                                        .setPacketValue(value);
+                                    context.read<AlertModel>().setPacketValue(
+                                        v: value, saveConfig: true);
                                   },
                                   items: packets.map<DropdownMenuItem<String>>(
                                       (String value) {
@@ -418,15 +429,13 @@ class AlertPageState extends State<AlertPage> {
                           flex: 2,
                           child: HoverClick(
                               onPressedL: (p0) {
-                                showModalBottomSheet(
-                                    context: context,
-                                    barrierColor: Colors.black26,
-                                    builder: (BuildContext context) {
-                                      return Container(
-                                        height: 200,
-                                        color: Constants.colorBgUnderCard,
-                                      );
-                                    });
+                                Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                        settings: const RouteSettings(),
+                                        builder: (context) {
+                                          return AlertAddrPage(model: _model);
+                                        }));
                               },
                               child: SizedBox(
                                   height: 40,
@@ -434,11 +443,13 @@ class AlertPageState extends State<AlertPage> {
                                       decoration: BoxDecoration(
                                           color: Constants.colorCard,
                                           borderRadius:
-                                              BorderRadius.circular(4)),
+                                              BorderRadius.circular(8)),
                                       width: 150,
                                       child: Center(
                                           child: Text(
-                                              packetToAddr ?? '192.168.1.1',
+                                              packetToAddr ?? 'ex: 192.168.1.1',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                   color:
                                                       Constants.colorTextSecond,

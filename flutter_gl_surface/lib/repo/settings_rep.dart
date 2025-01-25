@@ -20,6 +20,7 @@ class SettingsRep {
   static const _captureMinAreaKey = 'capt_min_area';
   static const _captIntValSecKey = 'capt_intval_sec';
   static const _soundUsedKey = 'soundUsedKey';
+  static const _packetUsedKey = 'packetUsedKey';
   static final SettingsRep _instance = SettingsRep._internal();
   final tag = 'settings';
 
@@ -93,6 +94,30 @@ class SettingsRep {
       await prefs.setString(_soundUsedKey, mapJson);
     } else {
       await prefs.remove(_soundUsedKey);
+    }
+  }
+
+  Future<Packet?> getPacketUriUsed() async {
+    final prefs = await SharedPreferences.getInstance();
+    var v = prefs.getString(_packetUsedKey);
+    if (v != null) {
+      try {
+        var mapJson = jsonDecode(v);
+        return Packet(
+            uri: mapJson['uri'], tcp: mapJson['tcp'], udp: mapJson['udp']);
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  Future setPacketUri(Packet? packet) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (packet != null) {
+      var map = {'uri': packet.uri, 'tcp': packet.tcp, 'udp': packet.udp};
+      var mapJson = jsonEncode(map);
+      await prefs.setString(_packetUsedKey, mapJson);
+    } else {
+      await prefs.remove(_packetUsedKey);
     }
   }
 

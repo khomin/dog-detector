@@ -9,7 +9,7 @@ import 'package:flutter_demo/components/round_box.dart';
 import 'package:flutter_demo/pages/home/grid_dialog.dart';
 import 'package:flutter_demo/pages/home/search_page.dart';
 import 'package:flutter_demo/pages/home/view_item1.dart';
-import 'package:flutter_demo/pages/model/app_model.dart';
+import 'package:flutter_demo/pages/app_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';

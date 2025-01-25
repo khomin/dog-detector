@@ -9,8 +9,10 @@ class AlertModel with ChangeNotifier {
 
   var usePacket = false;
   var packetValue = 'TCP';
-  var packetList = <String>['TCP', 'UDP'];
+  final packetList = <String>['TCP', 'UDP'];
   String? packetToAddr;
+
+  void setInitial() {}
 
   void setSound(Sound? v) {
     if (sound != v) {
@@ -28,23 +30,42 @@ class AlertModel with ChangeNotifier {
     }
   }
 
-  void setUsePacket(bool v) {
-    if (usePacket != v) {
-      usePacket = v;
+  void setUsePacket(
+      {required bool value, required bool saveConfig, Packet? packet}) {
+    if (usePacket != value) {
+      usePacket = value;
+      if (value) {
+        SettingsRep().setPacketUri(
+            packet ?? Packet(uri: '192.168.1.1', tcp: true, udp: false));
+      } else {
+        SettingsRep().setPacketUri(null);
+      }
       notifyListeners();
     }
   }
 
-  void setPacketValue(String v) {
+  void setPacketValue({required String v, required bool saveConfig}) {
     if (packetValue != v) {
       packetValue = v;
+      if (saveConfig) {
+        SettingsRep().setPacketUri(Packet(
+            uri: packetToAddr ?? '',
+            tcp: packetValue == 'TCP' ? true : false,
+            udp: packetValue == 'UDP' ? true : false));
+      }
       notifyListeners();
     }
   }
 
-  void setPacketToAddr(String? v) {
+  void setPacketToAddr({required String? v, required bool saveConfig}) {
     if (packetToAddr != v) {
       packetToAddr = v;
+      if (v != null && saveConfig) {
+        SettingsRep().setPacketUri(Packet(
+            uri: v,
+            tcp: packetValue == 'TCP' ? true : false,
+            udp: packetValue == 'UDP' ? true : false));
+      }
       notifyListeners();
     }
   }
