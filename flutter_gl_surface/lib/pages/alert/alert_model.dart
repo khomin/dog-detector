@@ -1,32 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_demo/repo/my_rep.dart';
+import 'package:flutter_demo/repo/settings_rep.dart';
 
 class AlertModel with ChangeNotifier {
   var useSound = false;
-  String? sound;
-  var soundList = <String>[];
+  Sound? sound;
+  var sounds = <Sound>[];
 
   var usePacket = false;
   var packetValue = 'TCP';
   var packetList = <String>['TCP', 'UDP'];
   String? packetToAddr;
 
-  void setUseSound(bool v) {
-    if (useSound != v) {
-      useSound = v;
-      notifyListeners();
-    }
-  }
-
-  void setSound(String? v) {
+  void setSound(Sound? v) {
     if (sound != v) {
       sound = v;
+      useSound = v != null;
+      SettingsRep().setSoundUsed(v);
       notifyListeners();
     }
   }
 
-  void setSoundList(List<String> list) {
-    if (soundList != list) {
-      soundList = list;
+  void setSoundList(List<Sound> list) {
+    if (sounds != list) {
+      sounds = list;
       notifyListeners();
     }
   }

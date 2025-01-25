@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:loggy/loggy.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -18,6 +19,7 @@ class SettingsRep {
   static const _showCaptureKey = 'show_area';
   static const _captureMinAreaKey = 'capt_min_area';
   static const _captIntValSecKey = 'capt_intval_sec';
+  static const _soundUsedKey = 'soundUsedKey';
   static final SettingsRep _instance = SettingsRep._internal();
   final tag = 'settings';
 
@@ -69,6 +71,29 @@ class SettingsRep {
   void setCaptureShowArea(bool v) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_showCaptureKey, v);
+  }
+
+  Future<Sound?> getSoundUsed() async {
+    final prefs = await SharedPreferences.getInstance();
+    var v = prefs.getString(_soundUsedKey);
+    if (v != null) {
+      try {
+        var mapJson = jsonDecode(v);
+        return Sound(name: mapJson['name'], uri: mapJson['uri']);
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  void setSoundUsed(Sound? sound) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (sound != null) {
+      var map = {'name': sound.name, 'uri': sound.uri};
+      var mapJson = jsonEncode(map);
+      await prefs.setString(_soundUsedKey, mapJson);
+    } else {
+      await prefs.remove(_soundUsedKey);
+    }
   }
 
   // void setPermissionsGranted() async {

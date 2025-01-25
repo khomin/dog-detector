@@ -1,11 +1,12 @@
 package com.example.detector
 
+import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Bundle
-import android.widget.Toast
-import android.Manifest
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.util.Log
 import android.view.Surface
 import androidx.core.content.ContextCompat
@@ -15,6 +16,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformViewRegistry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+
 
 class MainActivity: FlutterActivity() {
     private lateinit var methodChannel: MethodChannel
@@ -133,6 +135,32 @@ class MainActivity: FlutterActivity() {
                                     }
                                 }
                                 result.success(map)
+                            }
+                        }
+                        "get_system_sounds" -> {
+                            val map = mutableMapOf<String, Any>()
+                            val manager = RingtoneManager(this)
+                            manager.setType(RingtoneManager.TYPE_NOTIFICATION)
+                            val cursor = manager.cursor
+                            while (cursor.moveToNext()) {
+                                val id = cursor.getString(RingtoneManager.ID_COLUMN_INDEX)
+                                val uri = cursor.getString(RingtoneManager.URI_COLUMN_INDEX)
+                                val name = cursor.getString(RingtoneManager.TITLE_COLUMN_INDEX)
+                                map["$uri/$id"] = mapOf("uri" to "$uri/$id", "name" to name)
+                            }
+                            result.success(map)
+                        }
+                        "play_system_sound" -> {
+                            runBlocking(Dispatchers.IO) {
+                                val toneId = args["id"] as String
+                                try {
+                                    val tone =
+                                        RingtoneManager.getRingtone(context, Uri.parse(toneId))
+                                    tone.play()
+                                } catch (e: NoSuchElementException) {
+                                    Log.e(TAG, "error", e)
+                                }
+                                result.success(true)
                             }
                         }
                         else -> {

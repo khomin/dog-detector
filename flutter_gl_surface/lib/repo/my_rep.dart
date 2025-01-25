@@ -384,4 +384,35 @@ class MyRep {
     }
     Share.shareXFiles(listPath, text: 'Check out this image!');
   }
+
+  Future<List<Sound>> getSounds() async {
+    var list = <Sound>[];
+    try {
+      var r = await _mainChannel
+          .invokeMethod('get_system_sounds', <String, dynamic>{});
+      r.forEach((key, value) {
+        list.add(Sound(name: value['name'], uri: value['uri']));
+      });
+    } catch (e) {
+      logError('$tag: error: $e');
+    }
+    return list;
+  }
+
+  Future<bool> playSound({required String sound}) async {
+    try {
+      var r = await _mainChannel.invokeMethod(
+          'play_system_sound', <String, dynamic>{'id': sound}) as bool;
+      return r;
+    } catch (e) {
+      logError('$tag: error: $e');
+    }
+    return false;
+  }
+}
+
+class Sound {
+  Sound({required this.name, required this.uri});
+  final String name;
+  final String uri;
 }
