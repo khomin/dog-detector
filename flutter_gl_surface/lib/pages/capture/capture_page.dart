@@ -23,6 +23,7 @@ import 'package:intl/intl.dart';
 import 'package:loggy/loggy.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_demo/utils/common.dart';
+import 'package:rxdart/rxdart.dart';
 
 class CapturePage extends StatefulWidget {
   const CapturePage({super.key});
@@ -35,34 +36,12 @@ class CapturePageState extends State<CapturePage>
   final _dispStream = DisposableStream();
   late RecordModel _model;
   late final AppLifecycleListener _listener;
+  late final Animation<double> _slideHeight;
+  late final Animation<double> _slideOpacity;
+  late AnimationController _ctrSlideTop;
+  final _onStopRecordStream = PublishSubject<bool>();
   Widget? _captured;
   bool _hasLastCapture = false;
-  final _colors = <Color>[
-    Colors.red,
-    Colors.brown,
-    Colors.amber,
-    Colors.blue,
-    Colors.blueGrey,
-    Colors.orange,
-    Colors.pink,
-    Colors.purpleAccent,
-    Colors.red,
-    Colors.brown,
-    Colors.amber,
-    Colors.blue,
-    Colors.blueGrey,
-    Colors.orange,
-    Colors.pink,
-    Colors.purpleAccent,
-    Colors.red,
-    Colors.brown,
-    Colors.amber,
-    Colors.blue,
-    Colors.blueGrey,
-    Colors.orange,
-    Colors.pink,
-    Colors.purpleAccent
-  ];
   bool _onRightToLeft = false;
   bool _onLeftToGone = false;
   final tag = 'capturePage';
@@ -70,6 +49,25 @@ class CapturePageState extends State<CapturePage>
   @override
   void initState() {
     super.initState();
+
+    _ctrSlideTop = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+
+    _slideHeight = Tween<double>(
+      begin: kToolbarHeight,
+      end: kToolbarHeight * 3,
+    ).animate(CurvedAnimation(
+        parent: _ctrSlideTop.view,
+        curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
+
+    _slideOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+        parent: _ctrSlideTop.view,
+        curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
 
     Future.microtask(() async {
       // init first
@@ -120,12 +118,16 @@ class CapturePageState extends State<CapturePage>
     super.dispose();
     _listener.dispose();
     _dispStream.dispose();
+    _onStopRecordStream.close();
     _model.setRun(run: false, camera: null, mounted: false);
-    if (!MyRep().captureActive) {
+    // if (!MyRep().captureActive) {
+    () async {
+      MyRep().setCaptureActive(false);
       MyRep().stopCamera();
-    }
-    MyRep().onCapture = null;
-    MyRep().onFirstFrame = null;
+      // }
+      MyRep().onCapture = null;
+      MyRep().onFirstFrame = null;
+    }();
     WidgetsBinding.instance.removeObserver(this);
   }
 
@@ -193,9 +195,8 @@ class CapturePageState extends State<CapturePage>
         } else {
           _captured = ClipRRect(
               borderRadius: BorderRadius.circular(30.0),
-              child: Stack(
-                  alignment: Alignment.center,
-                  children: [Container(color: _colors.first)]));
+              child:
+                  Stack(alignment: Alignment.center, children: [Container()]));
         }
         _onRightToLeft = true;
         _hasLastCapture = true;
@@ -224,16 +225,22 @@ class CapturePageState extends State<CapturePage>
               _captured = ClipRRect(
                   borderRadius: BorderRadius.circular(30.0),
                   child: Stack(
-                      alignment: Alignment.center,
-                      children: [Container(color: _colors.first)]));
+                      alignment: Alignment.center, children: [Container()]));
             }
             _onRightToLeft = true;
           });
-          _colors.removeAt(0);
         });
       });
     }
-    _colors.removeAt(0);
+  }
+
+  void _handleOnSlide() {
+    if (MyRep().onCaptureTime.valueOrNull == null) return;
+    if (_ctrSlideTop.isForwardOrCompleted) {
+      _ctrSlideTop.reverse().orCancel;
+    } else {
+      _ctrSlideTop.forward().orCancel;
+    }
   }
 
   // @override
@@ -260,80 +267,103 @@ class CapturePageState extends State<CapturePage>
     _model = context.read<RecordModel>();
     return Scaffold(
         backgroundColor: Constants.colorBar,
-        // backgroundColor: Colors.transparent,
         body: CustomScrollView(
             physics: const NeverScrollableScrollPhysics(),
             slivers: [
-              SliverToBoxAdapter(
-                  child: SizedBox(
-                      height: kToolbarHeight,
-                      child: Row(children: [
-                        Container(
-                            width: 100,
-                            // color: Colors.yellow,
-                            margin: const EdgeInsets.only(left: 25),
-                            child: const Text('Capture',
-                                style: TextStyle(fontSize: 25))),
-                        //
-                        // duration
-                        SizedBox(
-                            // color: Colors.pink.withOpacity(0.3),
-                            width: 130,
-                            height: 50,
-                            // margin: EdgeInsets.only(left: 20),
-                            child: RepaintBoundary(
-                                child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                  StreamBuilder(
-                                      stream: MyRep().onCaptureTime,
-                                      initialData:
-                                          MyRep().onCaptureTime.valueOrNull,
-                                      builder: (context, snapshot) {
-                                        var duration = snapshot.data;
-                                        // if (duration == null) {
-                                        //   return const SizedBox();
-                                        // }
-                                        // return AnimatedOpacity(
-                                        //     opacity: duration == null ? 0.0 : 1.0,
-                                        //     duration: const Duration(seconds: 1),
-                                        //     child:
-                                        return AnimatedContainer(
-                                            duration: const Duration(
-                                                milliseconds: 100),
-                                            // margin: EdgeInsets.only(left: 20),
-                                            // color: duration == null
-                                            //     ? Colors.transparent
-                                            //     : Constants.colorPrimary,
-                                            // width: 10,
-                                            // height: 10,
-                                            width: duration == null ? 10 : 130,
-                                            height: duration == null ? 10 : 30,
-                                            child: RoundBox(
-                                                text: duration?.duration
-                                                        .format() ??
-                                                    '',
-                                                color: const Color.fromARGB(
-                                                        255, 211, 19, 5)
-                                                    .withOpacity(0.8),
-                                                borderRadius: 40));
-                                      })
-                                ]))),
-                        const Spacer(),
-                        RoundButton(
-                            color: Colors.transparent,
-                            iconColor:
-                                Constants.colorTextAccent.withOpacity(0.8),
-                            size: 70,
-                            vertTransform: true,
-                            iconData: Icons.arrow_back_ios_new,
-                            onPressed: (p0) {
-                              var model = context.read<AppModel>();
-                              model.setCollapse(!model.collapse);
-                            })
-                      ]))),
+              AnimatedBuilder(
+                  animation: _ctrSlideTop,
+                  builder: (context, child) {
+                    return SliverAppBar(
+                        backgroundColor: Constants.colorBar,
+                        toolbarHeight: _slideHeight.value,
+                        automaticallyImplyLeading: false,
+                        flexibleSpace: _sliverAppBar());
+                  }),
               SliverFillRemaining(child: _camera())
             ]));
+  }
+
+  Widget _sliverAppBar() {
+    return Stack(children: [
+      Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Opacity(
+              opacity: _slideOpacity.value,
+              child: SizedBox(
+                  height: _slideHeight.value / 1.5,
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        RoundButton(
+                            color: Constants.colorButtonRed.withOpacity(0.8),
+                            iconColor: Constants.colorCard.withOpacity(0.8),
+                            size: 55,
+                            radius: 20,
+                            useScaleAnimation: true,
+                            iconData: Icons.stop_circle_sharp,
+                            onPressed: (v) async {
+                              _handleOnSlide();
+                              await MyRep().setCaptureActive(false);
+                              _onStopRecordStream.add(true);
+                              MyRep().stopCamera();
+                            }),
+                        const SizedBox(width: 15),
+                        RoundButton(
+                            color: Constants.colorSecondary.withOpacity(0.8),
+                            iconColor: Constants.colorCard.withOpacity(0.8),
+                            size: 55,
+                            radius: 20,
+                            useScaleAnimation: true,
+                            iconData: Icons.close,
+                            onPressed: (v) {
+                              _handleOnSlide();
+                            })
+                      ])))),
+      Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+              color: Constants.colorBar,
+              height: kToolbarHeight,
+              child: Row(children: [
+                Container(
+                    width: 100,
+                    margin: const EdgeInsets.only(left: 25),
+                    child:
+                        const Text('Capture', style: TextStyle(fontSize: 25))),
+                HoverClick(
+                    onPressedL: (p0) async {
+                      _handleOnSlide();
+                    },
+                    child: SizedBox(
+                        width: 130,
+                        height: 50,
+                        child: RepaintBoundary(
+                            child:
+                                Stack(alignment: Alignment.center, children: [
+                          StreamBuilder(
+                              stream: MyRep().onCaptureTime,
+                              initialData: MyRep().onCaptureTime.valueOrNull,
+                              builder: (context, snapshot) {
+                                var duration = snapshot.data;
+                                return AnimatedContainer(
+                                    duration: Duration.zero,
+                                    width: duration == null ? 10 : 130,
+                                    height: duration == null ? 10 : 30,
+                                    child: RoundBox(
+                                        text: duration?.duration.format() ?? '',
+                                        color: const Color.fromARGB(
+                                                255, 211, 19, 5)
+                                            .withOpacity(0.8),
+                                        borderRadius: 40));
+                              })
+                        ])))),
+                const Spacer()
+              ])))
+    ]);
   }
 
   Widget _camera() {
@@ -404,54 +434,7 @@ class CapturePageState extends State<CapturePage>
                 ])),
                 //
                 // buttons
-                Positioned(left: 0, bottom: 0, right: 0, child: _buttons()),
-                //
-                // test
-                // Positioned(
-                //     child: Row(
-                //   children: [
-                //     RoundButton(
-                //         iconData: Icons.one_x_mobiledata_outlined,
-                //         color: Colors.red,
-                //         iconColor: Colors.orange,
-                //         onPressed: (p0) {
-                //           if (_captured == null) {
-                //             setState(() {
-                //               _captured = Container(color: _colors.first);
-                //               _onRightToLeft = true;
-                //             });
-                //           } else {}
-                //           _colors.removeAt(0);
-                //         }),
-                //     RoundButton(
-                //         iconData: Icons.two_k,
-                //         color: Colors.red,
-                //         iconColor: Colors.orange,
-                //         onPressed: (p0) {
-                //           setState(() {
-                //             _onLeftToGone = true;
-                //           });
-                //         }),
-                //     RoundButton(
-                //         iconData: Icons.restore,
-                //         color: Colors.red,
-                //         iconColor: Colors.orange,
-                //         onPressed: (p0) {
-                //           setState(() {
-                //             _onLeftToGone = false;
-                //             _captured = null;
-                //             _onRightToLeft = false;
-                //           });
-                //         }),
-                //     RoundButton(
-                //         iconData: Icons.start,
-                //         color: Colors.red,
-                //         iconColor: Colors.orange,
-                //         onPressed: (p0) {
-                //           _updateLastFrame(path: '');
-                //         })
-                // ]
-                // ))
+                Positioned(left: 0, bottom: 0, right: 0, child: _buttons())
               ]));
         });
   }
@@ -472,6 +455,7 @@ class CapturePageState extends State<CapturePage>
                   // center
                   AnimatedCameraButton(
                       activeDefault: MyRep().captureActive,
+                      onStopOutsideStream: _onStopRecordStream,
                       onCapture: () async {
                         await MyRep().setCaptureActive(true);
                       },

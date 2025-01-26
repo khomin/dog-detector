@@ -17,6 +17,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:loggy/loggy.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:rxdart/rxdart.dart';
 
 class ExpandModel with ChangeNotifier {
   bool isExpanded = false;
@@ -32,11 +33,13 @@ class AnimatedCameraButton extends StatefulWidget {
   const AnimatedCameraButton(
       {required this.onCapture,
       required this.onStop,
+      required this.onStopOutsideStream,
       this.activeDefault = false,
       super.key});
   final Function() onCapture;
   final Function() onStop;
   final bool activeDefault;
+  final PublishSubject<bool> onStopOutsideStream;
   @override
   State<AnimatedCameraButton> createState() => AnimatedCameraButtonState();
 }
@@ -52,7 +55,7 @@ class AnimatedCameraButtonState extends State<AnimatedCameraButton>
   // final _dispStream = DisposableStream();
   // late RecordModel _model;
   final tag = 'animCameraButton';
-
+  final _expandModel = ExpandModel();
   late final Animation<double> _opacity1;
   late final Animation<double> _opacity2;
   late final Animation<double> _width;
@@ -62,6 +65,7 @@ class AnimatedCameraButtonState extends State<AnimatedCameraButton>
   // late final Animation<double> _borderRadius;
   // late final Animation<double> _leftOffset;
   late AnimationController _controller;
+  final _dispStream = DisposableStream();
 
   final List<TabInfo> tabs = [
     const TabInfo(icon: Icons.info_outline),
@@ -143,6 +147,18 @@ class AnimatedCameraButtonState extends State<AnimatedCameraButton>
       _expandModel.setExpanded(true);
       _controller.forward().orCancel;
     }
+    _dispStream.add(widget.onStopOutsideStream.listen((v) async {
+      if (v) {
+        if (_expandModel.isExpanded) {
+          if (_controller.isForwardOrCompleted) {
+            await _controller.reverse().orCancel;
+          } else {
+            await _controller.forward().orCancel;
+          }
+          _expandModel.setExpanded(false);
+        }
+      }
+    }));
   }
 
   Future<void> _switchAnimation() async {
@@ -200,13 +216,11 @@ class AnimatedCameraButtonState extends State<AnimatedCameraButton>
   void dispose() {
     super.dispose();
     _controller.dispose();
-    // _dispStream.dispose();
+    _dispStream.dispose();
     // _model.setRun(run: false, camera: null, mounted: false);
     // MyRep().stopCamera();
     // WidgetsBinding.instance.removeObserver(this);
   }
-
-  final _expandModel = ExpandModel();
 
   @override
   Widget build(BuildContext context) {

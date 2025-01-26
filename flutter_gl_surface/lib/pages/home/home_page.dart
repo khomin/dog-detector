@@ -29,9 +29,8 @@ class HomePagePageState extends State<HomePagePage>
     with TickerProviderStateMixin {
   final _scrollCtr = ScrollController();
   final _focus = FocusNode();
-  // var _test = false;
-  late final Animation<double> _width;
-  late final Animation<double> _opacity;
+  late final Animation<double> _slideHeight;
+  late final Animation<double> _slideOpacity;
   late AnimationController _ctrSlideTop;
   late AnimationController _ctrShakeIcon;
   late final Animation<double> _iconRotate;
@@ -48,14 +47,14 @@ class HomePagePageState extends State<HomePagePage>
       vsync: this,
     );
 
-    _width = Tween<double>(
+    _slideHeight = Tween<double>(
       begin: kToolbarHeight,
       end: kToolbarHeight * 3,
     ).animate(CurvedAnimation(
         parent: _ctrSlideTop.view,
         curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
 
-    _opacity = Tween<double>(
+    _slideOpacity = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
@@ -137,7 +136,6 @@ class HomePagePageState extends State<HomePagePage>
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Constants.colorBar,
-        // backgroundColor: Colors.pink,
         body: Stack(alignment: Alignment.center, children: [
           Positioned(
               top: (kToolbarHeight * 2) - 30,
@@ -159,31 +157,17 @@ class HomePagePageState extends State<HomePagePage>
                     builder: (context, child) {
                       return SliverAppBar(
                           backgroundColor: Constants.colorBar,
-                          // backgroundColor: Colors.purple,
-                          toolbarHeight: _width.value,
+                          toolbarHeight: _slideHeight.value,
                           automaticallyImplyLeading: false,
-                          // toolbarHeight: _test ? kToolbarHeight * 2 : kToolbarHeight,
-                          // expandedHeight: kToolbarHeight,
-                          // collapsedHeight: kToolbarHeight,
                           flexibleSpace: _sliverAppBar());
                     }),
                 SliverToBoxAdapter(child: _header()),
                 //
-                // -
                 DecoratedSliver(
                     decoration: const BoxDecoration(
                       color: Constants.colorBgUnderCard,
                     ),
-                    //   // sliver: _gallery()
-                    //   sliver:
-                    // SliverFillRemaining(child: _gallery()),
                     sliver: SliverToBoxAdapter(child: _gallery()))
-                // SliverFillRemaining(
-                //     // fillOverscroll: false,
-                //     // fillOverscroll: true,
-                //     // hasScrollBody: false,
-                //     // child: _gallery()
-                // SliverToBoxAdapter(child: _gallery())
               ])
         ]));
   }
@@ -192,7 +176,6 @@ class HomePagePageState extends State<HomePagePage>
     return SizedBox(
         width: 300,
         height: 60,
-        // color: Colors.pink,
         child: Stack(children: [
           Positioned(
               top: 20,
@@ -214,14 +197,12 @@ class HomePagePageState extends State<HomePagePage>
                   margin: const EdgeInsets.only(left: 20, right: 20),
                   height: 50,
                   decoration: BoxDecoration(
-                      // color: Colors.red,
                       color: Constants.colorBgUnderCard,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 0),
-                        )
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 0))
                       ]),
                   child: Row(children: [
                     const Padding(
@@ -254,64 +235,7 @@ class HomePagePageState extends State<HomePagePage>
                                                 color:
                                                     Constants.colorTextSecond,
                                                 fontSize: 15,
-                                                // fontFamily: 'Sulphur',
-                                                // fontWeight: FontWeight.bold
                                                 fontWeight: FontWeight.w400))),
-                                    // RoundButton(
-                                    //     iconData: Icons.calendar_month,
-                                    //     color: Colors.transparent,
-                                    //     iconSize: 20,
-                                    //     size: 50,
-                                    //     iconColor: Constants.colorTextAccent
-                                    //         .withOpacity(0.5),
-                                    //     onPressed: (_) async {
-                                    //       showModalBottomSheet(
-                                    //           context: context,
-                                    //           barrierColor: Colors.black26,
-                                    //           builder: (BuildContext context) {
-                                    //             return Container(
-                                    //                 decoration: BoxDecoration(
-                                    //                     color:
-                                    //                         Constants.colorCard,
-                                    //                     boxShadow: [
-                                    //                       BoxShadow(
-                                    //                         color: Colors.black
-                                    //                             .withOpacity(0.2),
-                                    //                         blurRadius: 10,
-                                    //                         offset: const Offset(
-                                    //                             0, 0),
-                                    //                       )
-                                    //                     ],
-                                    //                     borderRadius:
-                                    //                         const BorderRadius
-                                    //                             .all(
-                                    //                             Radius.circular(
-                                    //                                 20))),
-                                    //                 child: Center(
-                                    //                     child: Column(
-                                    //                         mainAxisAlignment:
-                                    //                             MainAxisAlignment
-                                    //                                 .center,
-                                    //                         mainAxisSize:
-                                    //                             MainAxisSize.min,
-                                    //                         children: [
-                                    //                       CalendarDatePicker2(
-                                    //                           config:
-                                    //                               CalendarDatePicker2Config(
-                                    //                             calendarType:
-                                    //                                 CalendarDatePicker2Type
-                                    //                                     .multi,
-                                    //                           ),
-                                    //                           value: [
-                                    //                             DateTime.now()
-                                    //                           ],
-                                    //                           onValueChanged:
-                                    //                               (dates) {
-                                    //                             // _dates = dates
-                                    //                           })
-                                    //                     ])));
-                                    //           });
-                                    //     })
                                   ])),
                               Positioned(
                                   right: 15,
@@ -348,7 +272,7 @@ class HomePagePageState extends State<HomePagePage>
       var history =
           context.select<AppModel, List<HistoryRecord>>((v) => v.history);
       if (history.isEmpty) {
-        // if (true) {
+        // TODO: double day in emulator
         return RotationTransition(
             turns: _iconRotate,
             child: SizedBox(
@@ -434,120 +358,85 @@ class HomePagePageState extends State<HomePagePage>
   }
 
   Widget _sliverAppBar() {
-    return Stack(
-        // alignment: Alignment.center,
-        children: [
-          Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Opacity(
-                  opacity: _opacity.value,
-                  // opacity: 1,
-                  child: SizedBox(
-                      height: _width.value / 1.5,
-                      // color: Colors.purple.withOpacity(0.3),
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            RoundButton(
-                                color:
-                                    Constants.colorButtonRed.withOpacity(0.8),
-                                iconColor: Constants.colorCard.withOpacity(0.8),
-                                size: 55,
-                                radius: 20,
-                                useScaleAnimation: true,
-                                iconData: Icons.stop_circle_sharp,
-                                onPressed: (v) async {
-                                  _handleOnSlide();
-                                  await MyRep().setCaptureActive(false);
-                                  MyRep().stopCamera();
-                                }),
-                            const SizedBox(width: 15),
-                            RoundButton(
-                                color:
-                                    Constants.colorSecondary.withOpacity(0.8),
-                                iconColor: Constants.colorCard.withOpacity(0.8),
-                                size: 55,
-                                radius: 20,
-                                useScaleAnimation: true,
-                                iconData: Icons.close,
-                                onPressed: (v) {
-                                  _handleOnSlide();
-                                })
-                          ])))),
-          Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              // right: 0,
-              child: Container(
-                  color: Constants.colorBar,
-                  // color: Colors.blueAccent,
-                  height: kToolbarHeight,
-                  child: Row(children: [
-                    Container(
-                        width: 100,
-                        // color: Colors.yellow,
-                        margin: const EdgeInsets.only(left: 25),
-                        child: const Text('Home',
-                            style: TextStyle(
-                              // fontFamily: 'Sulphur',
-                              fontSize: 25,
-                              // color: Colors.black38,
-                              // fontWeight: FontWeight.bold
-                            ))),
-                    //
-                    // duration
-                    HoverClick(
-                        onPressedL: (p0) async {
-                          _handleOnSlide();
-                        },
-                        child: SizedBox(
-                            width: 130,
-                            height: 50,
-                            // color: Colors.orange,
-                            // margin: const EdgeInsets.only(
-                            //     left: 20),
-                            child: RepaintBoundary(
-                                child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                  StreamBuilder(
-                                      stream: MyRep().onCaptureTime,
-                                      initialData:
-                                          MyRep().onCaptureTime.valueOrNull,
-                                      builder: (context, snapshot) {
-                                        var duration = snapshot.data;
-                                        return AnimatedContainer(
-                                            duration: Duration.zero,
-                                            width: duration == null ? 10 : 130,
-                                            height: duration == null ? 10 : 30,
-                                            child: RoundBox(
-                                                text: duration?.duration
-                                                        .format() ??
-                                                    '',
-                                                color: const Color.fromARGB(
-                                                        255, 211, 19, 5)
-                                                    .withOpacity(0.8),
-                                                borderRadius: 40));
-                                      }),
-                                  // Positioned(
-                                  //     bottom: 0, child: Text('1'))
-                                ])))),
-                    const Spacer(),
-                    // RoundButton(
-                    //     color: Colors.transparent,
-                    //     iconColor: Constants.colorTextAccent
-                    //         .withOpacity(0.8),
-                    //     size: 70,
-                    //     iconData: Icons.close_sharp,
-                    //     onPressed: (p0) async {
-                    //       var model =
-                    //           context.read<AppModel>();
-                    //       model.setCollapse(!model.collapse);
-                    //     })
-                  ])))
-        ]);
+    return Stack(children: [
+      Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Opacity(
+              opacity: _slideOpacity.value,
+              child: SizedBox(
+                  height: _slideHeight.value / 1.5,
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        RoundButton(
+                            color: Constants.colorButtonRed.withOpacity(0.8),
+                            iconColor: Constants.colorCard.withOpacity(0.8),
+                            size: 55,
+                            radius: 20,
+                            useScaleAnimation: true,
+                            iconData: Icons.stop_circle_sharp,
+                            onPressed: (v) async {
+                              _handleOnSlide();
+                              await MyRep().setCaptureActive(false);
+                              MyRep().stopCamera();
+                            }),
+                        const SizedBox(width: 15),
+                        RoundButton(
+                            color: Constants.colorSecondary.withOpacity(0.8),
+                            iconColor: Constants.colorCard.withOpacity(0.8),
+                            size: 55,
+                            radius: 20,
+                            useScaleAnimation: true,
+                            iconData: Icons.close,
+                            onPressed: (v) {
+                              _handleOnSlide();
+                            })
+                      ])))),
+      Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+              color: Constants.colorBar,
+              height: kToolbarHeight,
+              child: Row(children: [
+                Container(
+                    width: 100,
+                    margin: const EdgeInsets.only(left: 25),
+                    child: const Text('Home', style: TextStyle(fontSize: 25))),
+                //
+                // duration
+                HoverClick(
+                    onPressedL: (p0) async {
+                      _handleOnSlide();
+                    },
+                    child: SizedBox(
+                        width: 130,
+                        height: 50,
+                        child: RepaintBoundary(
+                            child:
+                                Stack(alignment: Alignment.center, children: [
+                          StreamBuilder(
+                              stream: MyRep().onCaptureTime,
+                              initialData: MyRep().onCaptureTime.valueOrNull,
+                              builder: (context, snapshot) {
+                                var duration = snapshot.data;
+                                return AnimatedContainer(
+                                    duration: Duration.zero,
+                                    width: duration == null ? 10 : 130,
+                                    height: duration == null ? 10 : 30,
+                                    child: RoundBox(
+                                        text: duration?.duration.format() ?? '',
+                                        color: const Color.fromARGB(
+                                                255, 211, 19, 5)
+                                            .withOpacity(0.8),
+                                        borderRadius: 40));
+                              })
+                        ])))),
+                const Spacer()
+              ])))
+    ]);
   }
 }
