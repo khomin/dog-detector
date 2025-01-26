@@ -247,7 +247,15 @@ class MyRep {
     historyCache = [];
     try {
       var dir = Directory(path);
-      var folders = dir.listSync();
+      // var folders = dir.listSync();
+
+      // var folderrStream = dir.list();
+      // folderrStream.
+
+      var folders = await dir.list().toList();
+      // for (var entry in entries) {
+      //   print(entry.path);
+      // }
       var mapByYear = <int, Map<int, List<HistoryRecord>>>{};
       var allFiles = <FileSystemEntity>[];
       for (var folder in folders) {

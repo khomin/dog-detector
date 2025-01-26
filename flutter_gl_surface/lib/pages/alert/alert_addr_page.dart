@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/components/hover_click.dart';
 import 'package:flutter_demo/pages/alert/alert_model.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
@@ -103,7 +104,18 @@ class AlertAddrPageState extends State<AlertAddrPage> {
                     margin: const EdgeInsets.only(left: 25),
                     child:
                         const Text('Address', style: TextStyle(fontSize: 25))),
-                const Spacer()
+                const Spacer(),
+                RoundButton(
+                    color: Colors.transparent,
+                    iconColor: Constants.colorTextAccent.withOpacity(0.8),
+                    size: 50,
+                    radius: 18,
+                    vertTransform: true,
+                    iconData: Icons.close,
+                    onPressed: (p0) {
+                      Navigator.of(context).pop();
+                    }),
+                const SizedBox(width: 8)
               ])))
     ]);
   }

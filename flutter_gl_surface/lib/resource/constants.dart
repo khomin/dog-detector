@@ -4,6 +4,7 @@ class Constants {
   static final Constants _instance = Constants._internal();
 
   static const appName = "VocaByte";
+  static var appVersion = '0.0.1';
   static const localFolderName = 'vocabyte';
 
   static const colorBar = Color.fromARGB(255, 213, 212, 232);
@@ -25,6 +26,13 @@ class Constants {
   static const duration = Duration(milliseconds: 200);
   static const durationPanel = Duration(milliseconds: 100);
   static const lastFrameDuration = Duration(milliseconds: 150);
+
+  static const menuFontColor1 = Constants.colorTextAccent;
+  static const menuFontColor2 = Constants.colorTextSecond;
+  static const menuFontSize1 = 15.0;
+  static const menuFontSize2 = 14.0;
+  static const menuFontSize3 = 13.0;
+  static const menuBorderColor = Color.fromARGB(159, 211, 211, 212);
 
   static int minAreaDefault = 2000;
   static int minCaptIntvalDefault = 1;

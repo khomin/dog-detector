@@ -70,7 +70,7 @@ class AlertPageState extends State<AlertPage> {
                 decoration: const BoxDecoration(
                   color: Constants.colorBgUnderCard,
                 ),
-                sliver: SliverToBoxAdapter(child: _list()))
+                sliver: _list())
           ])
         ]));
   }
@@ -117,27 +117,14 @@ class AlertPageState extends State<AlertPage> {
   }
 
   Widget _list() {
-    return ChangeNotifierProvider.value(
-        value: _model,
-        builder: (context, child) {
-          return Builder(builder: (context) {
-            return SizedBox(
-                height: NavigatorRep().size.height / 1.5,
-                child: Column(children: [
-                  ListView(
-                      shrinkWrap: true,
-                      scrollDirection: Axis.vertical,
-                      children: [
-                        //
-                        // detection
-                        _sound(),
-                        //
-                        // TCP/UDP
-                        _packet()
-                      ])
-                ]));
-          });
-        });
+    return SliverList.list(children: [
+      //
+      // detection
+      _sound(),
+      //
+      // TCP/UDP
+      _packet()
+    ]);
   }
 
   Widget _sound() {
@@ -168,17 +155,19 @@ class AlertPageState extends State<AlertPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Use sound',
-                            style: TextStyle(
-                                color: _fontColor1,
-                                fontSize: _fontSize1,
-                                fontWeight: FontWeight.w400)),
+                        Flexible(
+                            child: Text('Use sound',
+                                style: TextStyle(
+                                    color: _fontColor1,
+                                    fontSize: _fontSize1,
+                                    fontWeight: FontWeight.w400))),
                         const SizedBox(height: 4),
-                        Text('For every capture',
-                            style: TextStyle(
-                                color: _fontColor2,
-                                fontSize: _fontSize3,
-                                fontWeight: FontWeight.w400))
+                        Flexible(
+                            child: Text('For every capture',
+                                style: TextStyle(
+                                    color: _fontColor2,
+                                    fontSize: _fontSize3,
+                                    fontWeight: FontWeight.w400)))
                       ]),
                   const Spacer(),
                   Switch(
@@ -210,17 +199,19 @@ class AlertPageState extends State<AlertPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Sound',
-                                    style: TextStyle(
-                                        color: _fontColor1,
-                                        fontSize: _fontSize1,
-                                        fontWeight: FontWeight.w400)),
+                                Flexible(
+                                    child: Text('Sound',
+                                        style: TextStyle(
+                                            color: _fontColor1,
+                                            fontSize: _fontSize1,
+                                            fontWeight: FontWeight.w400))),
                                 const SizedBox(height: 4),
-                                Text('Particular type',
-                                    style: TextStyle(
-                                        color: _fontColor2,
-                                        fontSize: _fontSize3,
-                                        fontWeight: FontWeight.w400))
+                                Flexible(
+                                    child: Text('Particular type',
+                                        style: TextStyle(
+                                            color: _fontColor2,
+                                            fontSize: _fontSize3,
+                                            fontWeight: FontWeight.w400)))
                               ]),
                           const Spacer(),
                           RoundButton(

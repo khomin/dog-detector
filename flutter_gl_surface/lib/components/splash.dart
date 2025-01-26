@@ -11,15 +11,16 @@ class Splash extends StatefulWidget {
 class SplashState extends State<Splash> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
         backgroundColor: Constants.colorBar,
-        body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [Text('logo')])
-            ]));
+        body: Center(
+            child: Row(children: [
+          const Spacer(),
+          Image.asset(
+            'assets/logo.png',
+            cacheWidth: 200,
+          ),
+          const Spacer()
+        ])));
   }
 }

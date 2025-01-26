@@ -327,7 +327,6 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
                             ])))
                   ]))
                 ])),
-                // const Spacer(),
                 RoundButton(
                     color: Colors.transparent,
                     iconColor: Constants.colorTextAccent.withOpacity(0.8),
