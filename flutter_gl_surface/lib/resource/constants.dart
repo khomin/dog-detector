@@ -29,7 +29,8 @@ class Constants {
   static int minAreaDefault = 2000;
   static int minCaptIntvalDefault = 1;
 
-  static const packet = 'move';
+  static const packetPrefix = 'move';
+  static const packetPort = 1000;
 
   // static const double learnCountForBreak = 20;
   // static const int reapedToLeanDefault = 10;

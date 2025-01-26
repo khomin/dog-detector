@@ -6,9 +6,7 @@ import 'package:flutter_demo/pages/alert/alert_addr_page.dart';
 import 'package:flutter_demo/pages/alert/alert_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/nav_rep.dart';
-import 'package:flutter_demo/repo/settings_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
-import 'package:loggy/loggy.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 
@@ -21,7 +19,7 @@ class AlertPage extends StatefulWidget {
 }
 
 class AlertPageState extends State<AlertPage> {
-  final _model = AlertModel();
+  late AlertModel _model;
   final _fontColor1 = Constants.colorTextAccent;
   final _fontColor2 = Constants.colorTextSecond;
   final _fontSize1 = 15.0;
@@ -34,50 +32,20 @@ class AlertPageState extends State<AlertPage> {
   @override
   void initState() {
     super.initState();
+
     Future.microtask(() async {
-      // whether sound used
-      Sound? usedSound = await SettingsRep().getSoundUsed();
-      // all system sounds
-      _model.setSoundList(await MyRep().getSounds());
-      if (_model.sounds.isNotEmpty) {
-        if (usedSound != null) {
-          // check if used is in system sounds
-          var found = _model.sounds.firstWhereOrNull((it) {
-            return it.uri == usedSound.uri;
-          });
-          if (found != null) {
-            _model.setSound(found);
-          } else {
-            // take first default
-            _model.setSound(_model.sounds.first);
-            SettingsRep().setSoundUsed(_model.sounds.first);
-          }
-        }
-      } else {
-        logError('$tag: no sounds');
-      }
-      // whether use packet sending
-      // await SettingsRep().get
-      Packet? packetUri = await SettingsRep().getPacketUriUsed();
-      if (packetUri != null) {
-        _model.setPacketToAddr(v: packetUri.uri, saveConfig: false);
-        _model.setUsePacket(value: true, saveConfig: false);
-        _model.setPacketValue(
-            v: packetUri.tcp ? 'TCP' : 'UDP', saveConfig: false);
-      } else {
-        _model.setUsePacket(value: false, saveConfig: false);
-      }
+      _model.initData();
     });
   }
 
   @override
   void dispose() {
     super.dispose();
-    _model.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    _model = context.read<AlertModel>();
     return Scaffold(
         backgroundColor: Constants.colorBar,
         body: Stack(alignment: Alignment.center, children: [
@@ -206,7 +174,7 @@ class AlertPageState extends State<AlertPage> {
                                 fontSize: _fontSize1,
                                 fontWeight: FontWeight.w400)),
                         const SizedBox(height: 4),
-                        Text('For every motion detected',
+                        Text('For every capture',
                             style: TextStyle(
                                 color: _fontColor2,
                                 fontSize: _fontSize3,
@@ -326,7 +294,7 @@ class AlertPageState extends State<AlertPage> {
                             fontSize: _fontSize1,
                             fontWeight: FontWeight.w400)),
                     const SizedBox(height: 4),
-                    Text('For every motion detected',
+                    Text('For every capture',
                         style: TextStyle(
                             color: _fontColor2,
                             fontSize: _fontSize3,
@@ -358,17 +326,23 @@ class AlertPageState extends State<AlertPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('TCP/UDP',
-                                style: TextStyle(
-                                    color: _fontColor1,
-                                    fontSize: _fontSize1,
-                                    fontWeight: FontWeight.w400)),
+                            Flexible(
+                                child: Text('TCP/UDP',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        color: _fontColor1,
+                                        fontSize: _fontSize1,
+                                        fontWeight: FontWeight.w400))),
                             const SizedBox(height: 4),
-                            Text('One of protocols',
-                                style: TextStyle(
-                                    color: _fontColor2,
-                                    fontSize: _fontSize3,
-                                    fontWeight: FontWeight.w400))
+                            Flexible(
+                                child: Text('One of protocols',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        color: _fontColor2,
+                                        fontSize: _fontSize3,
+                                        fontWeight: FontWeight.w400)))
                           ]),
                       const Spacer(),
                       SizedBox(
@@ -412,17 +386,19 @@ class AlertPageState extends State<AlertPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('IP/URI',
-                                style: TextStyle(
-                                    color: _fontColor1,
-                                    fontSize: _fontSize1,
-                                    fontWeight: FontWeight.w400)),
+                            Flexible(
+                                child: Text('IP/URI',
+                                    style: TextStyle(
+                                        color: _fontColor1,
+                                        fontSize: _fontSize1,
+                                        fontWeight: FontWeight.w400))),
                             const SizedBox(height: 4),
-                            Text('Destination address',
-                                style: TextStyle(
-                                    color: _fontColor2,
-                                    fontSize: _fontSize3,
-                                    fontWeight: FontWeight.w400))
+                            Flexible(
+                                child: Text('Destination address',
+                                    style: TextStyle(
+                                        color: _fontColor2,
+                                        fontSize: _fontSize3,
+                                        fontWeight: FontWeight.w400)))
                           ]),
                       const Spacer(),
                       Expanded(

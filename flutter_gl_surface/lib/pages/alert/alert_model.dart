@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/repo/settings_rep.dart';
+import 'package:loggy/loggy.dart';
+import 'package:collection/collection.dart';
 
 class AlertModel with ChangeNotifier {
   var useSound = false;
@@ -11,8 +13,41 @@ class AlertModel with ChangeNotifier {
   var packetValue = 'TCP';
   final packetList = <String>['TCP', 'UDP'];
   String? packetToAddr;
+  final tag = 'alertModel';
 
-  void setInitial() {}
+  Future<void> initData() async {
+    // whether sound used
+    Sound? usedSound = await SettingsRep().getSoundUsed();
+    // all system sounds
+    setSoundList(await MyRep().getSounds());
+    if (sounds.isNotEmpty) {
+      if (usedSound != null) {
+        // check if used is in system sounds
+        var found = sounds.firstWhereOrNull((it) {
+          return it.uri == usedSound.uri;
+        });
+        if (found != null) {
+          setSound(found);
+        } else {
+          // take first default
+          setSound(sounds.first);
+          SettingsRep().setSoundUsed(sounds.first);
+        }
+      }
+    } else {
+      logError('$tag: no sounds');
+    }
+    // whether use packet sending
+    // await SettingsRep().get
+    Packet? packetUri = await SettingsRep().getPacketUriUsed();
+    if (packetUri != null) {
+      setPacketToAddr(v: packetUri.address, saveConfig: false);
+      setUsePacket(value: true, saveConfig: false);
+      setPacketValue(v: packetUri.tcp ? 'TCP' : 'UDP', saveConfig: false);
+    } else {
+      setUsePacket(value: false, saveConfig: false);
+    }
+  }
 
   void setSound(Sound? v) {
     if (sound != v) {
@@ -34,10 +69,10 @@ class AlertModel with ChangeNotifier {
       {required bool value, required bool saveConfig, Packet? packet}) {
     if (usePacket != value) {
       usePacket = value;
-      if (value) {
+      if (value && saveConfig) {
         SettingsRep().setPacketUri(
-            packet ?? Packet(uri: '192.168.1.1', tcp: true, udp: false));
-      } else {
+            packet ?? Packet(address: '192.168.1.1', tcp: true, udp: false));
+      } else if (saveConfig) {
         SettingsRep().setPacketUri(null);
       }
       notifyListeners();
@@ -49,7 +84,7 @@ class AlertModel with ChangeNotifier {
       packetValue = v;
       if (saveConfig) {
         SettingsRep().setPacketUri(Packet(
-            uri: packetToAddr ?? '',
+            address: packetToAddr ?? '',
             tcp: packetValue == 'TCP' ? true : false,
             udp: packetValue == 'UDP' ? true : false));
       }
@@ -62,7 +97,7 @@ class AlertModel with ChangeNotifier {
       packetToAddr = v;
       if (v != null && saveConfig) {
         SettingsRep().setPacketUri(Packet(
-            uri: v,
+            address: v,
             tcp: packetValue == 'TCP' ? true : false,
             udp: packetValue == 'UDP' ? true : false));
       }

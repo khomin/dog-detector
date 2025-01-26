@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/services.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
-import 'package:loggy/loggy.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -104,7 +102,7 @@ class SettingsRep {
       try {
         var mapJson = jsonDecode(v);
         return Packet(
-            uri: mapJson['uri'], tcp: mapJson['tcp'], udp: mapJson['udp']);
+            address: mapJson['uri'], tcp: mapJson['tcp'], udp: mapJson['udp']);
       } catch (_) {}
     }
     return null;
@@ -113,7 +111,7 @@ class SettingsRep {
   Future setPacketUri(Packet? packet) async {
     final prefs = await SharedPreferences.getInstance();
     if (packet != null) {
-      var map = {'uri': packet.uri, 'tcp': packet.tcp, 'udp': packet.udp};
+      var map = {'uri': packet.address, 'tcp': packet.tcp, 'udp': packet.udp};
       var mapJson = jsonEncode(map);
       await prefs.setString(_packetUsedKey, mapJson);
     } else {
@@ -121,19 +119,11 @@ class SettingsRep {
     }
   }
 
-  // void setPermissionsGranted() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   prefs.setBool(_permissionGrantKey, true);
-  // }
-
   //
   // remove all stored values
   Future removeAll() async {
     final prefs = await SharedPreferences.getInstance();
     // await prefs.remove(_themeKey);
-    // await prefs.remove(_domainKey);
-    // await prefs.remove(_isDevKey);
-    // await prefs.remove(_updateBranchKey);
   }
 
   factory SettingsRep() {

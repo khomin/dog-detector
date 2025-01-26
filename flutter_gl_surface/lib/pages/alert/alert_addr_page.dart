@@ -212,12 +212,19 @@ class AlertAddrPageState extends State<AlertAddrPage> {
                                 fontWeight: FontWeight.w400)),
                         const SizedBox(height: 4),
                         Text(
-                            '${model.packetToAddr}/${Constants.packet}/${DateTime.now().millisecondsSinceEpoch}',
+                            '${model.packetToAddr}/${Constants.packetPrefix}/${DateTime.now().millisecondsSinceEpoch}',
                             style: const TextStyle(
                                 color: Constants.colorTextSecond,
                                 fontSize: 14,
                                 fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.w600))
+                                fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 100),
+                        const Text(
+                            'When used IP - port ${Constants.packetPort} will be used',
+                            style: TextStyle(
+                                color: Constants.colorTextAccent,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400)),
                       ]);
                     }
                     return const SizedBox();

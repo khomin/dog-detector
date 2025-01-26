@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_demo/repo/settings_rep.dart';
+import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/utils/common.dart';
 import 'package:flutter_demo/utils/file_utils.dart';
 import 'package:jiffy/jiffy.dart';
@@ -94,6 +97,16 @@ class MyRep {
             _complCaptOneFrame = null;
           } else {
             onCapture?.call(path);
+            // handle if sound enabled
+            var sound = await SettingsRep().getSoundUsed();
+            if (sound != null) {
+              playSound(sound: sound.uri);
+            }
+            // handle if packet sending enabled
+            var packet = await SettingsRep().getPacketUriUsed();
+            if (packet != null) {
+              sendPacket(packet);
+            }
           }
           getHistory();
           break;
@@ -409,6 +422,30 @@ class MyRep {
     }
     return false;
   }
+
+  void sendPacket(Packet packet) async {
+    try {
+      if (!packet.tcp && !packet.udp) {
+        return;
+      }
+      var now = DateTime.now().millisecondsSinceEpoch;
+      var message = '${Constants.packetPrefix}/$now';
+      if (packet.tcp) {
+        Socket socket =
+            await Socket.connect(packet.address, Constants.packetPort);
+        socket.write(message);
+        await socket.close();
+      } else if (packet.udp) {
+        var socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+        List<int> data = utf8.encode(message);
+        socket.send(
+            data, InternetAddress(packet.address), Constants.packetPort);
+        socket.close();
+      }
+    } catch (ex) {
+      logError('$tag: error: $ex');
+    }
+  }
 }
 
 class Sound {
@@ -418,8 +455,8 @@ class Sound {
 }
 
 class Packet {
-  Packet({required this.uri, required this.tcp, required this.udp});
-  final String uri;
+  Packet({required this.address, required this.tcp, required this.udp});
+  final String address;
   final bool tcp;
   final bool udp;
 }

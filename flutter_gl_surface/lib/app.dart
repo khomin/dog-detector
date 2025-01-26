@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_demo/components/splash.dart';
+import 'package:flutter_demo/pages/alert/alert_model.dart';
 import 'package:flutter_demo/pages/main_page.dart';
 import 'package:flutter_demo/pages/capture/camera_model.dart';
 import 'package:flutter_demo/pages/app_model.dart';
@@ -20,18 +21,31 @@ class App extends StatefulWidget {
 
 class AppState extends State<App> {
   late AppModel _appModel;
+  late AlertModel _alertModel;
 
   @override
   void initState() {
     super.initState();
     _appModel = AppModel();
-    () async {
-      Jiffy.setLocale('uk');
-      await FileUtils.init();
-      Loggy.initLoggy(logPrinter: LogPrinter());
-      _appModel.setReady(true);
-      _appModel.setHistory(await MyRep().getHistory());
-    }();
+    _alertModel = AlertModel();
+    _init();
+  }
+
+  void _init() async {
+    // date format
+    Jiffy.setLocale('uk');
+    // create app home directory
+    await FileUtils.init();
+    // init log
+    Loggy.initLoggy(logPrinter: LogPrinter());
+    // hide splash screen
+    _appModel.setReady(true);
+    // preload history
+    _appModel.setHistory(await MyRep().getHistory());
+    // preload alert
+    if (mounted) {
+      _alertModel.initData();
+    }
   }
 
   @override
@@ -42,7 +56,8 @@ class AppState extends State<App> {
           ChangeNotifierProvider<RecordModel>(
               create: (context) => RecordModel()),
           ChangeNotifierProvider<CameraModel>(
-              create: (context) => CameraModel())
+              create: (context) => CameraModel()),
+          ChangeNotifierProvider<AlertModel>.value(value: _alertModel)
         ],
         builder: (context, child) {
           if (!context.select<AppModel, bool>((v) => v.ready)) {
