@@ -1,4 +1,4 @@
-package com.example.detector
+package com.who.zone
 
 import android.app.Application
 import android.util.Log

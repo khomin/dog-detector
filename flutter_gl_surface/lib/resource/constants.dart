@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 class Constants {
   static final Constants _instance = Constants._internal();
 
-  static const appName = "VocaByte";
+  static const appName = "WhoZone";
   static var appVersion = '0.0.1';
-  static const localFolderName = 'vocabyte';
+  static const localFolderName = 'whoZone';
   static const appLink =
       'https://play.google.com/store/apps/details?id=com.vocabyte.app';
 

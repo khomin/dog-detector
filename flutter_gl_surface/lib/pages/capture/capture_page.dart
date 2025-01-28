@@ -414,8 +414,20 @@ class CapturePageState extends State<CapturePage>
                                               viewType: 'my_gl_surface_view',
                                               creationParams: null,
                                               creationParamsCodec:
-                                                  StandardMessageCodec())))))
-                        ])
+                                                  StandardMessageCodec()))))),
+                        ]),
+                        // Positioned(
+                        //     top: 0,
+                        //     left: 0,
+                        //     right: 0,
+                        //     // bottom: -(NavigatorRep().size.height + 20 / 3),
+                        //     child: Image.asset(
+                        //       'assets/Untitled.jpeg',
+                        //       // width: 500,
+                        //       height: 650,
+                        //       fit: BoxFit.fitHeight,
+                        //       //
+                        //     ))
                       ]);
                     })),
                 //

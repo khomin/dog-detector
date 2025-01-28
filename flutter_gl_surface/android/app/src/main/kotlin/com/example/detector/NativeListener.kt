@@ -1,4 +1,4 @@
-package com.example.detector
+package com.who.zone
 
 interface NativeListener {
     fun onCapture(path: String)

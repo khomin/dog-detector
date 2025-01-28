@@ -1,4 +1,4 @@
-package com.example.detector
+package com.who.zone
 
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView

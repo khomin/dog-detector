@@ -1,11 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-<!--    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>-->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".App"
+        android:label="WhoZone"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
