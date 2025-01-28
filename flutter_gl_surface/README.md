@@ -1,28 +1,25 @@
 # flutter_demo
 
-
-- make a photo button
-- capture animation frame
-
 - lock rotation
 
-- recent refactor UI
+- rename bundle app name
+
+# done
++ recent refactor UI
     - make preview hero animation
     - nice formating
 
-- pause camera when not onResume
++ pause camera when not onResume
 
-- make auto photo mode
++ make auto photo mode
 
 - settings menu
 
 - add navigator in history
     - show list of sessions
     - show list of images in a session
-
-- rename bundle app name
-
-# done
++ make a photo button
++ capture animation frame
 + capture from c++ or dart?
     - nativeCapture()
     - onCapture()

@@ -99,23 +99,22 @@ class AlertAddrPageState extends State<AlertAddrPage> {
               color: Constants.colorBar,
               height: kToolbarHeight,
               child: Row(children: [
+                RoundButton(
+                    padding: const EdgeInsets.only(left: 10),
+                    color: Colors.transparent,
+                    iconColor: Colors.black,
+                    size: 50,
+                    iconSize: 22,
+                    iconData: Icons.arrow_back_ios,
+                    onPressed: (p0) {
+                      Navigator.of(context).pop();
+                    }),
                 Container(
                     width: 100,
                     margin: const EdgeInsets.only(left: 25),
                     child:
                         const Text('Address', style: TextStyle(fontSize: 25))),
-                const Spacer(),
-                RoundButton(
-                    color: Colors.transparent,
-                    iconColor: Constants.colorTextAccent.withOpacity(0.8),
-                    size: 50,
-                    radius: 18,
-                    vertTransform: true,
-                    iconData: Icons.close,
-                    onPressed: (p0) {
-                      Navigator.of(context).pop();
-                    }),
-                const SizedBox(width: 8)
+                const Spacer()
               ])))
     ]);
   }

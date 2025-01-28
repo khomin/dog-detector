@@ -38,14 +38,14 @@ class AppState extends State<App> {
     await FileUtils.init();
     // init log
     Loggy.initLoggy(logPrinter: LogPrinter());
-    // hide splash screen
-    _appModel.setReady(true);
     // preload history
     _appModel.setHistory(await MyRep().getHistory());
     // preload alert
     if (mounted) {
       _alertModel.initData();
     }
+    // hide splash screen
+    _appModel.setReady(true);
   }
 
   @override

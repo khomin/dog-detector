@@ -56,13 +56,26 @@ class SettingsAboutState extends State<SettingsAbout> {
           top: 0,
           left: 0,
           right: 0,
-          child: Row(children: [
-            Container(
-                width: 100,
-                margin: const EdgeInsets.only(left: 25),
-                child: const Text('About', style: TextStyle(fontSize: 25))),
-            const Spacer(),
-          ]))
+          child: Container(
+              color: Constants.colorBar,
+              height: kToolbarHeight,
+              child: Row(children: [
+                RoundButton(
+                    padding: const EdgeInsets.only(left: 10),
+                    color: Colors.transparent,
+                    iconColor: Colors.black,
+                    size: 50,
+                    iconSize: 22,
+                    iconData: Icons.arrow_back_ios,
+                    onPressed: (p0) {
+                      Navigator.of(context).pop();
+                    }),
+                Container(
+                    width: 100,
+                    margin: const EdgeInsets.only(left: 25),
+                    child: const Text('About', style: TextStyle(fontSize: 25))),
+                const Spacer()
+              ])))
     ]);
   }
 

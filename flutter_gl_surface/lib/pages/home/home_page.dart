@@ -272,7 +272,7 @@ class HomePagePageState extends State<HomePagePage>
       var history =
           context.select<AppModel, List<HistoryRecord>>((v) => v.history);
       if (history.isEmpty) {
-        // TODO: double day in emulator
+        // TODO: double day in emulator (cannot get)
         return RotationTransition(
             turns: _iconRotate,
             child: SizedBox(
