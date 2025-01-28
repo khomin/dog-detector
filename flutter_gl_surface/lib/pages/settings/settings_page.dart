@@ -1,7 +1,13 @@
+import 'package:fixnum/fixnum.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/components/item_in_menu_list.dart';
 import 'package:flutter_demo/pages/alert/alert_model.dart';
+import 'package:flutter_demo/pages/settings/settings_about.dart';
+import 'package:flutter_demo/repo/my_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
+import 'package:flutter_demo/utils/converter.dart';
 import 'package:provider/provider.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -128,13 +134,63 @@ class SettingsPageState extends State<SettingsPage> {
                 ])),
             //
             // data
-            // TODO: riple
             ItemInMenuList(
                 height: _itemHeight,
                 useBorderTop: true,
                 useBorderBot: true,
-                child: const Row(children: [
-                  Column(
+                onClicked: () {
+                  showModalBottomSheet(
+                      context: context,
+                      barrierColor: Colors.black26,
+                      builder: (BuildContext context) {
+                        return Container(
+                            height: 200,
+                            color: Constants.colorBgUnderCard,
+                            child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text('Want to free data?',
+                                      style: TextStyle(
+                                          color: Constants.menuFontColor1,
+                                          fontSize: Constants.menuFontSize1,
+                                          fontWeight: FontWeight.w400)),
+                                  const SizedBox(height: 30),
+                                  Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        RoundButton(
+                                            color: Constants.colorButtonRed
+                                                .withOpacity(0.8),
+                                            iconColor: Constants.colorCard
+                                                .withOpacity(0.8),
+                                            size: 55,
+                                            radius: 20,
+                                            useScaleAnimation: true,
+                                            iconData: Icons.stop_circle_sharp,
+                                            onPressed: (v) async {
+                                              Navigator.of(context).pop();
+                                              MyRep().freeData();
+                                            }),
+                                        const SizedBox(width: 15),
+                                        RoundButton(
+                                            color: Constants.colorSecondary
+                                                .withOpacity(0.8),
+                                            iconColor: Constants.colorCard
+                                                .withOpacity(0.8),
+                                            size: 55,
+                                            radius: 20,
+                                            useScaleAnimation: true,
+                                            iconData: Icons.close,
+                                            onPressed: (v) {
+                                              Navigator.of(context).pop();
+                                            })
+                                      ])
+                                ]));
+                      });
+                },
+                child: Row(children: [
+                  const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -144,17 +200,22 @@ class SettingsPageState extends State<SettingsPage> {
                                 fontSize: Constants.menuFontSize2,
                                 fontWeight: FontWeight.w400))
                       ]),
-                  Spacer(),
-                  // TODO: real data
-                  // TODO: bottomsheet with confirmation
-                  SizedBox(width: 20),
-                  Text('123 GB',
-                      style: TextStyle(
-                          color: Constants.menuFontColor1,
-                          fontSize: Constants.menuFontSize2,
-                          fontWeight: FontWeight.w400)),
-                  SizedBox(width: 20),
-                  Icon(Icons.delete_rounded, color: Constants.colorPrimary)
+                  const Spacer(),
+                  const SizedBox(width: 20),
+                  StreamBuilder(
+                      stream: MyRep().onHistoryDataSize,
+                      initialData: MyRep().onHistoryDataSize.valueOrNull,
+                      builder: (context, snapshot) {
+                        var size = snapshot.data ?? Int64.ZERO;
+                        return Text(' ${Converter.convertBytesToKbMbGb(size)}',
+                            style: const TextStyle(
+                                color: Constants.menuFontColor1,
+                                fontSize: Constants.menuFontSize2,
+                                fontWeight: FontWeight.w400));
+                      }),
+                  const SizedBox(width: 20),
+                  const Icon(Icons.delete_rounded,
+                      color: Constants.colorPrimary)
                 ]))
           ]);
     });
@@ -174,10 +235,12 @@ class SettingsPageState extends State<SettingsPage> {
             ])),
         //
         // share
-        // TODO: riple
         ItemInMenuList(
             useBorderTop: true,
             useBorderBot: false,
+            onClicked: () {
+              MyRep().shareApp();
+            },
             height: _itemHeight,
             child: const Row(children: [
               Column(
@@ -188,23 +251,25 @@ class SettingsPageState extends State<SettingsPage> {
                         style: TextStyle(
                             color: Constants.menuFontColor2,
                             fontSize: Constants.menuFontSize2,
-                            fontWeight: FontWeight.w400)),
-                    // SizedBox(height: 4),
-                    // Text('Link with friends',
-                    //     style: TextStyle(
-                    //         color: Constants.menuFontColor2,
-                    //         fontSize: Constants.menuFontSize3,
-                    //         fontWeight: FontWeight.w400))
+                            fontWeight: FontWeight.w400))
                   ]),
               Spacer(),
               Icon(Icons.link, color: Constants.colorPrimary)
             ])),
         //
         // about the app
-        // TODO: riple + about page
         ItemInMenuList(
             useBorderTop: true,
             useBorderBot: false,
+            onClicked: () {
+              Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                      settings: const RouteSettings(),
+                      builder: (context) {
+                        return const SettingsAbout();
+                      }));
+            },
             height: _itemHeight,
             child: const Row(children: [
               Column(
@@ -222,10 +287,13 @@ class SettingsPageState extends State<SettingsPage> {
             ])),
         //
         // lincenses
-        // TODO: riple + licenses page
+        // licenses page
         ItemInMenuList(
             useBorderTop: true,
             useBorderBot: true,
+            onClicked: () {
+              showLicensePage(context: context);
+            },
             height: _itemHeight,
             child: const Row(children: [
               Column(
@@ -236,13 +304,7 @@ class SettingsPageState extends State<SettingsPage> {
                         style: TextStyle(
                             color: Constants.menuFontColor2,
                             fontSize: Constants.menuFontSize2,
-                            fontWeight: FontWeight.w400)),
-                    // SizedBox(height: 4),
-                    // Text('Link with friends',
-                    //     style: TextStyle(
-                    //         color: Constants.menuFontColor2,
-                    //         fontSize: Constants.menuFontSize3,
-                    //         fontWeight: FontWeight.w400))
+                            fontWeight: FontWeight.w400))
                   ]),
               Spacer(),
               Icon(Icons.description, color: Constants.colorPrimary)

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_demo/resource/constants.dart';
 
 class ItemInMenuList extends StatelessWidget {
@@ -7,18 +7,19 @@ class ItemInMenuList extends StatelessWidget {
       required this.useBorderBot,
       required this.height,
       required this.child,
+      this.onClicked,
       super.key});
   final bool useBorderTop;
   final bool useBorderBot;
   final double height;
   final Widget child;
+  final Function()? onClicked;
 
   @override
   Widget build(BuildContext context) {
     return Container(
         width: double.infinity,
         height: height,
-        padding: const EdgeInsets.only(left: 25, right: 25),
         decoration: BoxDecoration(
             border: Border(
                 top: useBorderTop
@@ -29,6 +30,23 @@ class ItemInMenuList extends StatelessWidget {
                     ? const BorderSide(
                         color: Constants.menuBorderColor, width: 1)
                     : BorderSide.none)),
-        child: child);
+        child: onClicked != null
+            ? ElevatedButton(
+                onPressed: () {
+                  onClicked?.call();
+                },
+                autofocus: false,
+                style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide.none),
+                    padding: null,
+                    alignment: Alignment.center,
+                    animationDuration: Duration.zero,
+                    shadowColor: Colors.transparent,
+                    textStyle: const TextStyle(
+                        fontWeight: FontWeight.w300, fontSize: 12)),
+                child: child)
+            : child);
   }
 }

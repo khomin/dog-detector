@@ -361,7 +361,17 @@ class CapturePageState extends State<CapturePage>
                                         borderRadius: 40));
                               })
                         ])))),
-                const Spacer()
+                const Spacer(),
+                RoundButton(
+                    color: Colors.transparent,
+                    iconColor: Constants.colorTextAccent.withOpacity(0.8),
+                    size: 70,
+                    vertTransform: true,
+                    iconData: Icons.arrow_back_ios_new,
+                    onPressed: (p0) {
+                      var model = context.read<AppModel>();
+                      model.setCollapse(!model.collapse);
+                    })
               ])))
     ]);
   }

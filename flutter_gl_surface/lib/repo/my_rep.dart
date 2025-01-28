@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_demo/repo/settings_rep.dart';
@@ -64,6 +65,7 @@ class MyRep {
   final onCaptureTime = BehaviorSubject<CaptureTime?>();
   final onHistory = BehaviorSubject<List<HistoryRecord>>();
   var historyCache = <HistoryRecord>[];
+  final onHistoryDataSize = BehaviorSubject<Int64>.seeded(Int64.ZERO);
   Function(String path)? onCapture;
   Function()? onFirstFrame;
   // private
@@ -245,6 +247,7 @@ class MyRep {
   Future<List<HistoryRecord>> getHistory() async {
     var path = '${FileUtils.homeDir}/gallery/';
     historyCache = [];
+    var dataSize = Int64();
     try {
       var dir = Directory(path);
       var folders = await dir.list().toList();
@@ -295,6 +298,7 @@ class MyRep {
           sub = dateJiffy.year.toString();
         }
         var folderName = file.parent.path;
+        dataSize += (await file.stat()).size;
         mapByYear[date.year]?[dateJiffy.dayOfYear]?.add(HistoryRecord(
             date: date,
             dateHeader: header,
@@ -328,6 +332,7 @@ class MyRep {
       logWarning('$tag: ex');
     }
     onHistory.add(historyCache);
+    onHistoryDataSize.add(dataSize);
     return historyCache;
   }
 
@@ -398,6 +403,10 @@ class MyRep {
     Share.shareXFiles(listPath, text: 'Check out this image!');
   }
 
+  void shareApp() {
+    Share.shareUri(Uri.parse(Constants.appLink));
+  }
+
   Future<List<Sound>> getSounds() async {
     var list = <Sound>[];
     try {
@@ -445,6 +454,11 @@ class MyRep {
     } catch (ex) {
       logError('$tag: error: $ex');
     }
+  }
+
+  Future<void> freeData() async {
+    await deleteHistoryRoot(historyCache);
+    onHistoryDataSize.add(Int64.ZERO);
   }
 }
 

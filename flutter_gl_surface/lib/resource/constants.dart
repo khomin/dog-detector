@@ -6,6 +6,8 @@ class Constants {
   static const appName = "VocaByte";
   static var appVersion = '0.0.1';
   static const localFolderName = 'vocabyte';
+  static const appLink =
+      'https://play.google.com/store/apps/details?id=com.vocabyte.app';
 
   static const colorBar = Color.fromARGB(255, 213, 212, 232);
   static const colorCard = Colors.white;
