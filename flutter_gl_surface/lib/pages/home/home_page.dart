@@ -15,6 +15,7 @@ import 'package:flutter_demo/repo/nav_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/resource/disposable_stream.dart';
 import 'package:flutter_demo/utils/common.dart';
+import 'package:loggy/loggy.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -37,6 +38,7 @@ class HomePagePageState extends State<HomePagePage>
   Timer? _scrollThrottleTm;
   final _onCloseSlide = BehaviorSubject<bool>.seeded(false);
   final _dispStream = DisposableStream();
+  final tag = 'homePage';
 
   @override
   void initState() {
@@ -100,8 +102,10 @@ class HomePagePageState extends State<HomePagePage>
     Timer(const Duration(milliseconds: 100), () async {
       var history = await MyRep().getHistory();
       if (!mounted) return;
-      context.read<AppModel>().setHistory(history);
-      if (context.read<AppModel>().history.isEmpty) {
+      var model = context.read<AppModel>();
+      model.setHistory(history);
+      if (model.history.isEmpty) {
+        logInfo('$tag: no history');
         Timer(const Duration(milliseconds: 200), () {
           if (!mounted) return;
           if (_ctrShakeIcon.isForwardOrCompleted) {
@@ -272,7 +276,6 @@ class HomePagePageState extends State<HomePagePage>
       var history =
           context.select<AppModel, List<HistoryRecord>>((v) => v.history);
       if (history.isEmpty) {
-        // TODO: double day in emulator (cannot get)
         return RotationTransition(
             turns: _iconRotate,
             child: SizedBox(

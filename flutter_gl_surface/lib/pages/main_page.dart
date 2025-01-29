@@ -25,13 +25,6 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
   }
 
   @override
-  void dispose() {
-    // _scrollCtr.dispose();
-    // _dispStream.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       Common().calcLayout(context);

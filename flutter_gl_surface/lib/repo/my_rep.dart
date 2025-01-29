@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_demo/components/semaphore.dart';
 import 'package:flutter_demo/repo/settings_rep.dart';
 import 'package:flutter_demo/resource/constants.dart';
 import 'package:flutter_demo/utils/common.dart';
@@ -244,7 +245,10 @@ class MyRep {
     }
   }
 
+  final _historySemphore = Semaphore(1);
+
   Future<List<HistoryRecord>> getHistory() async {
+    await _historySemphore.acquire();
     var path = '${FileUtils.homeDir}/gallery/';
     historyCache = [];
     var dataSize = Int64();
@@ -333,6 +337,7 @@ class MyRep {
     }
     onHistory.add(historyCache);
     onHistoryDataSize.add(dataSize);
+    _historySemphore.release();
     return historyCache;
   }
 

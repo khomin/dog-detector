@@ -40,12 +40,12 @@ class AppState extends State<App> {
     Loggy.initLoggy(logPrinter: LogPrinter());
     // preload history
     _appModel.setHistory(await MyRep().getHistory());
+    // hide splash screen
+    _appModel.setReady(true);
     // preload alert
     if (mounted) {
       _alertModel.initData();
     }
-    // hide splash screen
-    _appModel.setReady(true);
   }
 
   @override
