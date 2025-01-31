@@ -272,19 +272,24 @@ Java_com_who_zone_CaptureRep_putFrameNative(JNIEnv *env, jobject thiz,
     jbyte *u_plane_byte = env->GetByteArrayElements(u_plane, nullptr);
     jbyte *v_plane_byte = env->GetByteArrayElements(v_plane, nullptr);
     auto argbFrame = cv::Mat(height, width, CV_8UC4);
-    libyuv::Android420ToABGR((uint8_t *) y_plane_byte,
-                         yStride,
-                         (uint8_t *) u_plane_byte,
-                         uStride,
-                         (uint8_t *) v_plane_byte,
-                         vStride,
-                         uvPixelStride,
-                         argbFrame.data,
-                         width * 4,
-                         width, height);
+    // Convert YUV to ARGB
+    int result = libyuv::Android420ToABGR((uint8_t *)y_plane_byte,
+                                          yStride,
+                                          (uint8_t *)u_plane_byte,
+                                          uStride,
+                                          (uint8_t *)v_plane_byte,
+                                          vStride,
+                                          uvPixelStride,
+                                          argbFrame.data,
+                                          width * 4,
+                                          width, height);
+
+    if (result != 0) {
+        std::cerr << "Error: libyuv::Android420ToABGR failed with code " << result << std::endl;
+    }
     {
         std::lock_guard<std::mutex> l(lock);
-        inFrame = argbFrame;
+        inFrame = argbFrame.clone();  // Make sure to clone if needed
         condVar.notify_one();
     }
     env->ReleaseByteArrayElements(y_plane, y_plane_byte, 0);
