@@ -243,24 +243,27 @@ class CapturePageState extends State<CapturePage>
     }
   }
 
-  // @override
-  // void didChangeMetrics() {
-  //   super.didChangeMetrics();
-  //   // Here you can detect orientation change
-  //   // final orientation = MediaQuery.of(context).orientation;
-  //   var view = View.of(context).platformDispatcher.views.first;
-  //   var size = view.physicalSize / view.devicePixelRatio;
-  //   // print("BTEST_Current size: $size");
-  //   logDebug('BTEST: didChange');
-  //   _model.setOrientationWait(true);
-  //   _updateLayoutTm?.cancel();
-  //   _updateLayoutTm = Timer(const Duration(milliseconds: 300), () async {
-  //     await _updateRotation();
-  //     Timer(const Duration(milliseconds: 100), () {
-  //       _model.setOrientationWait(false);
-  //     });
-  //   });
-  // }
+  Timer? _updateLayoutTm;
+
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+    // Here you can detect orientation change
+    // final orientation = MediaQuery.of(context).orientation;
+    var view = View.of(context).platformDispatcher.views.first;
+    var size = view.physicalSize / view.devicePixelRatio;
+    // print("BTEST_Current size: $size");
+    logDebug('BTEST: didChange');
+    // _model.setOrientationWait(true);
+    _updateLayoutTm?.cancel();
+    _updateLayoutTm = Timer(const Duration(milliseconds: 300), () async {
+      // await _updateRotation();
+      _model.updateRotation();
+      // Timer(const Duration(milliseconds: 100), () {
+      //   _model.setOrientationWait(false);
+      // });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -421,13 +424,15 @@ class CapturePageState extends State<CapturePage>
                         //     left: 0,
                         //     right: 0,
                         //     // bottom: -(NavigatorRep().size.height + 20 / 3),
-                        //     child: Image.asset(
-                        //       'assets/Untitled.jpeg',
-                        //       // width: 500,
-                        //       height: 650,
-                        //       fit: BoxFit.fitHeight,
-                        //       //
-                        //     ))
+                        //     child: RotatedBox(
+                        //         quarterTurns: 1,
+                        //         child: Image.asset(
+                        //           'assets/image.jpeg',
+                        //           // width: 500,
+                        //           // height: 650,
+                        //           fit: BoxFit.fitWidth,
+                        //           //
+                        //         )))
                       ]);
                     })),
                 //

@@ -138,7 +138,7 @@ class MyRep {
           await _mainChannel.invokeMethod('get_cameras', <String, dynamic>{});
       r.forEach((key, value) {
         var camera = Camera(
-            id: key,
+            id: value['id'],
             facing: value['facing'],
             sensor: value['sensor'],
             size: Size((value['width'] as int).toDouble(),

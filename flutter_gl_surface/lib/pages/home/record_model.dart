@@ -17,12 +17,7 @@ class RecordModel with ChangeNotifier {
   bool orientationpWait = false;
   bool modeMenuVisible = false;
   double flipTurns = 0.0;
-
   Camera? camera;
-  // SurfaceLayout surfaceLayout = SurfaceLayout(rotation: 0, ratio: 1);
-
-  // bool hideSurface = false;
-  // bool showBlur = false;
   String? imgBlur;
   SurfaceLayout layout = SurfaceLayout(rotation: 0, ratio: 1);
   SurfaceLayout oldLayout = SurfaceLayout(rotation: 0, ratio: 1);
@@ -35,20 +30,6 @@ class RecordModel with ChangeNotifier {
       if (mounted) notifyListeners();
     }
   }
-
-  // void setHideSurface(bool v) {
-  //   if (hideSurface != v) {
-  //     hideSurface = v;
-  //     notifyListeners();
-  //   }
-  // }
-
-  // void setShowBlur(bool v) {
-  //   if (showBlur != v) {
-  //     showBlur = v;
-  //     notifyListeners();
-  //   }
-  // }
 
   void setImgBlur(String? v) {
     if (imgBlur != v) {
@@ -73,13 +54,6 @@ class RecordModel with ChangeNotifier {
     oldLayout = v;
   }
 
-  // void setOrientationWait(bool v) {
-  //   if (orientationpWait != v) {
-  //     orientationpWait = v;
-  //     notifyListeners();
-  //   }
-  // }
-
   void setModeMenuVisible(bool v) {
     if (modeMenuVisible != v) {
       modeMenuVisible = v;
@@ -101,8 +75,8 @@ class RecordModel with ChangeNotifier {
       } else {
         ratio = size.height / size.width;
       }
-      // ratio = size.height / size.width;
-      // ratio = size.width / size.height;
+      ratio = size.height / size.width;
+      ratio = size.width / size.height;
     }
     setSurfaceLayout(SurfaceLayout(rotation: rotation, ratio: ratio));
     logDebug(

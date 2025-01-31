@@ -14,7 +14,9 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformViewRegistry
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 
@@ -69,7 +71,7 @@ class MainActivity: FlutterActivity() {
                             }
                         }
                         "start_camera" -> {
-                            runBlocking(Dispatchers.IO) {
+                            CoroutineScope(Dispatchers.IO).launch {
                                 val id = args["id"] as String
                                 val minArea = args["minArea"] as Int
                                 val captureIntervalSec = args["captureIntervalSec"] as Int
@@ -82,14 +84,14 @@ class MainActivity: FlutterActivity() {
                             }
                         }
                         "stop_camera" -> {
-                            runBlocking(Dispatchers.IO) {
+                            CoroutineScope(Dispatchers.IO).launch {
                                 val captureRep = (context.applicationContext as App?)?.captureRep
                                 captureRep?.stop()
                                 result.success(true)
                             }
                         }
                         "set_capture_active" -> {
-                            runBlocking(Dispatchers.IO) {
+                            CoroutineScope(Dispatchers.IO).launch {
                                 val active = args["active"] as Boolean
                                 val captureRep = (context.applicationContext as App?)?.captureRep
                                 captureRep?.setCaptureActive(active)
@@ -97,14 +99,14 @@ class MainActivity: FlutterActivity() {
                             }
                         }
                         "capture_one_frame" -> {
-                            runBlocking(Dispatchers.IO) {
+                            CoroutineScope(Dispatchers.IO).launch {
                                 val captureRep = (context.applicationContext as App?)?.captureRep
                                 captureRep?.captureOneFrameNative(args["service_frame"] as Boolean)
                                 result.success(true)
                             }
                         }
                         "update_configuration" -> {
-                            runBlocking(Dispatchers.IO) {
+                            CoroutineScope(Dispatchers.IO).launch {
                                 val minArea = args["minArea"] as Int
                                 val captureIntervalSec = args["captureIntervalSec"] as Int
                                 val showAreaOnCapture = args["showAreaOnCapture"] as Boolean
@@ -114,11 +116,11 @@ class MainActivity: FlutterActivity() {
                             }
                         }
                         "get_cameras" -> {
-                            runBlocking(Dispatchers.IO) {
+                            CoroutineScope(Dispatchers.IO).launch {
                                 val captureRep = (context.applicationContext as App?)?.captureRep
                                 if (captureRep == null) {
                                     result.error("", "cannot open", "")
-                                    return@runBlocking
+                                    return@launch
                                 }
                                 val cameras = captureRep.getCameras(context)
                                 val map = mutableMapOf<String, Any>()
@@ -131,6 +133,7 @@ class MainActivity: FlutterActivity() {
                                         map2["height"] = camera?.height ?: 0
                                         map2["facing"] = cameraDesc.facing.name
                                         map2["sensor"] = cameraDesc.sensorOrientation
+                                        map2["id"] = cameraDesc.id
                                         map["$cameraIndex"] = map2
                                     }
                                 }
@@ -151,7 +154,7 @@ class MainActivity: FlutterActivity() {
                             result.success(map)
                         }
                         "play_system_sound" -> {
-                            runBlocking(Dispatchers.IO) {
+                            CoroutineScope(Dispatchers.IO).launch {
                                 val toneId = args["id"] as String
                                 try {
                                     val tone =
@@ -176,18 +179,18 @@ class MainActivity: FlutterActivity() {
         if(captureRep != null) {
             captureRep.setNativeListener(object : NativeListener {
                 override fun onCapture(path: String) {
-                    runBlocking(Dispatchers.Main) {
+                    CoroutineScope(Dispatchers.Main).launch {
                         methodChannel.invokeMethod("onCapture", mapOf("path" to path))
                     }
                 }
                 override fun onMovement() {
-                    runBlocking(Dispatchers.Main) {
+                    CoroutineScope(Dispatchers.Main).launch {
                         methodChannel.invokeMethod("onMovement", null)
                     }
                 }
 
                 override fun onFirstFrameNotify() {
-                    runBlocking(Dispatchers.Main) {
+                    CoroutineScope(Dispatchers.Main).launch {
                         methodChannel.invokeMethod("onFirstFrameNotify", null)
                     }
                 }
