@@ -398,42 +398,48 @@ class CapturePageState extends State<CapturePage>
                     left: 0,
                     right: 0,
                     bottom: -(NavigatorRep().size.height + 20 / 3),
-                    child: Builder(builder: (context) {
-                      var layout = context
-                          .select<RecordModel, SurfaceLayout>((v) => v.layout);
-                      logDebug(
-                          'BTEST: rotation-surface=${layout.rotation}, ratio=${layout.ratio}');
-                      return Stack(children: [
-                        Column(children: [
-                          Flexible(
-                              child: RotatedBox(
-                                  quarterTurns: layout.rotation,
-                                  child: AspectRatio(
-                                      aspectRatio: layout.ratio,
-                                      child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(20.0),
-                                          child: const AndroidView(
-                                              viewType: 'my_gl_surface_view',
-                                              creationParams: null,
-                                              creationParamsCodec:
-                                                  StandardMessageCodec()))))),
-                        ]),
-                        // Positioned(
-                        //     top: 0,
-                        //     left: 0,
-                        //     right: 0,
-                        //     // bottom: -(NavigatorRep().size.height + 20 / 3),
-                        //     child: RotatedBox(
-                        //         quarterTurns: 1,
-                        //         child: Image.asset(
-                        //           'assets/image.jpeg',
-                        //           // width: 500,
-                        //           // height: 650,
-                        //           fit: BoxFit.fitWidth,
-                        //           //
-                        //         )))
-                      ]);
+                    child: LayoutBuilder(builder: (context, constraints) {
+                      () async {
+                        _model.devRotation = await MyRep().getDeviceSensor();
+                        _model.updateRotation();
+                      }();
+                      return Builder(builder: (context) {
+                        var layout = context.select<RecordModel, SurfaceLayout>(
+                            (v) => v.layout);
+                        logDebug(
+                            'BTEST: rotation-surface=${layout.rotation}, ratio=${layout.ratio}');
+                        return Stack(children: [
+                          Column(children: [
+                            Flexible(
+                                child: RotatedBox(
+                                    quarterTurns: layout.rotation,
+                                    child: AspectRatio(
+                                        aspectRatio: layout.ratio,
+                                        child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(20.0),
+                                            child: const AndroidView(
+                                                viewType: 'my_gl_surface_view',
+                                                creationParams: null,
+                                                creationParamsCodec:
+                                                    StandardMessageCodec()))))),
+                          ]),
+                          // Positioned(
+                          //     top: 0,
+                          //     left: 0,
+                          //     right: 0,
+                          //     // bottom: -(NavigatorRep().size.height + 20 / 3),
+                          //     child: RotatedBox(
+                          //         quarterTurns: 1,
+                          //         child: Image.asset(
+                          //           'assets/image.jpeg',
+                          //           // width: 500,
+                          //           // height: 650,
+                          //           fit: BoxFit.fitWidth,
+                          //           //
+                          //         )))
+                        ]);
+                      });
                     })),
                 //
                 // blur

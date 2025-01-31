@@ -70,17 +70,17 @@ class RecordModel with ChangeNotifier {
     var size = camera?.size;
     var ratio = 1.0;
     if (size != null) {
-      if (size.width > size.height) {
-        ratio = size.width / size.height;
-      } else {
-        ratio = size.height / size.width;
-      }
+      //   if (size.width > size.height) {
+      //     ratio = size.width / size.height;
+      //   } else {
+      ratio = size.height / size.width;
+      // }
       ratio = size.height / size.width;
       ratio = size.width / size.height;
     }
     setSurfaceLayout(SurfaceLayout(rotation: rotation, ratio: ratio));
     logDebug(
-        'BTEST:2 rotation=$rotation, devRotation=$devRotation, sensorRotation=$sensorRotation');
+        'BTEST:2 rotation=$rotation, devRotation=$devRotation, sensorRotation=$sensorRotation, cam=${camera?.sensor}, ratio=$ratio');
   }
 
   int _adjustRotation(
