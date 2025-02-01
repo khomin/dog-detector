@@ -383,6 +383,9 @@ class CapturePageState extends State<CapturePage>
     return ChangeNotifierProvider.value(
         value: _model,
         builder: (context, child) {
+          // var v1 = NavigatorRep().size.height;
+          // var v = (NavigatorRep().size.height + 20 / 3);
+          var collapse = context.select<AppModel, bool>((v) => v.collapse);
           return Container(
               decoration: const BoxDecoration(
                   color: Colors.black,
@@ -394,51 +397,54 @@ class CapturePageState extends State<CapturePage>
                 //
                 // surface
                 Positioned(
+                    // top: 0,
+                    // top: collapse ? NavigatorRep().size.height / 3 : 0,
+                    // top: 0,
                     top: 0,
                     left: 0,
                     right: 0,
-                    bottom: -(NavigatorRep().size.height + 20 / 3),
+                    // bottom: 0,
+                    // bottom: collapse ? -NavigatorRep().size.height / 3 : 0,
                     child: LayoutBuilder(builder: (context, constraints) {
                       () async {
                         _model.devRotation = await MyRep().getDeviceSensor();
                         _model.updateRotation();
                       }();
                       return Builder(builder: (context) {
+                        // var model = context.watch<RecordModel>();
+                        var camera = context
+                            .select<RecordModel, Camera?>((v) => v.camera);
                         var layout = context.select<RecordModel, SurfaceLayout>(
                             (v) => v.layout);
                         logDebug(
-                            'BTEST: rotation-surface=${layout.rotation}, ratio=${layout.ratio}');
-                        return Stack(children: [
-                          Column(children: [
-                            Flexible(
-                                child: RotatedBox(
-                                    quarterTurns: layout.rotation,
-                                    child: AspectRatio(
-                                        aspectRatio: layout.ratio,
-                                        child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(20.0),
-                                            child: const AndroidView(
-                                                viewType: 'my_gl_surface_view',
-                                                creationParams: null,
-                                                creationParamsCodec:
-                                                    StandardMessageCodec()))))),
-                          ]),
-                          // Positioned(
-                          //     top: 0,
-                          //     left: 0,
-                          //     right: 0,
-                          //     // bottom: -(NavigatorRep().size.height + 20 / 3),
-                          //     child: RotatedBox(
-                          //         quarterTurns: 1,
-                          //         child: Image.asset(
-                          //           'assets/image.jpeg',
-                          //           // width: 500,
-                          //           // height: 650,
-                          //           fit: BoxFit.fitWidth,
-                          //           //
-                          //         )))
-                        ]);
+                            'BTEST: width=${camera?.size.width}, height=${camera?.size.height}, rotation-surface=${layout.rotation}, ratio=${layout.ratio}');
+                        return ClipRRect(
+                            borderRadius: BorderRadius.circular(20.0),
+                            child: RotatedBox(
+                                quarterTurns: layout.rotation,
+                                child: FittedBox(
+                                    // fit: BoxFit.contain,
+                                    // fit: BoxFit.fitHeight,
+                                    fit: BoxFit.fitWidth,
+                                    // fit: BoxFit.fill,
+                                    child: SizedBox(
+                                        // width: 500, // Same as the container's width
+                                        // height: 500, // Same as the container's height
+                                        // width: NavigatorRep().size.width,
+                                        // // height: NavigatorRep().size.height,
+                                        // height:
+                                        //     (NavigatorRep().size.height + 20 / 3),
+                                        // width: width ?? 100,
+                                        // height: height ?? 100,
+                                        width: camera?.size.width ??
+                                            NavigatorRep().size.width,
+                                        height: camera?.size.height ??
+                                            NavigatorRep().size.height,
+                                        child: const AndroidView(
+                                            viewType: 'my_gl_surface_view',
+                                            creationParams: null,
+                                            creationParamsCodec:
+                                                StandardMessageCodec())))));
                       });
                     })),
                 //
@@ -447,7 +453,8 @@ class CapturePageState extends State<CapturePage>
                     top: 0,
                     left: 0,
                     right: 0,
-                    bottom: -(NavigatorRep().size.height + 20 / 3),
+                    bottom: 0,
+                    // bottom: -(NavigatorRep().size.height + 20 / 3),
                     child: _blurTransition()),
                 //
                 // progress
@@ -533,39 +540,106 @@ class CapturePageState extends State<CapturePage>
       //     child:
       logDebug(
           'BTEST: rotation-blur=${layout.rotation}, ratio=${layout.ratio}');
-      return Stack(children: [
-        Column(children: [
-          Flexible(
-              child: RotatedBox(
-                  quarterTurns: layout.rotation,
-                  child: AspectRatio(
-                      aspectRatio: layout.ratio,
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20.0),
-                          child: Stack(children: [
-                            Positioned.fill(
-                                child: AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 50),
-                                    opacity: imgBlur == null ? 0 : 1,
-                                    child: ImageFiltered(
-                                        imageFilter: ImageFilter.blur(
-                                            sigmaX: 13, sigmaY: 13),
-                                        child: imgBlur == null
-                                            ? const SizedBox()
-                                            : Image.memory(
-                                                File(imgBlur).readAsBytesSync(),
-                                                // color: Colors.yellow,
-                                                // colorBlendMode: BlendMode.color,
-                                                cacheHeight: 100,
-                                                cacheWidth: 100,
-                                                //     NavigatorRep().size.width.toInt(),
-                                                // color: Colors.yellow,
-                                                // fit: BoxFit.fitHeight,
-                                                // fit: BoxFit.cover,
-                                                fit: BoxFit.fill))))
-                          ])))))
-        ])
-      ]);
+      return RotatedBox(
+          quarterTurns: layout.rotation,
+          child: AspectRatio(
+              aspectRatio: layout.ratio,
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20.0),
+                  child: Stack(children: [
+                    Positioned.fill(
+                        child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 50),
+                            opacity: imgBlur == null ? 0 : 1,
+                            child: ImageFiltered(
+                                imageFilter:
+                                    ImageFilter.blur(sigmaX: 13, sigmaY: 13),
+                                child: imgBlur == null
+                                    ? const SizedBox()
+                                    : Image.memory(
+                                        File(imgBlur).readAsBytesSync(),
+                                        // color: Colors.yellow,
+                                        // colorBlendMode: BlendMode.color,
+                                        cacheHeight: 100,
+                                        cacheWidth: 100,
+                                        //     NavigatorRep().size.width.toInt(),
+                                        // color: Colors.yellow,
+                                        // fit: BoxFit.fitHeight,
+                                        // fit: BoxFit.cover,
+                                        fit: BoxFit.fill))))
+                  ]))));
+      // return ClipRRect(
+      //     borderRadius: BorderRadius.circular(20.0),
+      //     child: RotatedBox(
+      //         quarterTurns: layout.rotation,
+      //         child: FittedBox(
+      //             fit: BoxFit.contain,
+      //             // fit: BoxFit.fitHeight,
+      //             // fit: BoxFit.fitWidth,
+      //             // fit: BoxFit.fill,
+      //             child: SizedBox(
+      //                 // width: 500, // Same as the container's width
+      //                 // height: 500, // Same as the container's height
+      //                 // width: NavigatorRep().size.width,
+      //                 // // height: NavigatorRep().size.height,
+      //                 // height:
+      //                 //     (NavigatorRep().size.height + 20 / 3),
+      //                 // width: width ?? 100,
+      //                 // height: height ?? 100,
+      //                 width: NavigatorRep().size.width,
+      //                 height: NavigatorRep().size.height,
+      //                 child: AnimatedOpacity(
+      //                     duration: const Duration(milliseconds: 50),
+      //                     opacity: imgBlur == null ? 0 : 1,
+      //                     child: ImageFiltered(
+      //                         imageFilter:
+      //                             ImageFilter.blur(sigmaX: 13, sigmaY: 13),
+      //                         child: imgBlur == null
+      //                             ? const SizedBox()
+      //                             : Image.memory(
+      //                                 File(imgBlur).readAsBytesSync(),
+      //                                 // color: Colors.yellow,
+      //                                 // colorBlendMode: BlendMode.color,
+      //                                 cacheHeight: 100,
+      //                                 cacheWidth: 100,
+      //                                 //     NavigatorRep().size.width.toInt(),
+      //                                 // color: Colors.yellow,
+      //                                 // fit: BoxFit.fitHeight,
+      //                                 // fit: BoxFit.cover,
+      //                                 fit: BoxFit.fill)))))));
+      // return Stack(children: [
+      //   Column(children: [
+      //     Flexible(
+      //         child: RotatedBox(
+      //             quarterTurns: layout.rotation,
+      //             child: AspectRatio(
+      //                 aspectRatio: layout.ratio,
+      //                 child: ClipRRect(
+      //                     borderRadius: BorderRadius.circular(20.0),
+      //                     child: Stack(children: [
+      //                       Positioned.fill(
+      //                           child: AnimatedOpacity(
+      //                               duration: const Duration(milliseconds: 50),
+      //                               opacity: imgBlur == null ? 0 : 1,
+      //                               child: ImageFiltered(
+      //                                   imageFilter: ImageFilter.blur(
+      //                                       sigmaX: 13, sigmaY: 13),
+      //                                   child: imgBlur == null
+      //                                       ? const SizedBox()
+      //                                       : Image.memory(
+      //                                           File(imgBlur).readAsBytesSync(),
+      //                                           // color: Colors.yellow,
+      //                                           // colorBlendMode: BlendMode.color,
+      //                                           cacheHeight: 100,
+      //                                           cacheWidth: 100,
+      //                                           //     NavigatorRep().size.width.toInt(),
+      //                                           // color: Colors.yellow,
+      //                                           // fit: BoxFit.fitHeight,
+      //                                           // fit: BoxFit.cover,
+      //                                           fit: BoxFit.fill))))
+      //                     ])))))
+      //   ])
+      // ]);
     });
   }
 

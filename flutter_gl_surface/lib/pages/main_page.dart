@@ -39,9 +39,11 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     duration: Constants.durationPanel,
                     curve: Curves.easeIn,
                     top: collapse ? NavigatorRep().size.height / 3 : 0,
+                    // top: 0,
                     left: 0,
                     right: 0,
-                    bottom: 0,
+                    // bottom: 0,
+                    bottom: collapse ? -NavigatorRep().size.height / 3 : 0,
                     child: Stack(children: [
                       Scaffold(
                           backgroundColor: Constants.colorBgUnderCard,

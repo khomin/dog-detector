@@ -152,26 +152,28 @@ class CameraSettingsPageState extends State<CameraSettingsPage> {
                                   });
                             }))
                       ]),
-                    ])),
-            Builder(builder: (context) {
-              var collapse = context.select<AppModel, bool>((v) => v.collapse);
-              if (collapse) {
-                return Container(
-                    margin: EdgeInsets.only(
-                        top: (NavigatorRep().size.height / 3) - kToolbarHeight),
-                    height: 50,
-                    decoration: BoxDecoration(boxShadow: [
-                      BoxShadow(
-                        spreadRadius: 10,
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, 0),
-                      )
-                    ]));
-              }
-              return const SizedBox();
-            })
-          ])
+                    ]))
+          ]),
+          Positioned(
+              top: (NavigatorRep().size.height / 3),
+              left: 0,
+              right: 0,
+              child: Builder(builder: (context) {
+                var collapse =
+                    context.select<AppModel, bool>((v) => v.collapse);
+                if (collapse) {
+                  return Container(
+                      height: 50,
+                      decoration: BoxDecoration(boxShadow: [
+                        BoxShadow(
+                            spreadRadius: 10,
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 0))
+                      ]));
+                }
+                return const SizedBox();
+              }))
         ]));
   }
 }
