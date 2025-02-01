@@ -124,6 +124,7 @@ class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
       var search = context.watch<SearchModel>().search;
       var history =
           context.select<SearchModel, List<HistoryRecord>>((v) => v.result);
+      var size = MediaQuery.of(context).size;
       if (history.isEmpty) {
         return HoverClick(
             onPressedL: (_) {
@@ -131,7 +132,7 @@ class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             },
             child: SizedBox(
                 // color: Colors.yellow,
-                height: NavigatorRep().size.height / 1.2,
+                height: size.height / 1.2,
                 width: double.infinity,
                 child: search != null && search.isNotEmpty
                     ? Column(
@@ -140,7 +141,7 @@ class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                         children: [
                             Icon(
                               Icons.screen_search_desktop_rounded,
-                              size: NavigatorRep().size.width / 5,
+                              size: size.width / 5,
                               color: Constants.colorPrimary,
                               shadows: [
                                 Shadow(

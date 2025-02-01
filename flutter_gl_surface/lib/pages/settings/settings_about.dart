@@ -100,52 +100,55 @@ class SettingsAboutState extends State<SettingsAbout> {
   }
 
   Widget _view() {
-    return SizedBox(
-        height: NavigatorRep().size.height / 1.5,
-        child: const Stack(alignment: Alignment.center, children: [
-          Positioned(
-              top: 40,
-              left: 20,
-              right: 20,
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('You may be wondering what this app is for',
-                        style: TextStyle(
-                            color: Constants.menuFontColor1,
-                            fontSize: Constants.menuFontSize1,
-                            fontWeight: FontWeight.w400)),
-                    SizedBox(height: 8),
-                    Text(
-                        'Perhaps you remember the day or days when you saw poop in your yard without any idea where it came from',
-                        style: TextStyle(
-                            color: Constants.menuFontColor1,
-                            fontSize: Constants.menuFontSize1,
-                            fontWeight: FontWeight.w400)),
-                    SizedBox(height: 8),
-                    Text(
-                        'Then you will agree that there is nothing more unpleasant then cleaning poop',
-                        style: TextStyle(
-                            color: Constants.menuFontColor1,
-                            fontSize: Constants.menuFontSize1,
-                            fontWeight: FontWeight.w400)),
-                    SizedBox(height: 8),
-                    Text(
-                        'Hope this app can help you find out the cause of that',
-                        style: TextStyle(
-                            color: Constants.menuFontColor1,
-                            fontSize: Constants.menuFontSize1,
-                            fontWeight: FontWeight.w400)),
-                    SizedBox(height: 8),
-                    Text(
-                        'Just stick your phone to the window, press capture and see what it will catch',
-                        style: TextStyle(
-                            color: Constants.menuFontColor1,
-                            fontSize: Constants.menuFontSize1,
-                            fontWeight: FontWeight.w400))
-                  ]))
-        ]));
+    return Builder(builder: (context) {
+      var size = MediaQuery.of(context).size;
+      return SizedBox(
+          height: size.height / 1.5,
+          child: const Stack(alignment: Alignment.center, children: [
+            Positioned(
+                top: 40,
+                left: 20,
+                right: 20,
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('You may be wondering what this app is for',
+                          style: TextStyle(
+                              color: Constants.menuFontColor1,
+                              fontSize: Constants.menuFontSize1,
+                              fontWeight: FontWeight.w400)),
+                      SizedBox(height: 8),
+                      Text(
+                          'Perhaps you remember the day or days when you saw poop in your yard without any idea where it came from',
+                          style: TextStyle(
+                              color: Constants.menuFontColor1,
+                              fontSize: Constants.menuFontSize1,
+                              fontWeight: FontWeight.w400)),
+                      SizedBox(height: 8),
+                      Text(
+                          'Then you will agree that there is nothing more unpleasant then cleaning poop',
+                          style: TextStyle(
+                              color: Constants.menuFontColor1,
+                              fontSize: Constants.menuFontSize1,
+                              fontWeight: FontWeight.w400)),
+                      SizedBox(height: 8),
+                      Text(
+                          'Hope this app can help you find out the cause of that',
+                          style: TextStyle(
+                              color: Constants.menuFontColor1,
+                              fontSize: Constants.menuFontSize1,
+                              fontWeight: FontWeight.w400)),
+                      SizedBox(height: 8),
+                      Text(
+                          'Just stick your phone to the window, press capture and see what it will catch',
+                          style: TextStyle(
+                              color: Constants.menuFontColor1,
+                              fontSize: Constants.menuFontSize1,
+                              fontWeight: FontWeight.w400))
+                    ]))
+          ]));
+    });
   }
 
   bool isValidIP(String ip) {

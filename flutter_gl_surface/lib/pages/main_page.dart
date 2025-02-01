@@ -26,9 +26,11 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      Common().calcLayout(context);
+    // return LayoutBuilder(builder: (context, constraints) {
+    // Common().calcLayout(context);
+    return Builder(builder: (context) {
       var collapse = context.select<AppModel, bool>((v) => v.collapse);
+      var size = MediaQuery.of(context).size;
       return RepaintBoundary(
           child: Container(
               color: Constants.colorBar,
@@ -38,12 +40,12 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                 AnimatedPositioned(
                     duration: Constants.durationPanel,
                     curve: Curves.easeIn,
-                    top: collapse ? NavigatorRep().size.height / 3 : 0,
+                    top: collapse ? size.height / 3 : 0,
                     // top: 0,
                     left: 0,
                     right: 0,
                     // bottom: 0,
-                    bottom: collapse ? -NavigatorRep().size.height / 3 : 0,
+                    bottom: collapse ? -(size.height / 3) : 0,
                     child: Stack(children: [
                       Scaffold(
                           backgroundColor: Constants.colorBgUnderCard,

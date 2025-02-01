@@ -12,11 +12,11 @@ extension DurationFormat on Duration {
 }
 
 class Common {
-  ScreenType calcLayout(BuildContext context) {
-    var view = View.of(context).platformDispatcher.views.first;
-    NavigatorRep().size = view.physicalSize / view.devicePixelRatio;
-    return rootWidgetLayout(NavigatorRep().size, view.devicePixelRatio);
-  }
+  // ScreenType calcLayout(BuildContext context) {
+  //   var view = View.of(context).platformDispatcher.views.first;
+  //   // NavigatorRep().size = view.physicalSize / view.devicePixelRatio;
+  //   return rootWidgetLayout(NavigatorRep().size, view.devicePixelRatio);
+  // }
 
   static ScreenType rootWidgetLayout(Size size, double devicePixelRatio) {
     ScreenType layout;

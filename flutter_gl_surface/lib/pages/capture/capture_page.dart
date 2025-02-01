@@ -310,7 +310,7 @@ class CapturePageState extends State<CapturePage>
                               _handleOnSlide();
                               await MyRep().setCaptureActive(false);
                               _onStopRecordStream.add(true);
-                              MyRep().stopCamera();
+                              // MyRep().stopCamera();
                             }),
                         const SizedBox(width: 15),
                         RoundButton(
@@ -411,7 +411,7 @@ class CapturePageState extends State<CapturePage>
                         _model.updateRotation();
                       }();
                       return Builder(builder: (context) {
-                        // var model = context.watch<RecordModel>();
+                        var size = MediaQuery.of(context).size;
                         var camera = context
                             .select<RecordModel, Camera?>((v) => v.camera);
                         var layout = context.select<RecordModel, SurfaceLayout>(
@@ -436,10 +436,9 @@ class CapturePageState extends State<CapturePage>
                                         //     (NavigatorRep().size.height + 20 / 3),
                                         // width: width ?? 100,
                                         // height: height ?? 100,
-                                        width: camera?.size.width ??
-                                            NavigatorRep().size.width,
-                                        height: camera?.size.height ??
-                                            NavigatorRep().size.height,
+                                        width: camera?.size.width ?? size.width,
+                                        height:
+                                            camera?.size.height ?? size.height,
                                         child: const AndroidView(
                                             viewType: 'my_gl_surface_view',
                                             creationParams: null,
@@ -447,6 +446,25 @@ class CapturePageState extends State<CapturePage>
                                                 StandardMessageCodec())))));
                       });
                     })),
+                Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    // bottom: 0,
+                    // bottom: -(NavigatorRep().size.height + 20 / 3),
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20.0),
+                        child: RotatedBox(
+                            // quarterTurns: 0,
+                            quarterTurns: 1,
+                            child: Image.asset(
+                              'assets/image.jpeg',
+                              // width: 500,
+                              // height: 650,
+                              // fit: BoxFit.fitWidth,
+                              fit: BoxFit.fitHeight,
+                              //
+                            )))),
                 //
                 // blur
                 Positioned(

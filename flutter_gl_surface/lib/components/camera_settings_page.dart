@@ -154,26 +154,29 @@ class CameraSettingsPageState extends State<CameraSettingsPage> {
                       ]),
                     ]))
           ]),
-          Positioned(
-              top: (NavigatorRep().size.height / 3),
-              left: 0,
-              right: 0,
-              child: Builder(builder: (context) {
-                var collapse =
-                    context.select<AppModel, bool>((v) => v.collapse);
-                if (collapse) {
-                  return Container(
-                      height: 50,
-                      decoration: BoxDecoration(boxShadow: [
-                        BoxShadow(
-                            spreadRadius: 10,
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 10,
-                            offset: const Offset(0, 0))
-                      ]));
-                }
-                return const SizedBox();
-              }))
+          Builder(builder: (context) {
+            var size = MediaQuery.of(context).size;
+            return Positioned(
+                top: (size.height / 3),
+                left: 0,
+                right: 0,
+                child: Builder(builder: (context) {
+                  var collapse =
+                      context.select<AppModel, bool>((v) => v.collapse);
+                  if (collapse) {
+                    return Container(
+                        height: 50,
+                        decoration: BoxDecoration(boxShadow: [
+                          BoxShadow(
+                              spreadRadius: 10,
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 0))
+                        ]));
+                  }
+                  return const SizedBox();
+                }));
+          })
         ]));
   }
 }

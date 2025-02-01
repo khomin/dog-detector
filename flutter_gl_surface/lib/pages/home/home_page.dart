@@ -275,13 +275,14 @@ class HomePagePageState extends State<HomePagePage>
     return Builder(builder: (context) {
       var history =
           context.select<AppModel, List<HistoryRecord>>((v) => v.history);
+      var size = MediaQuery.of(context).size;
       if (history.isEmpty) {
         return RotationTransition(
             turns: _iconRotate,
             child: SizedBox(
                 // height: double.infinity, //((270 + 28) * history.length).toDouble(),
                 // decoration: const BoxDecoration(color: Constants.colorBgUnderCard),
-                height: NavigatorRep().size.height / 1.5,
+                height: size.height / 1.5,
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -290,8 +291,8 @@ class HomePagePageState extends State<HomePagePage>
                           iconData: Icons.create_new_folder_rounded,
                           color: Constants.colorPrimary,
                           iconColor: Constants.colorBar,
-                          size: (NavigatorRep().size.width / 5) + 15,
-                          iconSize: NavigatorRep().size.width / 5,
+                          size: (size.width / 5) + 15,
+                          iconSize: size.width / 5,
                           useScaleAnimation: true,
                           useShadow: true,
                           onPressed: (p0) {

@@ -23,7 +23,7 @@ class Panel {
 class NavigatorRep {
   final routeBloc = PanelRouterBlocSecondary();
   final onLayoutChanged = BehaviorSubject<ScreenType>();
-  var size = const Size(0, 0);
+  // var size = const Size(0, 0);
 
   Future<bool> Function()? onCheckPopAllowed;
 

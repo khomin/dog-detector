@@ -140,12 +140,13 @@ class AlertAddrPageState extends State<AlertAddrPage> {
   }
 
   Widget _address() {
+    var size = MediaQuery.of(context).size;
     return SizedBox(
         // margin: const EdgeInsets.only(top: 50),
         // color: Constants.colorBgUnderCard,
         // color: Colors.deepOrange,
         // width: double.infinity,
-        height: NavigatorRep().size.height / 1.5,
+        height: size.height / 1.5,
         child: HoverClick(
             onPressedL: (_) {
               _focus.requestFocus();
