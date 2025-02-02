@@ -167,7 +167,7 @@ class SettingsPageState extends State<SettingsPage> {
                                             size: 55,
                                             radius: 20,
                                             useScaleAnimation: true,
-                                            iconData: Icons.stop_circle_sharp,
+                                            iconData: Icons.delete,
                                             onPressed: (v) async {
                                               Navigator.of(context).pop();
                                               MyRep().freeData();

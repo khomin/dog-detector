@@ -16,6 +16,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformViewRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -174,30 +175,30 @@ class MainActivity: FlutterActivity() {
                     Log.e(TAG, "Error parsing", e)
                 }
             }
+            val captureRep = (context.applicationContext as App?)?.captureRep
+            if (captureRep != null) {
+                captureRep.setNativeListener(object : NativeListener {
+                    override fun onCapture(path: String) {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            methodChannel.invokeMethod("onCapture", mapOf("path" to path))
+                        }
+                    }
 
-        val captureRep = (context.applicationContext as App?)?.captureRep
-        if(captureRep != null) {
-            captureRep.setNativeListener(object : NativeListener {
-                override fun onCapture(path: String) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        methodChannel.invokeMethod("onCapture", mapOf("path" to path))
+                    override fun onMovement() {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            methodChannel.invokeMethod("onMovement", null)
+                        }
                     }
-                }
-                override fun onMovement() {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        methodChannel.invokeMethod("onMovement", null)
-                    }
-                }
 
-                override fun onFirstFrameNotify() {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        methodChannel.invokeMethod("onFirstFrameNotify", null)
+                    override fun onFirstFrameNotify() {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            methodChannel.invokeMethod("onFirstFrameNotify", null)
+                        }
                     }
-                }
-            })
-        } else {
-            Log.e(TAG, "cannot get capture repository")
-        }
+                })
+            } else {
+                Log.e(TAG, "cannot get capture repository")
+            }
     }
 
     override fun onDestroy() {

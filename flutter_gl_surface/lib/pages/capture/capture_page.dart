@@ -446,25 +446,27 @@ class CapturePageState extends State<CapturePage>
                                                 StandardMessageCodec())))));
                       });
                     })),
-                Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    // bottom: 0,
-                    // bottom: -(NavigatorRep().size.height + 20 / 3),
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20.0),
-                        child: RotatedBox(
-                            // quarterTurns: 0,
-                            quarterTurns: 1,
-                            child: Image.asset(
-                              'assets/image.jpeg',
-                              // width: 500,
-                              // height: 650,
-                              // fit: BoxFit.fitWidth,
-                              fit: BoxFit.fitHeight,
-                              //
-                            )))),
+                //
+                // for presentation
+                // Positioned(
+                //     top: 0,
+                //     left: 0,
+                //     right: 0,
+                //     // bottom: 0,
+                //     // bottom: -(NavigatorRep().size.height + 20 / 3),
+                //     child: ClipRRect(
+                //         borderRadius: BorderRadius.circular(20.0),
+                //         child: RotatedBox(
+                //             // quarterTurns: 0,
+                //             quarterTurns: 1,
+                //             child: Image.asset(
+                //               'assets/image.jpeg',
+                //               // width: 500,
+                //               // height: 650,
+                //               // fit: BoxFit.fitWidth,
+                //               // fit: BoxFit.fitHeight,
+                //               //
+                //             )))),
                 //
                 // blur
                 Positioned(

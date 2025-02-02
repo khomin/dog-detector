@@ -124,7 +124,7 @@ class CaptureRep(val context: Context, val appLocalDir: String) {
                 val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
                 val supportedResolutions = mutableListOf<Size>()
                 configurationMap?.getOutputSizes(ImageFormat.YUV_420_888)?.forEach { size ->
-                    if (size.width <= 1280) {
+                    if (size.width <= targetCameraWidth) {
                         supportedResolutions.add(size)
                     }
                 }
@@ -331,7 +331,7 @@ class CaptureRep(val context: Context, val appLocalDir: String) {
             val configurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
             val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
             configurationMap?.getOutputSizes(ImageFormat.YUV_420_888)?.forEach { size ->
-                if(size.width <= 1280) {
+                if(size.width <= targetCameraWidth) {
                     supportedResolutions.add(size)
                 }
             }
@@ -414,5 +414,9 @@ class CaptureRep(val context: Context, val appLocalDir: String) {
 //            surfaceView?.setEGLContextClientVersion(2)
 //            surfaceView?.setRenderer(render)
         }
+    }
+
+    companion object {
+        val targetCameraWidth = 720
     }
 }
