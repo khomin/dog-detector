@@ -43,7 +43,7 @@ class PanelRouterBlocSecondary {
   final onGoto = PublishSubject<Panel?>();
   final onCurrent = BehaviorSubject<Panel?>();
   final navKey = GlobalKey<NavigatorState>();
-  late NavigatorObserverCustom observer;
+  // late NavigatorObserverCustom observer;
 
   void goto(Panel panel) {
     if (_checkPaneTheSameAsCurrent(panel, onCurrent.valueOrNull)) {
