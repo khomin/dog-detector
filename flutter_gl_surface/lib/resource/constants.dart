@@ -4,10 +4,10 @@ class Constants {
   static final Constants _instance = Constants._internal();
 
   static const appName = "WhoZone";
-  static var appVersion = '0.0.1';
+  static var appVersion = '1.0.2';
   static const localFolderName = 'whoZone';
   static const appLink =
-      'https://play.google.com/store/apps/details?id=com.vocabyte.app';
+      'https://play.google.com/store/apps/details?id=com.who.zone';
 
   static const colorBar = Color.fromARGB(255, 213, 212, 232);
   static const colorCard = Colors.white;

@@ -40,13 +40,39 @@ class ItemInMenuList extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                         side: BorderSide.none),
-                    padding: null,
+                    padding: EdgeInsets.zero,
                     alignment: Alignment.center,
                     animationDuration: Duration.zero,
                     shadowColor: Colors.transparent,
+                    backgroundColor: Colors.transparent,
                     textStyle: const TextStyle(
                         fontWeight: FontWeight.w300, fontSize: 12)),
-                child: child)
-            : child);
+                child: Padding(
+                    padding: const EdgeInsets.only(left: 25, right: 25),
+                    child: child))
+            : Padding(
+                padding: const EdgeInsets.only(left: 25, right: 25),
+                child: child));
   }
 }
+
+
+//  Widget _item(
+//       {required bool useBorderTop,
+//       required bool useBorderBot,
+//       required double height,
+//       required Widget child}) {
+//     return Container(
+//         width: double.infinity,
+//         height: height,
+//         padding: const EdgeInsets.only(left: 25, right: 25),
+//         decoration: BoxDecoration(
+//             border: Border(
+//                 top: useBorderTop
+//                     ? BorderSide(color: _borderColor, width: 1)
+//                     : BorderSide.none,
+//                 bottom: useBorderBot
+//                     ? BorderSide(color: _borderColor, width: 1)
+//                     : BorderSide.none)),
+//         child: child);
+//   }

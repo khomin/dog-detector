@@ -1,32 +1,38 @@
-# flutter_demo
+# 🐶 Dog Detector
 
-- lock rotation
+## 📋 Prerequisites
 
-- rename bundle app name
+### Android
 
-# done
-+ recent refactor UI
-    - make preview hero animation
-    - nice formating
+You need to build opencv manually using cmake, example: (adjust YOUR_DIR)
 
-+ pause camera when not onResume
+        cmake ../ \
+        -DBUILD_EXAMPLES=OFF \
+        -DOPENCV_FORCE_3RDPARTY_BUILD=ON \
+        -DBUILD_TESTS=OFF \
+        -DOPENCV_ENABLE_NONFREE=ON \
+        -DBUILD_PROTOBUF=OFF \
+        -DBUILD_opencv_dnn=OFF \
+        -DCMAKE_INSTALL_PREFIX=YOUR_DIR/lib_pack/opencv/
 
-+ make auto photo mode
+        make -j16
+        make install
 
-- settings menu
+so it will look like: 
 
-- add navigator in history
-    - show list of sessions
-    - show list of images in a session
-+ make a photo button
-+ capture animation frame
-+ capture from c++ or dart?
-    - nativeCapture()
-    - onCapture()
-+ camera settings -> cpp -> settings
-+ remember last used camera (use as default)
-+ record start at openening
-+ record flip camera button
-+ separate history on main screen by yesterday-today show folder only
-+ parse folder to date
-+ make fixed preview size
+    ./lib_pack/opencv/x86_64/..
+    ./lib_pack/opencv/arm64/..
+    ./lib_pack/opencv/x86/..
+
+The library is loaded in App.kt:
+
+    companion object {
+        private const val TAG = "App"
+        init {
+            try {
+                System.loadLibrary("opencv_cpp")
+            } catch (e: Exception) {
+                Log.e(TAG, e.toString())
+            }
+        }
+    }

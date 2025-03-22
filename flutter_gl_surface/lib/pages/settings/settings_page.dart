@@ -194,9 +194,9 @@ class SettingsPageState extends State<SettingsPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Disc data',
+                        Text('Used disk',
                             style: TextStyle(
-                                color: Constants.menuFontColor2,
+                                color: Constants.menuFontColor1,
                                 fontSize: Constants.menuFontSize2,
                                 fontWeight: FontWeight.w400))
                       ]),
@@ -229,7 +229,7 @@ class SettingsPageState extends State<SettingsPage> {
             child: Row(children: [
               Text('Others',
                   style: TextStyle(
-                      color: Constants.menuFontColor1,
+                      color: Constants.menuFontColor2,
                       fontSize: Constants.menuFontSize1,
                       fontWeight: FontWeight.w400))
             ])),
@@ -247,9 +247,9 @@ class SettingsPageState extends State<SettingsPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Share',
+                    Text('Share this app',
                         style: TextStyle(
-                            color: Constants.menuFontColor2,
+                            color: Constants.menuFontColor1,
                             fontSize: Constants.menuFontSize2,
                             fontWeight: FontWeight.w400))
                   ]),
@@ -278,7 +278,7 @@ class SettingsPageState extends State<SettingsPage> {
                   children: [
                     Text('About',
                         style: TextStyle(
-                            color: Constants.menuFontColor2,
+                            color: Constants.menuFontColor1,
                             fontSize: Constants.menuFontSize2,
                             fontWeight: FontWeight.w400)),
                   ]),
@@ -302,7 +302,7 @@ class SettingsPageState extends State<SettingsPage> {
                   children: [
                     Text('Licenses',
                         style: TextStyle(
-                            color: Constants.menuFontColor2,
+                            color: Constants.menuFontColor1,
                             fontSize: Constants.menuFontSize2,
                             fontWeight: FontWeight.w400))
                   ]),

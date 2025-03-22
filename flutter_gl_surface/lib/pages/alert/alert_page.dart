@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/components/circle_button.dart';
 import 'package:flutter_demo/components/hover_click.dart';
+import 'package:flutter_demo/components/item_in_menu_list.dart';
 import 'package:flutter_demo/pages/alert/alert_addr_page.dart';
 import 'package:flutter_demo/pages/alert/alert_model.dart';
 import 'package:flutter_demo/repo/my_rep.dart';
@@ -118,8 +119,9 @@ class AlertPageState extends State<AlertPage> {
 
   Widget _list() {
     return SliverList.list(children: [
+      _headerInList(),
       //
-      // detection
+      // notification
       _sound(),
       //
       // TCP/UDP
@@ -127,10 +129,10 @@ class AlertPageState extends State<AlertPage> {
     ]);
   }
 
-  Widget _sound() {
+  Widget _headerInList() {
     return Builder(builder: (context) {
-      var soundList = context.watch<AlertModel>().sounds;
-      var useSound = context.watch<AlertModel>().useSound;
+      // var useSound = context.watch<AlertModel>().useSound;
+      // var usePacket = context.watch<AlertModel>().usePacket;
       return Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -144,9 +146,40 @@ class AlertPageState extends State<AlertPage> {
                           fontSize: _fontSize1,
                           fontWeight: FontWeight.w400))
                 ])),
+            // Padding(
+            //     padding: const EdgeInsets.only(bottom: 5, left: 25, right: 25),
+            //     child: Row(children: [
+            //       Text(
+            //           'Sound notification is ${useSound ? "enabled" : "disabled"}',
+            //           style: const TextStyle(
+            //               color: Constants.menuFontColor1,
+            //               fontSize: Constants.menuFontSize1,
+            //               fontWeight: FontWeight.w400))
+            //     ])),
+            // Padding(
+            //     padding: const EdgeInsets.only(bottom: 30, left: 25, right: 25),
+            //     child: Row(children: [
+            //       Text(
+            //           'Packet sending is ${usePacket ? "enabled" : "disabled"}',
+            //           style: const TextStyle(
+            //               color: Constants.menuFontColor1,
+            //               fontSize: Constants.menuFontSize1,
+            //               fontWeight: FontWeight.w400))
+            //     ]))
+          ]);
+    });
+  }
+
+  Widget _sound() {
+    return Builder(builder: (context) {
+      var soundList = context.watch<AlertModel>().sounds;
+      var useSound = context.watch<AlertModel>().useSound;
+      return Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
             //
             // use sound
-            _item(
+            ItemInMenuList(
                 height: 80,
                 useBorderTop: true,
                 useBorderBot: false,
@@ -156,7 +189,7 @@ class AlertPageState extends State<AlertPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Flexible(
-                            child: Text('Use sound',
+                            child: Text('Sound notification',
                                 style: TextStyle(
                                     color: _fontColor1,
                                     fontSize: _fontSize1,
@@ -184,79 +217,82 @@ class AlertPageState extends State<AlertPage> {
                 ])),
             //
             // sound
-            AnimatedContainer(
-                height: useSound ? 80 : 0,
-                duration: _animationDuraton,
-                child: AnimatedOpacity(
-                    opacity: useSound ? 1 : 0,
-                    duration: _animationDuraton,
-                    child: _item(
-                        height: double.infinity,
-                        useBorderTop: true,
-                        useBorderBot: false,
-                        child: Row(children: [
-                          Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Flexible(
-                                    child: Text('Sound',
-                                        style: TextStyle(
-                                            color: _fontColor1,
-                                            fontSize: _fontSize1,
-                                            fontWeight: FontWeight.w400))),
-                                const SizedBox(height: 4),
-                                Flexible(
-                                    child: Text('Particular type',
-                                        style: TextStyle(
-                                            color: _fontColor2,
-                                            fontSize: _fontSize3,
-                                            fontWeight: FontWeight.w400)))
-                              ]),
-                          const Spacer(),
-                          RoundButton(
-                              color: Colors.transparent,
-                              iconColor: Constants.colorPrimary,
-                              size: 70,
-                              iconData: Icons.play_circle_fill,
-                              onPressed: (p0) async {
-                                var sound = context.read<AlertModel>().sound;
-                                if (sound == null) return;
-                                MyRep().playSound(sound: sound.uri);
-                              }),
-                          Expanded(
-                              flex: 2,
-                              child: Row(children: [
-                                Expanded(
-                                    child: DropdownButton<Sound>(
-                                        padding:
-                                            const EdgeInsets.only(right: 6),
-                                        value:
-                                            context.watch<AlertModel>().sound,
-                                        isExpanded: true,
-                                        onChanged: (Sound? value) {
-                                          context
-                                              .read<AlertModel>()
-                                              .setSound(value);
-                                        },
-                                        items: soundList
-                                            .map<DropdownMenuItem<Sound>>(
-                                                (Sound value) {
-                                          return DropdownMenuItem<Sound>(
-                                              value: value,
-                                              child: Text(value.name,
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: _fontSize2,
-                                                      color: Constants
-                                                          .colorPrimary)));
-                                        }).toList()))
-                              ]))
-                        ]))))
+            IgnorePointer(
+                ignoring: !useSound,
+                child: SizedBox(
+                    height: 80,
+                    child: AnimatedOpacity(
+                        opacity: useSound ? 1 : 0.5,
+                        duration: _animationDuraton,
+                        child: ItemInMenuList(
+                            height: double.infinity,
+                            useBorderTop: true,
+                            useBorderBot: false,
+                            child: Row(children: [
+                              Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Flexible(
+                                        child: Text('Sound',
+                                            style: TextStyle(
+                                                color: _fontColor1,
+                                                fontSize: _fontSize1,
+                                                fontWeight: FontWeight.w400))),
+                                    const SizedBox(height: 4),
+                                    Flexible(
+                                        child: Text('Particular type',
+                                            style: TextStyle(
+                                                color: _fontColor2,
+                                                fontSize: _fontSize3,
+                                                fontWeight: FontWeight.w400)))
+                                  ]),
+                              const Spacer(),
+                              RoundButton(
+                                  color: Colors.transparent,
+                                  iconColor: Constants.colorPrimary,
+                                  size: 70,
+                                  iconData: Icons.play_circle_fill,
+                                  onPressed: (p0) async {
+                                    var sound =
+                                        context.read<AlertModel>().sound;
+                                    if (sound == null) return;
+                                    MyRep().playSound(sound: sound.uri);
+                                  }),
+                              Expanded(
+                                  flex: 2,
+                                  child: Row(children: [
+                                    Expanded(
+                                        child: DropdownButton<Sound>(
+                                            padding:
+                                                const EdgeInsets.only(right: 6),
+                                            value: context
+                                                .watch<AlertModel>()
+                                                .sound,
+                                            isExpanded: true,
+                                            onChanged: (Sound? value) {
+                                              context
+                                                  .read<AlertModel>()
+                                                  .setSound(value);
+                                            },
+                                            items: soundList
+                                                .map<DropdownMenuItem<Sound>>(
+                                                    (Sound value) {
+                                              return DropdownMenuItem<Sound>(
+                                                  value: value,
+                                                  child: Text(value.name,
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: _fontSize2,
+                                                          color: Constants
+                                                              .colorPrimary)));
+                                            }).toList()))
+                                  ]))
+                            ])))))
           ]);
     });
   }
@@ -270,7 +306,7 @@ class AlertPageState extends State<AlertPage> {
       return Column(children: [
         //
         // send packets
-        _item(
+        ItemInMenuList(
             useBorderTop: true,
             useBorderBot: false,
             height: 80,
@@ -279,7 +315,7 @@ class AlertPageState extends State<AlertPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Send packets',
+                    Text('Packet sending',
                         style: TextStyle(
                             color: _fontColor1,
                             fontSize: _fontSize1,
@@ -302,149 +338,137 @@ class AlertPageState extends State<AlertPage> {
             ])),
         //
         // tcp/udp mode
-        AnimatedContainer(
-            height: usePacket ? 80 : 0,
-            duration: _animationDuraton,
-            child: AnimatedOpacity(
-                opacity: usePacket ? 1 : 0,
-                duration: _animationDuraton,
-                child: _item(
-                    height: double.infinity,
-                    useBorderTop: true,
-                    useBorderBot: false,
-                    child: Row(children: [
-                      Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Flexible(
-                                child: Text('TCP/UDP',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                        color: _fontColor1,
-                                        fontSize: _fontSize1,
-                                        fontWeight: FontWeight.w400))),
-                            const SizedBox(height: 4),
-                            Flexible(
-                                child: Text('One of protocols',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                        color: _fontColor2,
-                                        fontSize: _fontSize3,
-                                        fontWeight: FontWeight.w400)))
-                          ]),
-                      const Spacer(),
-                      SizedBox(
-                          height: 50,
-                          child: packets.isNotEmpty
-                              ? DropdownButton<String>(
-                                  padding: const EdgeInsets.only(right: 6),
-                                  value: packet,
-                                  onChanged: (String? value) {
-                                    if (value == null) return;
-                                    context.read<AlertModel>().setPacketValue(
-                                        v: value, saveConfig: true);
-                                  },
-                                  items: packets.map<DropdownMenuItem<String>>(
-                                      (String value) {
-                                    return DropdownMenuItem<String>(
-                                        value: value,
-                                        child: Text(value,
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: _fontSize2,
-                                                color:
-                                                    Constants.colorPrimary)));
-                                  }).toList())
-                              : const SizedBox())
-                    ])))),
+        IgnorePointer(
+            ignoring: !usePacket,
+            child: SizedBox(
+                height: 80,
+                child: AnimatedOpacity(
+                    opacity: usePacket ? 1 : 0.5,
+                    duration: _animationDuraton,
+                    child: ItemInMenuList(
+                        height: double.infinity,
+                        useBorderTop: true,
+                        useBorderBot: false,
+                        child: Row(children: [
+                          Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Flexible(
+                                    child: Text('TCP/UDP',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            color: _fontColor1,
+                                            fontSize: _fontSize1,
+                                            fontWeight: FontWeight.w400))),
+                                const SizedBox(height: 4),
+                                Flexible(
+                                    child: Text('One of protocols',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            color: _fontColor2,
+                                            fontSize: _fontSize3,
+                                            fontWeight: FontWeight.w400)))
+                              ]),
+                          const Spacer(),
+                          SizedBox(
+                              height: 50,
+                              child: packets.isNotEmpty
+                                  ? DropdownButton<String>(
+                                      padding: const EdgeInsets.only(right: 6),
+                                      value: packet,
+                                      onChanged: (String? value) {
+                                        if (value == null) return;
+                                        context
+                                            .read<AlertModel>()
+                                            .setPacketValue(
+                                                v: value, saveConfig: true);
+                                      },
+                                      items: packets
+                                          .map<DropdownMenuItem<String>>(
+                                              (String value) {
+                                        return DropdownMenuItem<String>(
+                                            value: value,
+                                            child: Text(value,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: _fontSize2,
+                                                    color: Constants
+                                                        .colorPrimary)));
+                                      }).toList())
+                                  : const SizedBox())
+                        ]))))),
         //
         // IP/URI
-        AnimatedContainer(
-            height: usePacket ? 80 : 0,
-            duration: _animationDuraton,
-            child: AnimatedOpacity(
-                opacity: usePacket ? 1 : 0,
-                duration: _animationDuraton,
-                child: _item(
-                    height: double.infinity,
-                    useBorderTop: true,
-                    useBorderBot: true,
-                    child: Row(children: [
-                      Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Flexible(
-                                child: Text('IP/URI',
-                                    style: TextStyle(
-                                        color: _fontColor1,
-                                        fontSize: _fontSize1,
-                                        fontWeight: FontWeight.w400))),
-                            const SizedBox(height: 4),
-                            Flexible(
-                                child: Text('Destination address',
-                                    style: TextStyle(
-                                        color: _fontColor2,
-                                        fontSize: _fontSize3,
-                                        fontWeight: FontWeight.w400)))
-                          ]),
-                      const Spacer(),
-                      Expanded(
-                          flex: 2,
-                          child: HoverClick(
-                              onPressedL: (p0) {
-                                Navigator.push(
-                                    context,
-                                    CupertinoPageRoute(
-                                        settings: const RouteSettings(),
-                                        builder: (context) {
-                                          return AlertAddrPage(model: _model);
-                                        }));
-                              },
-                              child: SizedBox(
-                                  height: 40,
-                                  child: Container(
-                                      decoration: BoxDecoration(
-                                          color: Constants.colorCard,
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                      width: 150,
-                                      child: Center(
-                                          child: Text(
-                                              packetToAddr ?? 'ex: 192.168.1.1',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                  color:
-                                                      Constants.colorTextSecond,
-                                                  fontSize: _fontSize2,
-                                                  fontWeight:
-                                                      FontWeight.w400)))))))
-                    ]))))
+        IgnorePointer(
+            ignoring: !usePacket,
+            child: SizedBox(
+                height: 80,
+                child: AnimatedOpacity(
+                    opacity: usePacket ? 1 : 0.5,
+                    duration: _animationDuraton,
+                    child: ItemInMenuList(
+                        height: double.infinity,
+                        useBorderTop: true,
+                        useBorderBot: true,
+                        child: Row(children: [
+                          Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Flexible(
+                                    child: Text('IP/URI',
+                                        style: TextStyle(
+                                            color: _fontColor1,
+                                            fontSize: _fontSize1,
+                                            fontWeight: FontWeight.w400))),
+                                const SizedBox(height: 4),
+                                Flexible(
+                                    child: Text('Destination address',
+                                        style: TextStyle(
+                                            color: _fontColor2,
+                                            fontSize: _fontSize3,
+                                            fontWeight: FontWeight.w400)))
+                              ]),
+                          const Spacer(),
+                          Expanded(
+                              flex: 2,
+                              child: HoverClick(
+                                  onPressedL: (p0) {
+                                    Navigator.push(
+                                        context,
+                                        CupertinoPageRoute(
+                                            settings: const RouteSettings(),
+                                            builder: (context) {
+                                              return AlertAddrPage(
+                                                  model: _model);
+                                            }));
+                                  },
+                                  child: SizedBox(
+                                      height: 40,
+                                      child: Container(
+                                          decoration: BoxDecoration(
+                                              color: Constants.colorCard,
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
+                                          width: 150,
+                                          child: Center(
+                                              child: Text(
+                                                  packetToAddr ??
+                                                      'ex: 192.168.1.1',
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                      color: Constants
+                                                          .colorTextSecond,
+                                                      fontSize: _fontSize2,
+                                                      fontWeight:
+                                                          FontWeight.w400)))))))
+                        ])))))
       ]);
     });
-  }
-
-  Widget _item(
-      {required bool useBorderTop,
-      required bool useBorderBot,
-      required double height,
-      required Widget child}) {
-    return Container(
-        width: double.infinity,
-        height: height,
-        padding: const EdgeInsets.only(left: 25, right: 25),
-        decoration: BoxDecoration(
-            border: Border(
-                top: useBorderTop
-                    ? BorderSide(color: _borderColor, width: 1)
-                    : BorderSide.none,
-                bottom: useBorderBot
-                    ? BorderSide(color: _borderColor, width: 1)
-                    : BorderSide.none)),
-        child: child);
   }
 }
