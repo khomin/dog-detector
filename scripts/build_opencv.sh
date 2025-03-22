@@ -43,7 +43,7 @@ echo "------------------"
 # x86
 mkdir x86
 cd ./x86
-cmake ../../ -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
+cmake ../../cpp -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
 -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 -Dprotobuf_BUILD_TESTS=OFF \
 -DCMAKE_SYSTEM_NAME=Android \
@@ -61,7 +61,7 @@ cd ../
 # aarch64
 mkdir aarch64
 cd ./aarch64
-cmake ../../ -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
+cmake ../../cpp -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
 -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 -DCMAKE_BUILD_TYPE=Release \
 -Dprotobuf_BUILD_TESTS=OFF \
@@ -80,7 +80,7 @@ cd ../
 # x86_64
 mkdir x86_64
 cd ./x86_64
-cmake ../../ -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
+cmake ../../cpp -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
 -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 -Dprotobuf_BUILD_TESTS=OFF \
 -DCMAKE_BUILD_TYPE=Release \

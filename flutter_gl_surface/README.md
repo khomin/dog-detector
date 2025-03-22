@@ -4,19 +4,24 @@
 
 ### Android
 
-You need to build opencv manually using cmake, example: (adjust YOUR_DIR)
+You need to build opencv manually using cmake or build_opencv.sh.
 
-        cmake ../ \
-        -DBUILD_EXAMPLES=OFF \
-        -DOPENCV_FORCE_3RDPARTY_BUILD=ON \
-        -DBUILD_TESTS=OFF \
-        -DOPENCV_ENABLE_NONFREE=ON \
-        -DBUILD_PROTOBUF=OFF \
-        -DBUILD_opencv_dnn=OFF \
-        -DCMAKE_INSTALL_PREFIX=YOUR_DIR/lib_pack/opencv/
+    mkdir build_opencv
+    cd build_opencv
+    ../scripts/build_opencv.sh
 
-        make -j16
-        make install
+    # for linux
+    export NDK=~/Android/Sdk/ndk/26.1.10909125/ // YOUR SDK VERSION
+    # for macos
+    export NDK=~/Android/Sdk/ndk/26.1.10909125/  // YOUR SDK VERSION
+    
+    # toolchain
+    export CMAKE_SYSROOT=${NDK}/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/
+    export TOOLCHAIN=${NDK}/build/cmake/android.toolchain.cmake
+    export INSTALL_PATH_PREFIX=~/Documents/PROJECTS/dog-detector/lib_pack/opencv
+    # build
+    chmod +x ./scripts/build_opencv.sh
+    ./scripts/build_opencv.sh
 
 so it will look like: 
 
