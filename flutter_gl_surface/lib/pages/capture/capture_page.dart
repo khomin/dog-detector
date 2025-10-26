@@ -35,7 +35,7 @@ class CapturePageState extends State<CapturePage>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   final _dispStream = DisposableStream();
   late RecordModel _model;
-  late final AppLifecycleListener _listener;
+  AppLifecycleListener? _listener;
   late final Animation<double> _slideHeight;
   late final Animation<double> _slideOpacity;
   late AnimationController _ctrSlideTop;
@@ -69,35 +69,6 @@ class CapturePageState extends State<CapturePage>
         parent: _ctrSlideTop.view,
         curve: const Interval(0.000, 0.50, curve: Curves.easeInOut)));
 
-    Future.microtask(() async {
-      // init first
-      await MyRep().initRender();
-
-      _listener = AppLifecycleListener(onStateChange: (value) {
-        // logDebug('BTEST_STATE=$value');
-        switch (value) {
-          case AppLifecycleState.inactive:
-          case AppLifecycleState.hidden:
-          case AppLifecycleState.detached:
-          case AppLifecycleState.paused:
-            _model.setRun(run: false, camera: null);
-            MyRep().stopCamera();
-            break;
-          case AppLifecycleState.resumed:
-            _start(flip: false);
-            break;
-        }
-      });
-
-      _model.devRotation = await MyRep().getDeviceSensor();
-      // _model.setOrientationWait(true);
-      await MyRep().registerView();
-      await MyRep().getCameras();
-      await _start(flip: false);
-      // await _updateRotation();
-      // _model.setOrientationWait(false);
-    });
-
     MyRep().onCapture = (path) {
       _updateLastFrame(path: path);
     };
@@ -116,7 +87,7 @@ class CapturePageState extends State<CapturePage>
   @override
   void dispose() {
     super.dispose();
-    _listener.dispose();
+    _listener?.dispose();
     _dispStream.dispose();
     _onStopRecordStream.close();
     _model.setRun(run: false, camera: null, mounted: false);
@@ -265,6 +236,35 @@ class CapturePageState extends State<CapturePage>
     });
   }
 
+  void _onPlatformViewCreated(int id) async {
+    // init first
+    await MyRep().initRender();
+
+    _listener = AppLifecycleListener(onStateChange: (value) {
+      // logDebug('BTEST_STATE=$value');
+      switch (value) {
+        case AppLifecycleState.inactive:
+        case AppLifecycleState.hidden:
+        case AppLifecycleState.detached:
+        case AppLifecycleState.paused:
+          _model.setRun(run: false, camera: null);
+          MyRep().stopCamera();
+          break;
+        case AppLifecycleState.resumed:
+          _start(flip: false);
+          break;
+      }
+    });
+
+    _model.devRotation = await MyRep().getDeviceSensor();
+    // _model.setOrientationWait(true);
+    await MyRep().registerView();
+    await MyRep().getCameras();
+    await _start(flip: false);
+    // await _updateRotation();
+    // _model.setOrientationWait(false);
+  }
+
   @override
   Widget build(BuildContext context) {
     _model = context.read<RecordModel>();
@@ -300,8 +300,10 @@ class CapturePageState extends State<CapturePage>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         RoundButton(
-                            color: Constants.colorButtonRed.withOpacity(0.8),
-                            iconColor: Constants.colorCard.withOpacity(0.8),
+                            color:
+                                Constants.colorButtonRed.withValues(alpha: 0.8),
+                            iconColor:
+                                Constants.colorCard.withValues(alpha: 0.8),
                             size: 55,
                             radius: 20,
                             useScaleAnimation: true,
@@ -314,8 +316,10 @@ class CapturePageState extends State<CapturePage>
                             }),
                         const SizedBox(width: 15),
                         RoundButton(
-                            color: Constants.colorSecondary.withOpacity(0.8),
-                            iconColor: Constants.colorCard.withOpacity(0.8),
+                            color:
+                                Constants.colorSecondary.withValues(alpha: 0.8),
+                            iconColor:
+                                Constants.colorCard.withValues(alpha: 0.8),
                             size: 55,
                             radius: 20,
                             useScaleAnimation: true,
@@ -360,14 +364,14 @@ class CapturePageState extends State<CapturePage>
                                         text: duration?.duration.format() ?? '',
                                         color: const Color.fromARGB(
                                                 255, 211, 19, 5)
-                                            .withOpacity(0.8),
+                                            .withValues(alpha: 0.8),
                                         borderRadius: 40));
                               })
                         ])))),
                 const Spacer(),
                 RoundButton(
                     color: Colors.transparent,
-                    iconColor: Constants.colorTextAccent.withOpacity(0.8),
+                    iconColor: Constants.colorTextAccent.withValues(alpha: 0.8),
                     size: 70,
                     vertTransform: true,
                     iconData: Icons.arrow_back_ios_new,
@@ -439,11 +443,14 @@ class CapturePageState extends State<CapturePage>
                                         width: camera?.size.width ?? size.width,
                                         height:
                                             camera?.size.height ?? size.height,
-                                        child: const AndroidView(
-                                            viewType: 'my_gl_surface_view',
-                                            creationParams: null,
-                                            creationParamsCodec:
-                                                StandardMessageCodec())))));
+                                        child: AndroidView(
+                                          viewType: 'my_gl_surface_view',
+                                          creationParams: null,
+                                          creationParamsCodec:
+                                              const StandardMessageCodec(),
+                                          onPlatformViewCreated:
+                                              _onPlatformViewCreated,
+                                        )))));
                       });
                     })),
                 //
@@ -533,7 +540,8 @@ class CapturePageState extends State<CapturePage>
                         duration: Constants.duration * 2,
                         child: RoundButton(
                             color: Constants.colorButton,
-                            iconColor: Constants.colorCard.withOpacity(0.8),
+                            iconColor:
+                                Constants.colorCard.withValues(alpha: 0.8),
                             size: 55,
                             useScaleAnimation: true,
                             iconData: Icons.flip_camera_android,

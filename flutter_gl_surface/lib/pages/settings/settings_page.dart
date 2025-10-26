@@ -161,9 +161,9 @@ class SettingsPageState extends State<SettingsPage> {
                                       children: [
                                         RoundButton(
                                             color: Constants.colorButtonRed
-                                                .withOpacity(0.8),
+                                                .withValues(alpha: 0.8),
                                             iconColor: Constants.colorCard
-                                                .withOpacity(0.8),
+                                                .withValues(alpha: 0.8),
                                             size: 55,
                                             radius: 20,
                                             useScaleAnimation: true,
@@ -175,9 +175,9 @@ class SettingsPageState extends State<SettingsPage> {
                                         const SizedBox(width: 15),
                                         RoundButton(
                                             color: Constants.colorSecondary
-                                                .withOpacity(0.8),
+                                                .withValues(alpha: 0.8),
                                             iconColor: Constants.colorCard
-                                                .withOpacity(0.8),
+                                                .withValues(alpha: 0.8),
                                             size: 55,
                                             radius: 20,
                                             useScaleAnimation: true,

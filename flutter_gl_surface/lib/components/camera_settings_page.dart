@@ -59,7 +59,8 @@ class CameraSettingsPageState extends State<CameraSettingsPage> {
                   const Spacer(),
                   RoundButton(
                       color: Colors.transparent,
-                      iconColor: Constants.colorTextAccent.withOpacity(0.8),
+                      iconColor:
+                          Constants.colorTextAccent.withValues(alpha: 0.8),
                       size: 70,
                       iconData: Icons.close_sharp,
                       onPressed: (p0) async {
@@ -169,7 +170,7 @@ class CameraSettingsPageState extends State<CameraSettingsPage> {
                         decoration: BoxDecoration(boxShadow: [
                           BoxShadow(
                               spreadRadius: 10,
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 10,
                               offset: const Offset(0, 0))
                         ]));

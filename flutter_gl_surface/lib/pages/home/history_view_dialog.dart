@@ -15,7 +15,7 @@ class FullViewDialog {
       int initialIndex = 0}) {
     return showGeneralDialog(
       context: context,
-      // barrierColor: Colors.black12.withOpacity(0.8),
+      // barrierColor: Colors.black12.withValues(alpha:0.8),
       barrierColor: Colors.transparent,
       barrierDismissible: true,
       barrierLabel: '',
@@ -183,8 +183,8 @@ class FullViewItemState extends State<FullViewItem> {
         // color: Colors.orange,
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           RoundButton(
-              color: Constants.colorButtonRed.withOpacity(0.8),
-              iconColor: Constants.colorCard.withOpacity(0.8),
+              color: Constants.colorButtonRed.withValues(alpha: 0.8),
+              iconColor: Constants.colorCard.withValues(alpha: 0.8),
               size: 55,
               radius: 20,
               useScaleAnimation: true,
@@ -196,8 +196,8 @@ class FullViewItemState extends State<FullViewItem> {
               }),
           const SizedBox(width: 15),
           RoundButton(
-              color: Constants.colorSecondary.withOpacity(0.8),
-              iconColor: Constants.colorCard.withOpacity(0.8),
+              color: Constants.colorSecondary.withValues(alpha: 0.8),
+              iconColor: Constants.colorCard.withValues(alpha: 0.8),
               size: 55,
               radius: 20,
               useScaleAnimation: true,
@@ -346,7 +346,7 @@ class FullViewItemState extends State<FullViewItem> {
             const Spacer(),
             RoundButton(
                 color: Colors.transparent,
-                iconColor: Constants.colorTextAccent.withOpacity(0.8),
+                iconColor: Constants.colorTextAccent.withValues(alpha: 0.8),
                 size: 50,
                 radius: 18,
                 vertTransform: true,
@@ -374,8 +374,8 @@ class FullViewItemState extends State<FullViewItem> {
                           // borderRadius: BorderRadius.circular(20.0),
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  Colors.black.withOpacity(0.3), // Shadow color
+                              color: Colors.black
+                                  .withValues(alpha: 0.3), // Shadow color
                               blurRadius: 10.0, // Blur radius
                               spreadRadius: 1.0, // Spread radius
                               offset: const Offset(0,

@@ -175,7 +175,7 @@ class AlertAddrPageState extends State<AlertAddrPage> {
                                         hintText: 'ex: 192.168.1.1',
                                         hintStyle: TextStyle(
                                             color: Constants.colorTextAccent
-                                                .withOpacity(0.3),
+                                                .withValues(alpha: 0.3),
                                             fontSize: 17,
                                             fontWeight: FontWeight.w700)),
                                     style: const TextStyle(

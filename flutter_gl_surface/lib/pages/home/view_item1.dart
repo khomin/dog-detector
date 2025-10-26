@@ -109,8 +109,8 @@ class ViewItem1State extends State<ViewItem1> with TickerProviderStateMixin {
         controller: _slideCtr,
         onSlided: () {},
         button: RoundButton(
-            color: Constants.colorButtonRed.withOpacity(0.8),
-            iconColor: Constants.colorCard.withOpacity(0.8),
+            color: Constants.colorButtonRed.withValues(alpha: 0.8),
+            iconColor: Constants.colorCard.withValues(alpha: 0.8),
             size: 55,
             radius: 20,
             useScaleAnimation: true,
@@ -142,7 +142,7 @@ class ViewItem1State extends State<ViewItem1> with TickerProviderStateMixin {
                     color: Constants.colorCard,
                     boxShadow: [
                       BoxShadow(
-                          color: Constants.colorPrimary.withOpacity(0.4),
+                          color: Constants.colorPrimary.withValues(alpha: 0.4),
                           blurRadius: 20,
                           offset: const Offset(0, 10))
                     ],
@@ -170,7 +170,7 @@ class ViewItem1State extends State<ViewItem1> with TickerProviderStateMixin {
                                     Text('${history.date.day}',
                                         style: TextStyle(
                                             color: Constants.colorTextAccent
-                                                .withOpacity(0.5),
+                                                .withValues(alpha: 0.5),
                                             fontSize: 16,
                                             // fontFamily: 'Salsa',
                                             fontWeight: FontWeight.bold)),
@@ -204,7 +204,7 @@ class ViewItem1State extends State<ViewItem1> with TickerProviderStateMixin {
                                                 style: TextStyle(
                                                     color: Constants
                                                         .colorTextAccent
-                                                        .withOpacity(0.5),
+                                                        .withValues(alpha: 0.5),
                                                     fontSize: 16,
                                                     // fontFamily: 'Salsa',
                                                     fontWeight:
@@ -227,7 +227,7 @@ class ViewItem1State extends State<ViewItem1> with TickerProviderStateMixin {
                                 Icon(Icons.photo_library_sharp,
                                     size: 18,
                                     color: Constants.colorTextAccent
-                                        .withOpacity(0.5)),
+                                        .withValues(alpha: 0.5)),
                                 const SizedBox(width: 4),
                                 //
                                 // count of photos

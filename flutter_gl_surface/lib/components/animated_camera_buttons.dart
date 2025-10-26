@@ -55,8 +55,8 @@ class AnimatedCameraButtonsState extends State<AnimatedCameraButtons>
     tabInfoItems = [
       for (final tab in tabs)
         RoundButton(
-            color: Constants.colorBgUnderCard.withOpacity(0.3),
-            iconColor: Constants.colorCard.withOpacity(0.8),
+            color: Constants.colorBgUnderCard.withValues(alpha: 0.3),
+            iconColor: Constants.colorCard.withValues(alpha: 0.8),
             size: 55,
             useScaleAnimation: true,
             iconData: Icons.hdr_auto,

@@ -25,7 +25,7 @@ class GridDialog {
       int initialIndex = 0}) {
     return showGeneralDialog(
         context: context,
-        // barrierColor: Colors.black12.withOpacity(0.8),
+        // barrierColor: Colors.black12.withValues(alpha:0.8),
         barrierColor: Colors.transparent,
         // barrierDismissible: true,
         // barrierLabel: '',
@@ -294,10 +294,10 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
                             scale: _scaleAnimation,
                             child: Row(children: [
                               RoundButton(
-                                  color:
-                                      Constants.colorButtonRed.withOpacity(0.8),
-                                  iconColor:
-                                      Constants.colorCard.withOpacity(0.8),
+                                  color: Constants.colorButtonRed
+                                      .withValues(alpha: 0.8),
+                                  iconColor: Constants.colorCard
+                                      .withValues(alpha: 0.8),
                                   size: 45,
                                   radius: 20,
                                   useScaleAnimation: true,
@@ -310,10 +310,10 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
                                   }),
                               const SizedBox(width: 15),
                               RoundButton(
-                                  color:
-                                      Constants.colorSecondary.withOpacity(0.8),
-                                  iconColor:
-                                      Constants.colorCard.withOpacity(0.8),
+                                  color: Constants.colorSecondary
+                                      .withValues(alpha: 0.8),
+                                  iconColor: Constants.colorCard
+                                      .withValues(alpha: 0.8),
                                   size: 45,
                                   radius: 20,
                                   iconData: Icons.share,
@@ -329,7 +329,7 @@ class HistoryBoxDialogState extends State<HistoryGridBox>
                 ])),
                 RoundButton(
                     color: Colors.transparent,
-                    iconColor: Constants.colorTextAccent.withOpacity(0.8),
+                    iconColor: Constants.colorTextAccent.withValues(alpha: 0.8),
                     size: 50,
                     radius: 18,
                     vertTransform: true,

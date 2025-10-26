@@ -30,26 +30,26 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.who.zone"
-    compileSdk flutter.compileSdkVersion
-    ndkVersion = "26.1.10909125"
-
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
-
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '11'
     }
-
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
     }
 
     defaultConfig {
         applicationId "com.who.zone"
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdk = flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         externalNativeBuild {
@@ -60,6 +60,7 @@ android {
                         "-DANDROID_STL=c++_shared"
                 cFlags "-D__STDC_FORMAT_MACROS -D__ANDROID__ -fPIC -Wl -Bsymbolic"
                 cppFlags "-std=c++17", "-fPIC", "-frtti", "-fexceptions", "--build-id", "-Wl", "-Bsymbolic"
+                abiFilters "arm64-v8a", "x86_64"
                 version = '3.18.0+'
             }
         }

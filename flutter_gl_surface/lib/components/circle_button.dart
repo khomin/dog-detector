@@ -73,7 +73,7 @@ class RoundButtonState extends State<RoundButton>
         decoration: BoxDecoration(boxShadow: [
           if (widget.useShadow)
             BoxShadow(
-                color: Constants.colorPrimary.withOpacity(0.3),
+                color: Constants.colorPrimary.withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 1))
         ]),

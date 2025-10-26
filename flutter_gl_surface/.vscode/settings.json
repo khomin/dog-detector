@@ -1,0 +1,21 @@
+{
+    "files.associations": {
+        "*.qml": "c",
+        "*.ipp": "cpp"
+    },
+    "git.ignoreLimitWarning": true,
+    "cmake.configureOnOpen": true,
+
+    "editor.defaultFormatter": "Dart-Code.dart-code",
+    "editor.formatOnSave": true,
+
+    "search.exclude": {
+        "assets/**": true,
+        "/android/app/.cxx**": true
+    },
+    "editor.quickSuggestions": {
+        "comments": "off",
+        "strings": "off",
+        "other": "off"
+    }
+}

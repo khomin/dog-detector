@@ -204,7 +204,7 @@ class HomePagePageState extends State<HomePagePage>
                       color: Constants.colorBgUnderCard,
                       boxShadow: [
                         BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 10,
                             offset: const Offset(0, 0))
                       ]),
@@ -319,7 +319,7 @@ class HomePagePageState extends State<HomePagePage>
                                     const EdgeInsets.only(left: 8, right: 8),
                                 child: Icon(Icons.create_new_folder_rounded,
                                     color: Constants.colorTextSecond
-                                        .withOpacity(0.5))),
+                                        .withValues(alpha: 0.5))),
                             // Padding(
                             //     padding: EdgeInsets.only(left: 2, right: 8),
                             //     child: Text('Capture',
@@ -375,8 +375,10 @@ class HomePagePageState extends State<HomePagePage>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         RoundButton(
-                            color: Constants.colorButtonRed.withOpacity(0.8),
-                            iconColor: Constants.colorCard.withOpacity(0.8),
+                            color:
+                                Constants.colorButtonRed.withValues(alpha: 0.8),
+                            iconColor:
+                                Constants.colorCard.withValues(alpha: 0.8),
                             size: 55,
                             radius: 20,
                             useScaleAnimation: true,
@@ -388,8 +390,10 @@ class HomePagePageState extends State<HomePagePage>
                             }),
                         const SizedBox(width: 15),
                         RoundButton(
-                            color: Constants.colorSecondary.withOpacity(0.8),
-                            iconColor: Constants.colorCard.withOpacity(0.8),
+                            color:
+                                Constants.colorSecondary.withValues(alpha: 0.8),
+                            iconColor:
+                                Constants.colorCard.withValues(alpha: 0.8),
                             size: 55,
                             radius: 20,
                             useScaleAnimation: true,
@@ -435,7 +439,7 @@ class HomePagePageState extends State<HomePagePage>
                                         text: duration?.duration.format() ?? '',
                                         color: const Color.fromARGB(
                                                 255, 211, 19, 5)
-                                            .withOpacity(0.8),
+                                            .withValues(alpha: 0.8),
                                         borderRadius: 40));
                               })
                         ])))),

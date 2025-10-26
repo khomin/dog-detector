@@ -3,7 +3,7 @@
 
 # how to use
 # export NDK=/Users/user/Library/Android/sdk/ndk/26.1.10909125
-# export NDK=~/Android/Sdk/ndk/26.1.10909125/
+# export NDK=~/Android/Sdk/ndk/29.0.14033849
 
 # export CMAKE_SYSROOT=${NDK}/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/
 # export TOOLCHAIN=${NDK}/build/cmake/android.toolchain.cmake
@@ -43,8 +43,9 @@ echo "------------------"
 # x86
 mkdir x86
 cd ./x86
-cmake ../../cpp -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
+cmake ../../ -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
 -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+-DBUILD_SAMPLES=OFF \
 -Dprotobuf_BUILD_TESTS=OFF \
 -DCMAKE_SYSTEM_NAME=Android \
 -DCMAKE_BUILD_TYPE=Release \
@@ -61,8 +62,9 @@ cd ../
 # aarch64
 mkdir aarch64
 cd ./aarch64
-cmake ../../cpp -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
+cmake ../../ -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
 -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+-DBUILD_SAMPLES=OFF \
 -DCMAKE_BUILD_TYPE=Release \
 -Dprotobuf_BUILD_TESTS=OFF \
 -DCMAKE_SYSTEM_NAME=Android \
@@ -74,14 +76,15 @@ cmake ../../cpp -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
 -DCMAKE_ANDROID_NDK=${NDK} \
 -DCMAKE_CXX_FLAGS="-llog"
 make -j32
-cmake --install . --prefix ${INSTALL_PATH_PREFIX}/arm64
+cmake --install . --prefix ${INSTALL_PATH_PREFIX}/arm64-v8a
 cd ../
 
 # x86_64
 mkdir x86_64
 cd ./x86_64
-cmake ../../cpp -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
+cmake ../../ -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
 -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+-DBUILD_SAMPLES=OFF \
 -Dprotobuf_BUILD_TESTS=OFF \
 -DCMAKE_BUILD_TYPE=Release \
 -DCMAKE_SYSTEM_NAME=Android \

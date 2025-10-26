@@ -180,7 +180,7 @@ class AnimatedCameraMenuState extends State<AnimatedCameraMenu>
                 width: width.value,
                 height: height.value,
                 decoration: BoxDecoration(
-                    color: Constants.colorBgUnderCard.withOpacity(0.3),
+                    color: Constants.colorBgUnderCard.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(_borderRadius.value),
                         topRight: Radius.circular(_borderRadius.value),

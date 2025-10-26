@@ -20,6 +20,7 @@ class App : Application() {
         private const val TAG = "App"
         init {
             try {
+                System.loadLibrary("opencv_java4")
                 System.loadLibrary("opencv_cpp")
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())

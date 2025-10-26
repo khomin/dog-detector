@@ -92,7 +92,8 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                   //     topRight: Radius.circular(20)),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.2),
                                       blurRadius: 10,
                                       offset: const Offset(0, 0),
                                     )
@@ -110,7 +111,7 @@ class MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                         // backgroundColor: Constants.colorCard,
                                         unselectedItemColor: Constants
                                             .colorTextSecond
-                                            .withOpacity(0.8),
+                                            .withValues(alpha: 0.8),
                                         items: const <BottomNavigationBarItem>[
                                           BottomNavigationBarItem(
                                               icon: Icon(Icons.home),

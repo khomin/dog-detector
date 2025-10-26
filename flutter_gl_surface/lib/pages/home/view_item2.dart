@@ -158,7 +158,7 @@ class ViewItem2State extends State<ViewItem2> with TickerProviderStateMixin {
                             child: Icon(Icons.check_circle,
                                 size: 40,
                                 color: Constants.colorBgUnderCard
-                                    .withOpacity(0.7)));
+                                    .withValues(alpha: 0.7)));
                       })
                 ]))));
   }

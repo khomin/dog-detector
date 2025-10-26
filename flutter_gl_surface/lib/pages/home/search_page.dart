@@ -111,7 +111,7 @@ class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                     iconSize: 22,
                     margin: const EdgeInsets.only(right: 15),
                     size: 40,
-                    iconColor: Constants.colorTextAccent.withOpacity(0.5),
+                    iconColor: Constants.colorTextAccent.withValues(alpha: 0.5),
                     onPressed: (_) {
                       _textCtr.clear();
                     });
@@ -145,8 +145,8 @@ class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                               color: Constants.colorPrimary,
                               shadows: [
                                 Shadow(
-                                    color:
-                                        Constants.colorPrimary.withOpacity(0.3),
+                                    color: Constants.colorPrimary
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 15,
                                     offset: const Offset(0, 1))
                               ],
@@ -155,12 +155,12 @@ class SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                             Text('No results',
                                 style: TextStyle(
                                     color: Constants.colorTextAccent
-                                        .withOpacity(0.7),
+                                        .withValues(alpha: 0.7),
                                     fontSize: 18,
                                     shadows: const <Shadow>[
                                       // Shadow(
                                       //     color: Constants.colorPrimary
-                                      //         .withOpacity(0.6),
+                                      //         .withValues(alpha:0.6),
                                       //     blurRadius: 25,
                                       //     offset: const Offset(0, 1)
                                       //     // offset: Offset(10.0, 10.0),

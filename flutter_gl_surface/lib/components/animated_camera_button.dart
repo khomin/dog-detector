@@ -246,7 +246,8 @@ class AnimatedCameraButtonState extends State<AnimatedCameraButton>
                                 ignoring: expanded,
                                 child: RoundButton(
                                     color: Constants.colorButtonBg,
-                                    iconColor: Colors.red.withOpacity(0.8),
+                                    iconColor:
+                                        Colors.red.withValues(alpha: 0.8),
                                     // size: 5, //_widthIconStart.value,
                                     size: 70,
                                     useScaleAnimation: true,
