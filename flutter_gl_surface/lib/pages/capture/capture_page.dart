@@ -74,10 +74,6 @@ class CapturePageState extends State<CapturePage>
     };
     MyRep().onFirstFrame = () async {
       logDebug('BTEST_onFirstFrame');
-      // await _updateRotation();
-      // await Future.delayed(const Duration(milliseconds: 1000));
-      // _model.setOrientationWait(false);
-      // _model.setHideSurface(false);
       await Future.delayed(const Duration(milliseconds: 100));
       _model.setImgBlur(null);
       _model.setFlipWait(false);
@@ -190,7 +186,9 @@ class CapturePageState extends State<CapturePage>
                   borderRadius: BorderRadius.circular(30.0),
                   child: Stack(alignment: Alignment.center, children: [
                     Image.memory(File(path).readAsBytesSync(),
-                        cacheHeight: 100, cacheWidth: 100, fit: BoxFit.fill)
+                        cacheHeight: 100,
+                        cacheWidth: 100,
+                        fit: BoxFit.fitHeight)
                   ]));
             } else {
               _captured = ClipRRect(
@@ -407,7 +405,7 @@ class CapturePageState extends State<CapturePage>
                     top: 0,
                     left: 0,
                     right: 0,
-                    // bottom: 0,
+                    bottom: 0,
                     // bottom: collapse ? -NavigatorRep().size.height / 3 : 0,
                     child: LayoutBuilder(builder: (context, constraints) {
                       () async {
@@ -422,14 +420,15 @@ class CapturePageState extends State<CapturePage>
                             (v) => v.layout);
                         logDebug(
                             'BTEST: width=${camera?.size.width}, height=${camera?.size.height}, rotation-surface=${layout.rotation}, ratio=${layout.ratio}');
+                        // return Text('111');
                         return ClipRRect(
                             borderRadius: BorderRadius.circular(20.0),
                             child: RotatedBox(
                                 quarterTurns: layout.rotation,
                                 child: FittedBox(
-                                    // fit: BoxFit.contain,
+                                    fit: BoxFit.cover,
                                     // fit: BoxFit.fitHeight,
-                                    fit: BoxFit.fitWidth,
+                                    // fit: BoxFit.fitWidth,
                                     // fit: BoxFit.fill,
                                     child: SizedBox(
                                         // width: 500, // Same as the container's width
@@ -438,8 +437,8 @@ class CapturePageState extends State<CapturePage>
                                         // // height: NavigatorRep().size.height,
                                         // height:
                                         //     (NavigatorRep().size.height + 20 / 3),
-                                        // width: width ?? 100,
-                                        // height: height ?? 100,
+                                        // width: 350 ?? 100,
+                                        // height: 350 ?? 100,
                                         width: camera?.size.width ?? size.width,
                                         height:
                                             camera?.size.height ?? size.height,
@@ -556,16 +555,9 @@ class CapturePageState extends State<CapturePage>
 
   Widget _blurTransition() {
     return Builder(builder: (context) {
-      // return const SizedBox();
       var layout =
           context.select<RecordModel, SurfaceLayout>((v) => v.oldLayout);
       var imgBlur = context.select<RecordModel, String?>((v) => v.imgBlur);
-      // var img = flipData.img1;
-      // if (imgBlur == null) return const SizedBox();
-      // var imgFile = File(imgBlur);
-      // return RotatedBox(
-      //     quarterTurns: layout.rotation,
-      //     child:
       logDebug(
           'BTEST: rotation-blur=${layout.rotation}, ratio=${layout.ratio}');
       return RotatedBox(
@@ -579,95 +571,38 @@ class CapturePageState extends State<CapturePage>
                         child: AnimatedOpacity(
                             duration: const Duration(milliseconds: 50),
                             opacity: imgBlur == null ? 0 : 1,
-                            child: ImageFiltered(
-                                imageFilter:
-                                    ImageFilter.blur(sigmaX: 13, sigmaY: 13),
-                                child: imgBlur == null
-                                    ? const SizedBox()
-                                    : Image.memory(
-                                        File(imgBlur).readAsBytesSync(),
-                                        // color: Colors.yellow,
-                                        // colorBlendMode: BlendMode.color,
-                                        cacheHeight: 100,
-                                        cacheWidth: 100,
-                                        //     NavigatorRep().size.width.toInt(),
-                                        // color: Colors.yellow,
-                                        // fit: BoxFit.fitHeight,
-                                        // fit: BoxFit.cover,
-                                        fit: BoxFit.fill))))
+                            child: imgBlur == null
+                                ? const SizedBox()
+                                : Image.memory(
+                                    File(imgBlur).readAsBytesSync(),
+                                    // color: Colors.yellow,
+                                    // colorBlendMode: BlendMode.color,
+                                    // cacheHeight: 100,
+                                    // cacheWidth: 100,
+                                    //     NavigatorRep().size.width.toInt(),
+                                    // color: Colors.yellow,
+                                    // fit: BoxFit.fitHeight,
+                                    fit: BoxFit.cover,
+                                    // fit: BoxFit.fill
+                                  ))),
+                    if (imgBlur != null)
+                      Positioned.fill(
+                          child: BackdropFilter(
+                              filter: ImageFilter.blur(
+                                sigmaX:
+                                    5.0, // Control the intensity of the horizontal blur
+                                sigmaY:
+                                    5.0, // Control the intensity of the vertical blur
+                              ),
+                              child: Container(
+                                // This container is needed to define the size of the blur area.
+                                // Since the image fills the Stack, this transparent container
+                                // ensures the blur covers the same area.
+                                color: Colors.black.withValues(
+                                    alpha:
+                                        0.00001), // Slight overlay for effect
+                              )))
                   ]))));
-      // return ClipRRect(
-      //     borderRadius: BorderRadius.circular(20.0),
-      //     child: RotatedBox(
-      //         quarterTurns: layout.rotation,
-      //         child: FittedBox(
-      //             fit: BoxFit.contain,
-      //             // fit: BoxFit.fitHeight,
-      //             // fit: BoxFit.fitWidth,
-      //             // fit: BoxFit.fill,
-      //             child: SizedBox(
-      //                 // width: 500, // Same as the container's width
-      //                 // height: 500, // Same as the container's height
-      //                 // width: NavigatorRep().size.width,
-      //                 // // height: NavigatorRep().size.height,
-      //                 // height:
-      //                 //     (NavigatorRep().size.height + 20 / 3),
-      //                 // width: width ?? 100,
-      //                 // height: height ?? 100,
-      //                 width: NavigatorRep().size.width,
-      //                 height: NavigatorRep().size.height,
-      //                 child: AnimatedOpacity(
-      //                     duration: const Duration(milliseconds: 50),
-      //                     opacity: imgBlur == null ? 0 : 1,
-      //                     child: ImageFiltered(
-      //                         imageFilter:
-      //                             ImageFilter.blur(sigmaX: 13, sigmaY: 13),
-      //                         child: imgBlur == null
-      //                             ? const SizedBox()
-      //                             : Image.memory(
-      //                                 File(imgBlur).readAsBytesSync(),
-      //                                 // color: Colors.yellow,
-      //                                 // colorBlendMode: BlendMode.color,
-      //                                 cacheHeight: 100,
-      //                                 cacheWidth: 100,
-      //                                 //     NavigatorRep().size.width.toInt(),
-      //                                 // color: Colors.yellow,
-      //                                 // fit: BoxFit.fitHeight,
-      //                                 // fit: BoxFit.cover,
-      //                                 fit: BoxFit.fill)))))));
-      // return Stack(children: [
-      //   Column(children: [
-      //     Flexible(
-      //         child: RotatedBox(
-      //             quarterTurns: layout.rotation,
-      //             child: AspectRatio(
-      //                 aspectRatio: layout.ratio,
-      //                 child: ClipRRect(
-      //                     borderRadius: BorderRadius.circular(20.0),
-      //                     child: Stack(children: [
-      //                       Positioned.fill(
-      //                           child: AnimatedOpacity(
-      //                               duration: const Duration(milliseconds: 50),
-      //                               opacity: imgBlur == null ? 0 : 1,
-      //                               child: ImageFiltered(
-      //                                   imageFilter: ImageFilter.blur(
-      //                                       sigmaX: 13, sigmaY: 13),
-      //                                   child: imgBlur == null
-      //                                       ? const SizedBox()
-      //                                       : Image.memory(
-      //                                           File(imgBlur).readAsBytesSync(),
-      //                                           // color: Colors.yellow,
-      //                                           // colorBlendMode: BlendMode.color,
-      //                                           cacheHeight: 100,
-      //                                           cacheWidth: 100,
-      //                                           //     NavigatorRep().size.width.toInt(),
-      //                                           // color: Colors.yellow,
-      //                                           // fit: BoxFit.fitHeight,
-      //                                           // fit: BoxFit.cover,
-      //                                           fit: BoxFit.fill))))
-      //                     ])))))
-      //   ])
-      // ]);
     });
   }
 

@@ -257,26 +257,6 @@ class FullViewItemState extends State<FullViewItem> {
                                   transformationController:
                                       _controllerList[index],
                                   child: _item(model));
-                              // history: model,
-                              // onPressed: () {},
-                              // animationTicker: widget.animationTicker,
-                              // isNextAwailable: _current.index <
-                              //     widget.models.length - 1,
-                              // isPreviousAwailable: _current.index > 0,
-                              // onNext: () {
-                              //   if (_current.index + 1 <
-                              //       widget.models.length) {
-                              //     _current.index++;
-                              //     _changeItem(fromLine: false);
-                              //   }
-                              // },
-                              // onPrevious: () {
-                              //   if ((_current.index - 1) >= 0) {
-                              //     _current.index--;
-                              //     _changeItem(fromLine: false);
-                              //   }
-                              // },
-                              // model: model
                             });
                       }))));
     });
@@ -471,8 +451,8 @@ class CustomPageViewScrollPhysics extends ScrollPhysics {
 
   @override
   SpringDescription get spring => const SpringDescription(
-        mass: 100000,
-        stiffness: 0.1,
-        damping: 0.1,
+        mass: 1.0,
+        stiffness: 50000,
+        damping: 1000,
       );
 }
